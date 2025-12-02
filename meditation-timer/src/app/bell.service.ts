@@ -4,10 +4,17 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class BellService {
-  constructor() {}
+  private audio: HTMLAudioElement;
 
-  // Stub methods for audio
+  constructor() {
+    this.audio = new Audio('/bell.mp3');
+    this.audio.load();
+  }
+
   playBell() {
-    console.log('Bell played (stub)');
+    this.audio.currentTime = 0;
+    this.audio.play().catch(error => {
+      console.warn('Bell audio playback failed. User interaction might be required.', error);
+    });
   }
 }

@@ -2,30 +2,51 @@ import { Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { TimerService } from '../timer.service';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-control-buttons',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule],
+  imports: [MatButtonModule, MatIconModule, AsyncPipe],
   template: `
-    <div class="controls-container">
-      <button mat-fab color="primary" aria-label="Start Timer" (click)="timerService.start()">
-        <mat-icon>play_arrow</mat-icon>
-      </button>
-      <button mat-fab color="warn" aria-label="Pause Timer" (click)="timerService.pause()">
-        <mat-icon>pause</mat-icon>
-      </button>
-      <button mat-mini-fab aria-label="Reset Timer" (click)="timerService.reset()">
-        <mat-icon>refresh</mat-icon>
-      </button>
-    </div>
+    @if (timerService.state$ | async; as state) {
+      <div class="controls-container">
+        <button
+          mat-fab
+          color="primary"
+          aria-label="Start Timer"
+          (click)="timerService.start()"
+          [disabled]="state.isRunning">
+          <mat-icon>play_arrow</mat-icon>
+        </button>
+
+        <button
+          mat-fab
+          color="accent"
+          aria-label="Pause Timer"
+          (click)="timerService.pause()"
+          [disabled]="!state.isRunning">
+          <mat-icon>pause</mat-icon>
+        </button>
+
+        <button
+          mat-fab
+          extended
+          aria-label="Reset Timer"
+          (click)="timerService.reset()">
+          <mat-icon>refresh</mat-icon>
+          Reset
+        </button>
+      </div>
+    }
   `,
   styles: [`
     .controls-container {
       display: flex;
       justify-content: center;
-      gap: 1rem;
-      margin: 1rem 0;
+      align-items: center;
+      gap: 1.5rem;
+      margin: 2rem 0;
     }
   `]
 })
