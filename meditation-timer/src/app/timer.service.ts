@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { TimerState } from './timer-state.interface';
@@ -16,28 +15,11 @@ export class TimerService {
     intervals: 0,
     theme: 'light',
     isRunning: false,
-=======
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { TimerState } from './timer-state.interface';
-
-@Injectable({
-  providedIn: 'root'
-})
-export class TimerService {
-  private initialState: TimerState = {
-    duration: 1800, // 30 minutes
-    delay: 45,
-    intervals: 0,
-    theme: 'light',
-    isRunning: false
->>>>>>> jules-meditation-timer-phase1-revised
   };
 
   private stateSubject = new BehaviorSubject<TimerState>(this.initialState);
   state$ = this.stateSubject.asObservable();
 
-<<<<<<< HEAD
   private timer: any;
   private delayTimer: any;
 
@@ -77,10 +59,6 @@ export class TimerService {
     this.updateState({ duration: this.initialState.duration });
   }
 
-=======
-  constructor() {}
-
->>>>>>> jules-meditation-timer-phase1-revised
   updateState(newState: Partial<TimerState>) {
     this.stateSubject.next({ ...this.stateSubject.value, ...newState });
   }
