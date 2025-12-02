@@ -9,33 +9,7 @@ import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
   selector: 'app-header',
   standalone: true,
   imports: [MatToolbarModule, MatButtonModule, MatIconModule, RouterModule, ThemeToggleComponent],
-  template: `
-    <mat-toolbar color="primary" class="sticky-header">
-      <span routerLink="/" class="title">Meditation Timer</span>
-      <span class="spacer"></span>
-      <nav>
-        <button mat-button routerLink="/">Timer</button>
-        <button mat-button routerLink="/readings">Readings</button>
-      </nav>
-      <app-theme-toggle></app-theme-toggle>
-    </mat-toolbar>
-  `,
-  styles: [`
-    .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    .spacer {
-      flex: 1 1 auto;
-    }
-    .title {
-      cursor: pointer;
-      font-weight: 500;
-    }
-    nav {
-      margin-right: 16px;
-    }
-  `]
+  templateUrl: 'header.html',
+  styleUrls: ['header.css']
 })
 export class HeaderComponent {}
