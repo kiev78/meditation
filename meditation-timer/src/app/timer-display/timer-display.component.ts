@@ -5,7 +5,7 @@ import { TimerService } from '../timer.service';
 @Component({
   selector: 'app-timer-display',
   standalone: true,
-  imports: [AsyncPipe, DatePipe],
+  imports: [AsyncPipe],
   template: `
     <div class="display-container">
       <!-- Using a mock value for display since logic isn't fully implemented -->

@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { AsyncPipe } from '@angular/common';
 import { TimerService } from '../timer.service';
 
 @Component({
   selector: 'app-theme-toggle',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule],
+  imports: [MatButtonModule, MatIconModule, AsyncPipe],
   template: `
     <button mat-icon-button (click)="toggleTheme()" aria-label="Toggle theme">
       <mat-icon>{{ (timerService.state$ | async)?.theme === 'light' ? 'dark_mode' : 'light_mode' }}</mat-icon>
