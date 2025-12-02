@@ -9,6 +9,7 @@ import { TimerService } from '../timer.service';
   imports: [MatButtonModule, MatIconModule],
   template: `
     <div class="controls-container">
+<<<<<<< HEAD
       <button mat-fab color="primary" aria-label="Start Timer" (click)="timerService.start()">
         <mat-icon>play_arrow</mat-icon>
       </button>
@@ -16,6 +17,15 @@ import { TimerService } from '../timer.service';
         <mat-icon>pause</mat-icon>
       </button>
       <button mat-mini-fab aria-label="Reset Timer" (click)="timerService.reset()">
+=======
+      <button mat-fab color="primary" aria-label="Start Timer">
+        <mat-icon>play_arrow</mat-icon>
+      </button>
+      <button mat-fab color="warn" aria-label="Pause Timer">
+        <mat-icon>pause</mat-icon>
+      </button>
+      <button mat-mini-fab aria-label="Reset Timer">
+>>>>>>> jules-meditation-timer-phase1-revised
         <mat-icon>refresh</mat-icon>
       </button>
     </div>
