@@ -1,0 +1,21 @@
+@use '@angular/material' as mat;
+
+:root {
+  --primary-color: #673ab7;
+  --background-color: #fafafa;
+  --text-color: #333;
+  --timer-font: 'Courier New', Courier, monospace;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+body.dark-theme {
+  --primary-color: #9c27b0;
+  --background-color: #303030;
+  --text-color: #fff;
+}
