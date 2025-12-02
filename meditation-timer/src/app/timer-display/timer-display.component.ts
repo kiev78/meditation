@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
 import { TimerService } from '../timer.service';
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-timer-display',
@@ -8,9 +10,12 @@ import { TimerService } from '../timer.service';
   imports: [AsyncPipe],
   template: `
     <div class="display-container">
-      <!-- Using a mock value for display since logic isn't fully implemented -->
-      <h1 class="timer-digits">30:00</h1>
-      <p>Status: {{ (timerService.state$ | async)?.isRunning ? 'Running' : 'Stopped' }}</p>
+      <h1 class="timer-digits">
+        {{ formattedTime$ | async }}
+      </h1>
+      <p class="status">
+        Status: {{ (timerService.state$ | async)?.isRunning ? 'Running' : 'Stopped' }}
+      </p>
     </div>
   `,
   styles: [`
@@ -19,13 +24,38 @@ import { TimerService } from '../timer.service';
       margin: 2rem 0;
     }
     .timer-digits {
-      font-family: var(--timer-font, monospace);
+      font-family: var(--timer-font, 'Roboto Mono', monospace);
       font-size: 5rem;
       font-weight: bold;
       margin: 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .status {
+      font-size: 1.2rem;
+      color: var(--mat-sys-on-surface-variant);
     }
   `]
 })
 export class TimerDisplayComponent {
-  constructor(public timerService: TimerService) {}
+  public timerService = inject(TimerService);
+
+  formattedTime$: Observable<string> = this.timerService.state$.pipe(
+    map(state => this.formatTime(state.remainingTime))
+  );
+
+  private formatTime(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+
+    const mStr = m.toString().padStart(2, '0');
+    const sStr = s.toString().padStart(2, '0');
+
+    if (h > 0) {
+      const hStr = h.toString().padStart(2, '0');
+      return `${hStr}:${mStr}:${sStr}`;
+    } else {
+      return `${mStr}:${sStr}`;
+    }
+  }
 }
