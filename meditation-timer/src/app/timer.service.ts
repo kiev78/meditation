@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Subscription, interval, timer, of } from 'rxjs';
-import { switchMap, takeWhile, tap, map, filter } from 'rxjs/operators';
+import { BehaviorSubject, Subscription, interval, timer, of, concat } from 'rxjs';
+import { switchMap, takeWhile, tap, map, filter, take } from 'rxjs/operators';
 import { TimerState } from './timer-state.interface';
 import { BellService } from './bell.service';
 import { SettingsService } from './settings.service';
@@ -53,27 +53,63 @@ export class TimerService {
     this.requestWakeLock();
 
     const currentState = this.stateSubject.value;
-    const delayMs = currentState.delay * 1000;
 
-    this.timerSubscription = timer(delayMs).pipe(
-      tap(() => this.bellService.playBell()), // Play start bell
-      switchMap(() => interval(1000).pipe(
-        map(tick => currentState.remainingTime - (tick + 1)), // tick starts at 0, so 1st emit is 1 sec passed
-        takeWhile(remaining => remaining >= 0)
-      ))
-    ).subscribe({
-      next: (remaining) => {
-        this.updateState({ remainingTime: remaining });
-        this.checkInterval(remaining);
+    // We want to count up from -delay to 0, then from duration down to 0.
+    const delaySeconds = currentState.delay;
+    const durationSeconds = currentState.remainingTime > 0 && currentState.remainingTime < currentState.duration
+                          ? currentState.remainingTime // Resume functionality: if paused, resume from where we left off
+                          : currentState.duration;     // Start fresh
 
-        if (remaining === 0) {
-          this.bellService.playBell(); // Play end bell
-          this.stop();
+    let stream;
+
+    if (delaySeconds > 0) {
+      // Delay Sequence: -delay, ..., -1
+      const delayTickerImmediate = timer(0, 1000).pipe(
+        map(i => -delaySeconds + i),
+        take(delaySeconds)
+      );
+
+      stream = concat(
+        delayTickerImmediate.pipe(
+          tap(val => this.updateState({ remainingTime: val }))
+        ),
+        of(0).pipe(
+          // Transition point: Play bell, immediately set remainingTime to duration to avoid flicker, then switch to main timer
+          tap(() => {
+             this.bellService.playBell();
+             this.updateState({ remainingTime: durationSeconds }); // Ensure UI jumps to full time/resume time
+          }),
+          switchMap(() => interval(1000).pipe(
+            map(tick => durationSeconds - (tick + 1)),
+            takeWhile(remaining => remaining >= 0)
+          ))
+        )
+      );
+    } else {
+      // No delay
+      stream = of(0).pipe(
+        tap(() => this.bellService.playBell()),
+        switchMap(() => interval(1000).pipe(
+          map(tick => durationSeconds - (tick + 1)),
+          takeWhile(remaining => remaining >= 0)
+        ))
+      );
+    }
+
+    this.timerSubscription = stream.subscribe({
+      next: (remaining: any) => {
+        // remaining can be negative or positive
+        if (typeof remaining === 'number') {
+           this.updateState({ remainingTime: remaining });
+
+           if (remaining >= 0) {
+             this.checkInterval(remaining);
+             if (remaining === 0) {
+               this.bellService.playBell();
+               this.stop();
+             }
+           }
         }
-      },
-      complete: () => {
-        // Timer completed naturally (reached 0)
-        // Handled in next(0) block above
       }
     });
   }
@@ -106,9 +142,6 @@ export class TimerService {
     const passedTime = state.duration - remainingTime;
     const intervalSeconds = state.intervals * 60;
 
-    // Check if passedTime is a multiple of intervalSeconds
-    // We also want to avoid ringing at the very start (passedTime=0) if that logic slips in,
-    // and we avoid ringing at the very end (remainingTime=0) because the end bell handles that.
     if (passedTime > 0 && remainingTime > 0 && passedTime % intervalSeconds === 0) {
       this.bellService.playBell();
     }

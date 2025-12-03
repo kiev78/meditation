@@ -24,13 +24,9 @@
                 "input": "public"
               }
             ],
-        "styles": [
-        {
-          "input": "src/styles.scss",
-          "bundleName": "styles",
-          "inject": false
-        }
-      ],
+            "styles": [
+              "src/styles.scss"
+            ],
             "scripts": []
           },
           "configurations": {
