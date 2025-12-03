@@ -1,0 +1,53 @@
+<div class="settings-container">
+  <h2>Settings</h2>
+
+  <div class="form-group">
+    <label>Background Source</label>
+    <div class="radio-group">
+      <label>
+        <input type="radio" name="mode" value="url" [(ngModel)]="mode" />
+        URL
+      </label>
+      <label>
+        <input type="radio" name="mode" value="upload" [(ngModel)]="mode" />
+        Upload
+      </label>
+    </div>
+  </div>
+
+  <div *ngIf="mode === 'url'" class="form-group">
+    <label for="background-url">Background Image URL</label>
+    <input
+      type="text"
+      id="background-url"
+      class="form-control"
+      [(ngModel)]="backgroundImageUrl"
+      placeholder="Enter image URL"
+    />
+  </div>
+
+  <div *ngIf="mode === 'upload'" class="form-group">
+    <input
+      type="file"
+      hidden
+      (change)="onFileSelected($event)"
+      #fileInput
+      accept="image/*"
+    />
+    <button class="btn btn-secondary" (click)="fileInput.click()">
+      Upload Image
+    </button>
+  </div>
+
+  <div class="button-group">
+    <button class="btn btn-primary" (click)="save()">Save URL</button>
+    <button class="btn btn-danger" (click)="clearBackground()">
+      Clear Background
+    </button>
+  </div>
+
+  <div *ngIf="backgroundImageUrl" class="preview">
+    <p>Current background:</p>
+    <img [src]="backgroundImageUrl" alt="Background preview" />
+  </div>
+</div>

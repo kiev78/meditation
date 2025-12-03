@@ -9,9 +9,11 @@ export class SettingsService {
 
   constructor() {}
 
-  saveSettings(settings: TimerState) {
+  saveSettings(settings: Partial<TimerState>) {
     try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(settings));
+      const currentSettings = this.loadSettings() || {};
+      const newSettings = { ...currentSettings, ...settings };
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(newSettings));
     } catch (e) {
       console.error('Error saving settings to localStorage', e);
     }
