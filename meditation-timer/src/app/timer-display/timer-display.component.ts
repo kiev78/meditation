@@ -16,9 +16,6 @@ import { Observable } from 'rxjs';
       <p class="status">
         Status: {{ (timerService.state$ | async)?.isRunning ? 'Running' : 'Stopped' }}
       </p>
-      <p class="end-time" *ngIf="(endTime$ | async) as endTime">
-        <i>Timer will end at {{ endTime | date:'shortTime' }}</i>
-      </p>
     </div>
   `,
   styles: [`
@@ -37,11 +34,6 @@ import { Observable } from 'rxjs';
       font-size: 1.2rem;
       color: var(--mat-sys-on-surface-variant);
     }
-    .end-time {
-      font-size: 1rem;
-      color: var(--mat-sys-on-surface-variant);
-      margin-top: 0.5rem;
-    }
   `]
 })
 export class TimerDisplayComponent {
@@ -49,25 +41,6 @@ export class TimerDisplayComponent {
 
   formattedTime$: Observable<string> = this.timerService.state$.pipe(
     map(state => this.formatTime(state.remainingTime))
-  );
-
-  endTime$: Observable<Date | null> = this.timerService.state$.pipe(
-    map(state => {
-      if (!state.isRunning) return null;
-
-      let secondsLeft = 0;
-      if (state.remainingTime < 0) {
-        // In delay phase: add delay remainder + full duration
-        secondsLeft = Math.abs(state.remainingTime) + state.duration;
-      } else {
-        // In main phase
-        secondsLeft = state.remainingTime;
-      }
-
-      if (secondsLeft <= 0) return null;
-
-      return new Date(Date.now() + secondsLeft * 1000);
-    })
   );
 
   private formatTime(seconds: number): string {

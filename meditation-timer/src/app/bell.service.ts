@@ -17,4 +17,9 @@ export class BellService {
       console.warn('Bell audio playback failed. User interaction might be required.', error);
     });
   }
+
+  stopBell() {
+    this.audio.pause();
+    this.audio.currentTime = 0;
+  }
 }

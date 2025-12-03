@@ -131,6 +131,7 @@ export class TimerService {
   pause() {
     this.updateState({ isRunning: false });
     this.releaseWakeLock();
+    this.bellService.stopBell();
     if (this.timerSubscription) {
       this.timerSubscription.unsubscribe();
       this.timerSubscription = null;
