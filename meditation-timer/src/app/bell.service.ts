@@ -7,7 +7,7 @@ export class BellService {
   private audio: HTMLAudioElement;
 
   constructor() {
-    this.audio = new Audio('/bell.mp3');
+    this.audio = new Audio('sounds/bell.mp3');
     this.audio.load();
   }
 
