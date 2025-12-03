@@ -56,12 +56,12 @@ import { AsyncPipe } from '@angular/common';
         min="0"
         max="1"
         step="0.01"
-        discrete
-        [displayWith]="formatVolumeLabel">
+        >
         <input matSliderThumb
                [value]="bellService.volume$ | async"
-               (valueChange)="onVolumeChange($event)">
+               (input)="onVolumeChange($event)">
       </mat-slider>
+      <span style="min-width: 2rem; text-align: center;">{{ formatVolumeLabel((bellService.volume$ | async)!) }}%</span>
     </div>
   `,
   styles: [`
@@ -94,8 +94,11 @@ export class ControlButtonsComponent {
     public bellService: BellService
   ) {}
 
-  onVolumeChange(value: number) {
-    this.bellService.setVolume(value);
+  onVolumeChange(event: Event | number) {
+    // The `input` event from matSliderThumb is a MatSliderDragEvent, which is not easily typed here.
+    // It has a `value` property. We check if the event is a number (from valueChange) or an object.
+    const value = typeof event === 'number' ? event : (event.target as HTMLInputElement)?.value;
+    this.bellService.setVolume(Number(value));
   }
 
   getVolumeIcon(volume: number): string {
@@ -109,6 +112,6 @@ export class ControlButtonsComponent {
   }
 
   formatVolumeLabel(value: number): string {
-    return Math.round(value * 100) + '%';
+    return `${Math.round(value * 100)}`;
   }
 }
