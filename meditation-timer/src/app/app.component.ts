@@ -1,55 +1,21 @@
-import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
-import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { Component, HostListener, inject } from '@angular/core';
+import { RouterOutlet, Router } from '@angular/router';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { HeaderComponent } from './header/header.component';
 import { HelpButtonComponent } from './help-button/help-button.component';
-import { TimerService } from './timer.service';
-import { Subscription } from 'rxjs';
-import { CommonModule } from '@angular/common';
-import { ImageStorageService } from './image-storage.service';
-import { filter } from 'rxjs/operators';
+import { ShortcutsDialogComponent } from './shortcuts-dialog/shortcuts-dialog.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, CommonModule, HelpButtonComponent],
+  imports: [RouterOutlet, HeaderComponent, HelpButtonComponent, MatDialogModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent {
   title = 'meditation-timer';
   private router = inject(Router);
-  private timerService = inject(TimerService);
-  private imageStorageService = inject(ImageStorageService);
-  private settingsSubscription: Subscription | undefined;
-  backgroundImageUrl: string | undefined;
-
-  ngOnInit() {
-    this.loadBackgroundImage();
-
-    this.router.events.pipe(
-      filter((event): event is NavigationEnd => event instanceof NavigationEnd)
-    ).subscribe(() => {
-      this.loadBackgroundImage();
-    });
-  }
-
-  async loadBackgroundImage() {
-    const imageFile = await this.imageStorageService.getImage();
-    if (imageFile) {
-      this.backgroundImageUrl = URL.createObjectURL(imageFile);
-    } else {
-      if(this.settingsSubscription) this.settingsSubscription.unsubscribe();
-      this.settingsSubscription = this.timerService.state$.subscribe(state => {
-        this.backgroundImageUrl = state.backgroundImage;
-      });
-    }
-  }
-
-  ngOnDestroy() {
-    if (this.settingsSubscription) {
-      this.settingsSubscription.unsubscribe();
-    }
-  }
+  private dialog = inject(MatDialog);
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
@@ -58,6 +24,18 @@ export class AppComponent implements OnInit, OnDestroy {
       this.router.navigate(['/']);
     } else if (event.key === 'r' || event.key === 'R') {
       this.router.navigate(['/readings']);
+    } else if (event.key === '?') {
+      this.openHelp();
+    }
+  }
+
+  openHelp() {
+    // Check if dialog is already open to prevent stacking
+    if (this.dialog.openDialogs.length === 0) {
+      this.dialog.open(ShortcutsDialogComponent, {
+        width: '400px',
+        autoFocus: false
+      });
     }
   }
 }

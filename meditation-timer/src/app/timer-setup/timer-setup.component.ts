@@ -50,12 +50,8 @@ export class TimerSetupComponent {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    // Check for '?' key (shift + /)
-    if (event.key === '?') {
-       // Prevent default if it might type into an already focused input (though ? is rarely a control char, user asked for shortcut)
-       // If focus is already in an input, we might want to let them type '?'?
-       // But the requirements say "settings lets add ? shortcut".
-       // Let's assume global shortcut to focus settings.
+    // Check for 's' key to focus settings
+    if (event.key === 's' || event.key === 'S') {
        if (document.activeElement?.tagName !== 'INPUT') {
           event.preventDefault();
           this.durationInput.nativeElement.focus();
