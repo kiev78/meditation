@@ -1,18 +1,55 @@
-import { Component, HostListener, inject } from '@angular/core';
-import { RouterOutlet, Router } from '@angular/router';
+import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
 import { HelpButtonComponent } from './help-button/help-button.component';
+import { TimerService } from './timer.service';
+import { Subscription } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { ImageStorageService } from './image-storage.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, HelpButtonComponent],
+  imports: [RouterOutlet, HeaderComponent, CommonModule, HelpButtonComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'meditation-timer';
   private router = inject(Router);
+  private timerService = inject(TimerService);
+  private imageStorageService = inject(ImageStorageService);
+  private settingsSubscription: Subscription | undefined;
+  backgroundImageUrl: string | undefined;
+
+  ngOnInit() {
+    this.loadBackgroundImage();
+
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.loadBackgroundImage();
+    });
+  }
+
+  async loadBackgroundImage() {
+    const imageFile = await this.imageStorageService.getImage();
+    if (imageFile) {
+      this.backgroundImageUrl = URL.createObjectURL(imageFile);
+    } else {
+      if(this.settingsSubscription) this.settingsSubscription.unsubscribe();
+      this.settingsSubscription = this.timerService.state$.subscribe(state => {
+        this.backgroundImageUrl = state.backgroundImage;
+      });
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.settingsSubscription) {
+      this.settingsSubscription.unsubscribe();
+    }
+  }
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {

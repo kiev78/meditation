@@ -129,18 +129,13 @@ export class TimerService {
   }
 
   pause() {
-    this.updateState({ isRunning: false });
-    this.releaseWakeLock();
+    this._stopTimer();
     this.bellService.stopBell();
-    if (this.timerSubscription) {
-      this.timerSubscription.unsubscribe();
-      this.timerSubscription = null;
-    }
   }
 
   // Called when timer ends naturally
   private stop() {
-    this.pause();
+    this._stopTimer();
     this.updateState({ remainingTime: this.stateSubject.value.duration }); // Reset for next run
   }
 
@@ -148,6 +143,15 @@ export class TimerService {
     this.pause();
     const currentState = this.stateSubject.value;
     this.updateState({ remainingTime: currentState.duration });
+  }
+
+  private _stopTimer() {
+    this.updateState({ isRunning: false });
+    this.releaseWakeLock();
+    if (this.timerSubscription) {
+      this.timerSubscription.unsubscribe();
+      this.timerSubscription = null;
+    }
   }
 
   private checkInterval(remainingTime: number) {
