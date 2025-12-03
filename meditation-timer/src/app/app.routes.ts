@@ -5,6 +5,7 @@ import { SettingsComponent } from './settings/settings.component';
 
 export const routes: Routes = [
   { path: '', component: TimerContainerComponent },
+  { path: 'timer', component: TimerContainerComponent },
   { path: 'readings', component: ReadingsComponent },
   { path: 'settings', component: SettingsComponent }
 ];
