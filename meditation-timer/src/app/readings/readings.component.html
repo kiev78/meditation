@@ -1,531 +1,714 @@
-<main class="readings-container" id="toc">
-  <div>
-    <h1>Buddhist Liturgy Reference</h1>
+<div class="page-container" id="toc">
+  <nav class="toc-nav">
+    <ul class="toc-list">
+      <li *ngFor="let item of tocItems">
+        <a
+          [href]="'#' + item.id"
+          (click)="$event.preventDefault(); scrollTo(item.id)"
+          [ngClass]="{
+            active: item.id === activeFragment,
+            'level-1': item.level === 1,
+            'level-2': item.level === 2
+          }"
+        >
+          {{ item.text }}
+        </a>
+      </li>
+    </ul>
+  </nav>
 
-    <ol>
-      <li><a routerLink="." fragment="opening-dedication">Opening &amp; Dedication</a>
-        <ol>
-          <li><a routerLink="." fragment="homage-to-the-buddha">Homage to the Buddha</a></li>
-          <li><a routerLink="." fragment="the-three-refugees-recite-three-times">The Three Refugees: recite three times</a></li>
-          <li><a routerLink="." fragment="three-refuges-chant-in-pali">Three Refuges Chant, in Pali</a></li>
-          <li><a routerLink="." fragment="the-three-refuges-english-prose-form">The Three Refuges (English Prose form)</a></li>
-          <li><a routerLink="." fragment="short-refuge-prayer-repeat-3-times">Short Refuge Prayer (Repeat 3 times)</a></li>
-          <li><a routerLink="." fragment="incense-offering">Incense Offering</a></li>
-          <li><a routerLink="." fragment="sharing-the-merit">Sharing the Merit</a></li>
-          <li><a routerLink="." fragment="dedication-of-merit">Dedication of Merit</a></li>
-        </ol>
-      </li>
-      <li><a routerLink="." fragment="closing-blessings-aspirations">Closing Blessings &amp; Aspirations</a>
-        <ol>
-          <li><a routerLink="." fragment="transfer-of-merit">Transfer of merit</a></li>
-          <li><a routerLink="." fragment="dedication-prayer">Dedication Prayer</a></li>
-          <li><a routerLink="." fragment="four-bodhisattva-vows-chant-3-times">Four Bodhisattva Vows (chant 3 times)</a></li>
-          <li><a routerLink="." fragment="four-great-vows-chan">Four Great Vows (Chan)</a></li>
-          <li><a routerLink="." fragment="evening-gatha">Evening Gatha</a></li>
-          <li><a routerLink="." fragment="admonition-to-practice">Admonition to practice</a></li>
-          <li><a routerLink="." fragment="admonition-to-practice-alternate-translation">Admonition to practice (alternate
-              translation)</a></li>
-          <li><a routerLink="." fragment="the-four-immeasurables">The Four Immeasurables</a></li>
-          <li><a routerLink="." fragment="the-morning-puja">The Morning Puja</a></li>
-          <li><a routerLink="." fragment="prayer-to-recognize-my-own-faults-and-keep-in-mind-the-objects-of-refuge">Prayer to Recognize My
-              Own Faults and Keep in Mind the Objects of Refuge</a></li>
-        </ol>
-      </li>
-      <li><a routerLink="." fragment="core-chants-sutra-readings">Core Chants / Sutra Readings</a>
-        <ol>
-          <li><a routerLink="." fragment="choices">Choices</a></li>
-          <li><a routerLink="." fragment="the-heart-sutra-tibetan">The Heart Sutra – Tibetan</a></li>
-          <li><a routerLink="." fragment="the-prajnaparamita-heart-sutra">The Prajnaparamita Heart Sutra:</a></li>
-          <li><a routerLink="." fragment="the-heart-sutra-expanded">The Heart Sutra (expanded)</a></li>
-          <li><a routerLink="." fragment="metta-sutta">Metta Sutta</a></li>
-        </ol>
-      </li>
-      <li><a routerLink="." fragment="meditation-contemplation-passages">Meditation &amp; Contemplation Passages</a>
-        <ol>
-          <li><a routerLink="." fragment="verses-of-the-elder-nuns">Verses of the Elder Nuns</a></li>
-          <li><a routerLink="." fragment="breathing-in-and-out">Breathing in and out</a></li>
-          <li><a routerLink="." fragment="body-awareness">Body awareness</a></li>
-          <li><a routerLink="." fragment="feelings">Feelings</a></li>
-          <li><a routerLink="." fragment="wordly-and-unwordly-feelings">Wordly and unwordly Feelings</a></li>
-          <li><a routerLink="." fragment="the-five-precepts">The Five Precepts</a></li>
-          <li><a routerLink="." fragment="the-five-recollections">The Five Recollections</a></li>
-          <li><a routerLink="." fragment="positive-precepts">Positive Precepts</a></li>
-          <li><a routerLink="." fragment="gatha-on-aversion">Gatha on Aversion</a></li>
-          <li><a routerLink="." fragment="gatha-on-craving">Gatha on Craving</a></li>
-          <li><a routerLink="." fragment="these-are-the-five-remembrances">These are the Five Remembrances. </a></li>
-          <li><a routerLink="." fragment="the-four-noble-truths">The Four Noble Truths</a></li>
-          <li><a routerLink="." fragment="the-noble-eightfold-path">The Noble Eightfold Path </a></li>
-        </ol>
-      </li>
-    </ol>
-
+  <main class="readings-container" #content>
     <h1 id="opening-dedication"><strong>Opening &amp; Dedication</strong></h1>
 
-    <h2 id="homage-to-the-buddha">Homage to the Buddha &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
-
-    <p>Namo tassa, bhagavato, arahato, samma sambuddhasa<br>Namo tassa, bhagavato, arahato, samma sambuddhasa<br>Namo
-      tassa, bhagavato, arahato, samma sambuddhasa</p>
-
-    <h2 id="the-three-refugees-recite-three-times"><strong>The Three Refugees: recite three times</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
-
-    <p>I take refuge in the Buddha, and I wish all sentient beings, <br> will awaken to the great Path, and make the
-      supreme resolution.<br>I take refuge in the Dharma, and I wish all sentient beings, <br> will penetrate the
-      sutras, their wisdom as deep as the ocean.<br>I take refuge in the Sangha, and I wish all sentient beings, <br>
-      will be brought together in harmony, without any obstructions at all.&nbsp;</p>
-
-    <h2 id="three-refuges-chant-in-pali"><strong>Three Refuges Chant, in Pali</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
-
-    <p>buddhaṁ saraṇaṁ gacchāmi<br>dhammaṁ saraṇaṁ gacchāmi<br>saṅghaṁ saraṇaṁ gacchāmi</p>
-
-    <p>dutiyampi buddhaṁ…<br>…dhammaṁ…<br>…saṅghaṁ…</p>
-
-    <p>tatiyampi buddhaṁ…<br>…dhammaṁ…<br>…saṅghaṁ…<br><br>ti saraṅa-gamanaṃ niṭṭhitaṃ</p>
-
-    <p>I go for refuge to the Buddha, Dhamma, &amp; Sangha.<br>A second time…<br>A third time…<br>I have gone for refuge
-      to the Triple Gem.</p>
-
-    <h2 id="the-three-refuges-english-prose-form"><strong>The Three Refuges (English Prose form)</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
-
-    <p>I take refuge in the Buddha, the one who shows me the way in this life .<br>I take refuge in the Dharma, the way
-      of understanding and of love .<br>I take refuge in the Sangha, the community that lives in harmony and
-      awareness.<br><em>(Bell)</em><br>Dwelling in the refuge of the Buddha,<br>I clearly see the path of light and
-      beauty in this world.<br>Dwelling in the refuge of the Dharma, I learn to open many doors<br>on the path of
-      transformation.<br>Dwelling in the refuge of the Sangha, shining light that supports me,<br>I keep my practice
-      free of obstruction.<br><em>(Bell)<br></em>Taking refuge in the Buddha in myself, I aspire to help all
-      people<br>recognize their own awakened nature, realizing the mind of love.<br>Taking refuge in the Dharma in
-      myself, I aspire to help all people<br>fully master the ways of practice and walk together on the path of
-      liberation.<br>Taking refuge in the Sangha in myself, I aspire to help all people<br>build fourfold communities,
-      to embrace all beings and support their transformation.<br>(Two Bells)</p>
-
-    <h2 id="short-refuge-prayer-repeat-3-times"><strong>Short Refuge Prayer </strong>(Repeat 3 times) &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
-
-    <p>Taking refuge in the Buddha, I learn to transform anger into compassion.<br>Taking refuge in the Dharma, I learn
-      to transform delusion into wisdom.<br>Taking refuge in the Sangha, I learn to transform desire into generosity.
+    <p>
+      Namo tassa, bhagavato, arahato, samma sambuddhasa<br />Namo tassa, bhagavato, arahato, samma
+      sambuddhasa<br />Namo tassa, bhagavato, arahato, samma sambuddhasa
     </p>
 
-    <h2 id="incense-offering"><strong>Incense Offering</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="the-three-refugees-recite-three-times">
+      <strong>The Three Refugees: recite three times</strong>
+    </h2>
 
-    <p>In gratitude we offer this incense to all the Buddhas and Bodhisattvas throughout space and time.<br>May it be as
-      fragrant as earth herself, reflecting our careful efforts,<br>Our wholehearted awareness, and the fruit of
-      understanding slowly ripening.<br>May we and all beings be companions of Buddhas and Bodhisattvas.<br>May we
-      awaken from forgetfulness and realize our true home.</p>
+    <p>
+      I take refuge in the Buddha, and I wish all sentient beings, <br />
+      will awaken to the great Path, and make the supreme resolution.<br />I take refuge in the
+      Dharma, and I wish all sentient beings, <br />
+      will penetrate the sutras, their wisdom as deep as the ocean.<br />I take refuge in the
+      Sangha, and I wish all sentient beings, <br />
+      will be brought together in harmony, without any obstructions at all.&nbsp;
+    </p>
 
-    <p><strong>Setting the Intention<br></strong>Today from this instant on until the moment in the evening when I fall
-      asleep, I will exert myself to accomplish all the positive and release all the negative. I will practice the
-      Dharma to become able to help all beings be free from suffering and progress toward liberation.<br>Today I will
-      avoid causing harm through my physical activity.<br>I will avoid causing harm through my speech.<br>I will avoid
-      causing harm through my thoughts.<br>Today I will do my best to engage in beneficial physical activity.<br>I will
-      do my best to speak useful and pleasant words.<br>I will do my best to nourish well-wishing thoughts for all
-      beings.</p>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="three-refuges-chant-in-pali"><strong>Three Refuges Chant, in Pali</strong></h2>
 
-    <h2 id="sharing-the-merit"><strong>Sharing the Merit</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    <p>buddhaṁ saraṇaṁ gacchāmi<br />dhammaṁ saraṇaṁ gacchāmi<br />saṅghaṁ saraṇaṁ gacchāmi</p>
 
-    <p>Beginning anew, practicing the way of awareness gives rise to benefits without limit. We vow to share the fruits
-      with all beings. We vow to offer tribute to parents, teachers and friends, and numerous beings who give guidance
-      and support along the path.</p>
+    <p>dutiyampi buddhaṁ…<br />…dhammaṁ…<br />…saṅghaṁ…</p>
 
-    <h2 id="dedication-of-merit"><strong>Dedication of Merit</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    <p>tatiyampi buddhaṁ…<br />…dhammaṁ…<br />…saṅghaṁ…<br /><br />ti saraṅa-gamanaṃ niṭṭhitaṃ</p>
 
-    <p>May the merit of our practice awaken wisdom and compassion and benefit all sentient beings throughout space and
-      time. May all beings be happy, may all beings be safe, may all beings be healthy, may they be free from suffering
-      and may all beings be at ease.</p>
+    <p>
+      I go for refuge to the Buddha, Dhamma, &amp; Sangha.<br />A second time…<br />A third time…<br />I
+      have gone for refuge to the Triple Gem.
+    </p>
+
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="the-three-refuges-english-prose-form">
+      <strong>The Three Refuges (English Prose form)</strong>
+    </h2>
+
+    <p>
+      I take refuge in the Buddha, the one who shows me the way in this life .<br />I take refuge in
+      the Dharma, the way of understanding and of love .<br />I take refuge in the Sangha, the
+      community that lives in harmony and awareness.<br /><em>(Bell)</em><br />Dwelling in the
+      refuge of the Buddha,<br />I clearly see the path of light and beauty in this world.<br />Dwelling
+      in the refuge of the Dharma, I learn to open many doors<br />on the path of transformation.<br />Dwelling
+      in the refuge of the Sangha, shining light that supports me,<br />I keep my practice free of
+      obstruction.<br /><em>(Bell)<br /></em>Taking refuge in the Buddha in myself, I aspire to help
+      all people<br />recognize their own awakened nature, realizing the mind of love.<br />Taking
+      refuge in the Dharma in myself, I aspire to help all people<br />fully master the ways of
+      practice and walk together on the path of liberation.<br />Taking refuge in the Sangha in
+      myself, I aspire to help all people<br />build fourfold communities, to embrace all beings and
+      support their transformation.<br />(Two Bells)
+    </p>
+
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="short-refuge-prayer-repeat-3-times">
+      <strong>Short Refuge Prayer </strong>(Repeat 3 times)
+    </h2>
+
+    <p>
+      Taking refuge in the Buddha, I learn to transform anger into compassion.<br />Taking refuge in
+      the Dharma, I learn to transform delusion into wisdom.<br />Taking refuge in the Sangha, I
+      learn to transform desire into generosity.
+    </p>
+
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="incense-offering"><strong>Incense Offering</strong></h2>
+
+    <p>
+      In gratitude we offer this incense to all the Buddhas and Bodhisattvas throughout space and
+      time.<br />May it be as fragrant as earth herself, reflecting our careful efforts,<br />Our
+      wholehearted awareness, and the fruit of understanding slowly ripening.<br />May we and all
+      beings be companions of Buddhas and Bodhisattvas.<br />May we awaken from forgetfulness and
+      realize our true home.
+    </p>
+
+    <p>
+      <strong>Setting the Intention<br /></strong>Today from this instant on until the moment in the
+      evening when I fall asleep, I will exert myself to accomplish all the positive and release all
+      the negative. I will practice the Dharma to become able to help all beings be free from
+      suffering and progress toward liberation.<br />Today I will avoid causing harm through my
+      physical activity.<br />I will avoid causing harm through my speech.<br />I will avoid causing
+      harm through my thoughts.<br />Today I will do my best to engage in beneficial physical
+      activity.<br />I will do my best to speak useful and pleasant words.<br />I will do my best to
+      nourish well-wishing thoughts for all beings.
+    </p>
+
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="sharing-the-merit"><strong>Sharing the Merit</strong></h2>
+
+    <p>
+      Beginning anew, practicing the way of awareness gives rise to benefits without limit. We vow
+      to share the fruits with all beings. We vow to offer tribute to parents, teachers and friends,
+      and numerous beings who give guidance and support along the path.
+    </p>
+
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="dedication-of-merit"><strong>Dedication of Merit</strong></h2>
+
+    <p>
+      May the merit of our practice awaken wisdom and compassion and benefit all sentient beings
+      throughout space and time. May all beings be happy, may all beings be safe, may all beings be
+      healthy, may they be free from suffering and may all beings be at ease.
+    </p>
 
     <h1 id="closing-blessings-aspirations">Closing Blessings &amp; Aspirations</h1>
 
     <div>
-      <h2 id="transfer-of-merit"><strong>Transfer of merit</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2> 
+      &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+      <h2 id="transfer-of-merit"><strong>Transfer of merit</strong></h2>
 
-      <p>We pray,<br>For the flourishing of Buddhadharma,<br>For peace in the world,<br>For the joy and contentment of all
-        people,&nbsp;<br>For the freedom and ease of body and mind,<br>May sentient beings depart from suffering,<br>May
-        the vows of the donors be fulfilled.</p>
-    </div>
-
-    <div>
-      <h2 id="dedication-prayer"><strong>Dedication Prayer</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
-
-      <p>(always dedicate the merit at the conclusion of any practice, however short)<br>By this merit, may all attain
-        perfect awakening,<br>rising above all forces of negativity,<br>going beyond the ocean of samsara.<br>May we find
-        liberation in the turbulent waves of birth, old age, sickness, and death.<br>(repeat 3 times)</p>
-    </div>
-
-    <h2 id="four-bodhisattva-vows-chant-3-times"><strong>Four Bodhisattva Vows</strong> (chant 3 times) &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
-
-    <p>All beings without number I vow to liberate. Endless blind passions I vow to uproot. Dharma gates beyond measure
-      I vow to pass through. The great way of Buddha I vow to attain.</p>
-
-    <h2 id="four-great-vows-chan"><strong>Four Great Vows (Chan)</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
-
-    <p>I vow to deliver innumerable sentient beings. I vow to cut off endless vexations. I vow to master limitless
-      approaches to Dharma. I vow to attain supreme Buddhahood.</p>
-
-    <p><em>Said in another way: </em><br><em>I vow to learn and practice the path just as the awakened one has
-        taught.</em><br><em>I vow to teach the path to all beings so they can practice the path just as the awakened one
-        has taught and they can share the path with all beings just as the awakened one has taught.</em></p>
-
-    <div>
-      <h2 id="evening-gatha"><strong>Evening Gatha</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
-
-      <p>Let me respectfully remind you, life and death are of supreme importance.<br>Time swiftly passes by, and
-        opportunity is lost.<br>Each of us should strive to awaken: Awaken!<br>Take heed; do not squander your life</p>
-    </div>
-
-    <div>
-      <h2 id="admonition-to-practice"><strong>Admonition to practice</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
-
-      <p>The day has passed. our lives, too, are closing. Like fish with little water; joy will not last. Let us work
-        with pure effort. Work as we would were our heads aflame. Be mindful of impermanence! Be careful of idleness!
+      <p>
+        We pray,<br />For the flourishing of Buddhadharma,<br />For peace in the world,<br />For the
+        joy and contentment of all people,&nbsp;<br />For the freedom and ease of body and mind,<br />May
+        sentient beings depart from suffering,<br />May the vows of the donors be fulfilled.
       </p>
     </div>
 
     <div>
-      <h2 id="admonition-to-practice-alternate-translation"><strong>Admonition to practice</strong> (alternate
-        translation) &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+      &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+      <h2 id="dedication-prayer"><strong>Dedication Prayer</strong></h2>
 
-      <p>This day has now ended. Our life is short. I reflect on how I spent this day, as it may have been my last. I
-        re-commit to keep the precepts and practice alive and well in me.</p>
+      <p>
+        (always dedicate the merit at the conclusion of any practice, however short)<br />By this
+        merit, may all attain perfect awakening,<br />rising above all forces of negativity,<br />going
+        beyond the ocean of samsara.<br />May we find liberation in the turbulent waves of birth,
+        old age, sickness, and death.<br />(repeat 3 times)
+      </p>
+    </div>
+
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="four-bodhisattva-vows-chant-3-times">
+      <strong>Four Bodhisattva Vows</strong> (chant 3 times)
+    </h2>
+
+    <p>
+      All beings without number I vow to liberate. Endless blind passions I vow to uproot. Dharma
+      gates beyond measure I vow to pass through. The great way of Buddha I vow to attain.
+    </p>
+
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="four-great-vows-chan"><strong>Four Great Vows (Chan)</strong></h2>
+
+    <p>
+      I vow to deliver innumerable sentient beings. I vow to cut off endless vexations. I vow to
+      master limitless approaches to Dharma. I vow to attain supreme Buddhahood.
+    </p>
+
+    <p>
+      <em>Said in another way: </em><br /><em
+        >I vow to learn and practice the path just as the awakened one has taught.</em
+      ><br /><em
+        >I vow to teach the path to all beings so they can practice the path just as the awakened
+        one has taught and they can share the path with all beings just as the awakened one has
+        taught.</em
+      >
+    </p>
+
+    <div>
+      &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+      <h2 id="evening-gatha"><strong>Evening Gatha</strong></h2>
+
+      <p>
+        Let me respectfully remind you, life and death are of supreme importance.<br />Time swiftly
+        passes by, and opportunity is lost.<br />Each of us should strive to awaken: Awaken!<br />Take
+        heed; do not squander your life
+      </p>
     </div>
 
     <div>
-      <h2 id="the-four-immeasurables"><strong>The Four Immeasurables</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+      &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+      <h2 id="admonition-to-practice"><strong>Admonition to practice</strong></h2>
 
-      <p>May all beings have happiness and the cause of happiness.<br>May all beings be free from suffering and the cause
-        of suffering.<br>May all beings never part from happiness beyond suffering.<br>May all beings rest in equanimity,
-        free from attachment and hatred.</p>
+      <p>
+        The day has passed. our lives, too, are closing. Like fish with little water; joy will not
+        last. Let us work with pure effort. Work as we would were our heads aflame. Be mindful of
+        impermanence! Be careful of idleness!
+      </p>
     </div>
 
     <div>
-      <h2 id="the-morning-puja"><strong>The Morning Puja</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+      &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+      <h2 id="admonition-to-practice-alternate-translation">
+        <strong>Admonition to practice</strong> (alternate translation)
+      </h2>
 
-      <p>This human birth is precious, our opportunity to awaken.<br>The body is impermanent&nbsp;and time of death
-        uncertain.<br>The cause and effect of karma&nbsp;shapes the course of life.<br>Life brings inevitable
-        difficulties, no one can control it all.<br>This life we must know as the tiny splash of a raindrop,<br>A thing
-        of beauty that disappears even as it comes into being.<br>Therefore, I recall my inspiration and
-        aspiration,<br>And vow to make use of every day and night to achieve it.</p>
+      <p>
+        This day has now ended. Our life is short. I reflect on how I spent this day, as it may have
+        been my last. I re-commit to keep the precepts and practice alive and well in me.
+      </p>
     </div>
 
-    <h2 id="prayer-to-recognize-my-own-faults-and-keep-in-mind-the-objects-of-refuge"><strong>Prayer to Recognize My Own
-        Faults and Keep in Mind the Objects of Refuge</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    <div>
+      &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+      <h2 id="the-four-immeasurables"><strong>The Four Immeasurables</strong></h2>
 
-    <p>Bless me to see my own faults.<br>Bess me to have no desire to examine the faults of others.&nbsp; <br>Bless me to
-      pacify all turbulent, cruel, and disturbing thoughts. <br>Bless me to have good thoughts arise from deep
-      within.<br>Bless me to reduce craving and to increase contentment. <br>Bless me to remember that the time of death
-      is uncertain. <br>Bless me to generate great confidence in the Dharma.<br>Bless me to practice impartial pure
-      perception.<br>Bless me to develop uncontrived respect and devotion.<br>Bless me to reduce mental activity about
-      unobtainable things. <br>Bless me to establish the Dharma in the depths of my mind. <br>Bless me to go with
-      diligence to the depths of Dharma practice.<br>Bless me to liberate my mind-stream, which is the ultimate goal of
-      practice.<br>Bless me to be freed of obstacles in my practice.<br>Bless me to have the results of my practice
-      ripen immediately. <br>Bless me to destroy the duality of hope and fear.<br>Bless me to see the non-dual
-      primordial wisdom.<br>Bless me to recognize the self-face of my own primordial wisdom. <br>Bless me to abide in
-      the secure place within myself.<br>Bless me to gain the great certainty without effort.</p>
+      <p>
+        May all beings have happiness and the cause of happiness.<br />May all beings be free from
+        suffering and the cause of suffering.<br />May all beings never part from happiness beyond
+        suffering.<br />May all beings rest in equanimity, free from attachment and hatred.
+      </p>
+    </div>
+
+    <div>
+      &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+      <h2 id="the-morning-puja"><strong>The Morning Puja</strong></h2>
+
+      <p>
+        This human birth is precious, our opportunity to awaken.<br />The body is
+        impermanent&nbsp;and time of death uncertain.<br />The cause and effect of karma&nbsp;shapes
+        the course of life.<br />Life brings inevitable difficulties, no one can control it all.<br />This
+        life we must know as the tiny splash of a raindrop,<br />A thing of beauty that disappears
+        even as it comes into being.<br />Therefore, I recall my inspiration and aspiration,<br />And
+        vow to make use of every day and night to achieve it.
+      </p>
+    </div>
+
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="prayer-to-recognize-my-own-faults-and-keep-in-mind-the-objects-of-refuge">
+      <strong>Prayer to Recognize My Own Faults and Keep in Mind the Objects of Refuge</strong>
+    </h2>
+
+    <p>
+      Bless me to see my own faults.<br />Bess me to have no desire to examine the faults of
+      others.&nbsp; <br />Bless me to pacify all turbulent, cruel, and disturbing thoughts.
+      <br />Bless me to have good thoughts arise from deep within.<br />Bless me to reduce craving
+      and to increase contentment. <br />Bless me to remember that the time of death is uncertain.
+      <br />Bless me to generate great confidence in the Dharma.<br />Bless me to practice impartial
+      pure perception.<br />Bless me to develop uncontrived respect and devotion.<br />Bless me to
+      reduce mental activity about unobtainable things. <br />Bless me to establish the Dharma in
+      the depths of my mind. <br />Bless me to go with diligence to the depths of Dharma
+      practice.<br />Bless me to liberate my mind-stream, which is the ultimate goal of practice.<br />Bless
+      me to be freed of obstacles in my practice.<br />Bless me to have the results of my practice
+      ripen immediately. <br />Bless me to destroy the duality of hope and fear.<br />Bless me to
+      see the non-dual primordial wisdom.<br />Bless me to recognize the self-face of my own
+      primordial wisdom. <br />Bless me to abide in the secure place within myself.<br />Bless me to
+      gain the great certainty without effort.
+    </p>
 
     <h1 id="core-chants-sutra-readings">Core Chants / Sutra Readings</h1>
 
-    <h2 id="choices"><strong>Choices</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="choices"><strong>Choices</strong></h2>
 
-    <p>We are what we think.<br>All that we are arises with our thoughts. With our thoughts we make the world.<br>Speak or
-      act with an impure mind and trouble will follow you, As the wheel follows the ox that draws the cart.<br>We are
-      what we think.<br>All that we are arises with our thoughts. With our thoughts we make the world.<br>Speak or act
-      with a pure mind and happiness will follow you, As your shadow, unshakable.<br>How can a troubled mind understand
-      the way?<br>Your worst enemy cannot harm you as much as your own thoughts, unguarded. But once mastered, no one
-      can help you as much,<br>Not even your family, teachers or friends.</p>
+    <p>
+      We are what we think.<br />All that we are arises with our thoughts. With our thoughts we make
+      the world.<br />Speak or act with an impure mind and trouble will follow you, As the wheel
+      follows the ox that draws the cart.<br />We are what we think.<br />All that we are arises
+      with our thoughts. With our thoughts we make the world.<br />Speak or act with a pure mind and
+      happiness will follow you, As your shadow, unshakable.<br />How can a troubled mind understand
+      the way?<br />Your worst enemy cannot harm you as much as your own thoughts, unguarded. But
+      once mastered, no one can help you as much,<br />Not even your family, teachers or friends.
+    </p>
 
-    <h2 id="the-heart-sutra-tibetan"><strong>The Heart Sutra – Tibetan</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="the-heart-sutra-tibetan"><strong>The Heart Sutra – Tibetan</strong></h2>
 
-    <p>Thus have I heard: Once the Blessed One was dwelling in Rajagriha at Vulture Peak Mountain with a great gathering
-      of monks, nuns and Bodhisattvas. At that time the Blessed One entered the samadhi that expresses the dharma
-      called “Profound Illumination.” At the same time, noble Avalokiteshvara, the Bodhisattva Mahasattva, while
-      engaging in the profound transcendent wisdom, clearly saw the five skandhas to be empty of nature. Then, through
-      the inspiration of the Buddha, venerable Shariputra said to noble Avalokiteshvara, the Bodhisattva Mahasattva,
-      “How should a son or daughter of noble family train, who wishes to follow the profound path of transcendent
-      wisdom?”<br>Then noble Avalokiteshvara, a Bodhisattva Mahasattva, said to venerable Shariputra: “O Shariputra, a
-      son or daughter of noble family who wishes to follow the profound path of transcendent wisdom should see in this
-      way: See the five skandhas to be empty of nature. Form is emptiness. Emptiness is form. Emptiness is no other
-      than form; form is no other than emptiness. In the same way, feeling, perception, formation, and consciousness
-      are emptiness.<br>“Thus, Shariputra, all phenomena are emptiness. They have no characteristics. There is no birth
-      and no cessation. There is no impurity and no purity. There is no decrease and no increase. Therefore,
-      Shariputra, in emptiness, there is no form, no feeling, no perception, no formation, no consciousness; no eye, no
-      ear, no nose, no tongue, no body, no mind; no appearance, no sound, no smell, no taste, no touch, no phenomena; no
-      quality of sight, and so on until no quality of thought and no quality of mind-consciousness; no ignorance, no end
-      of ignorance up to no old age and death, no end of old age and death; no suffering, no cause of suffering, no
-      cessation of suffering and no path; no wisdom, no attainment and no non-attainment. Therefore, Shariputra, since
-      the Bodhisattvas have no attainment, they abide by means of transcendent wisdom. Since there is no obscuration of
-      mind, there is no fear. They transcend falsity and attain complete nirvana, passing beyond the bounds of sorrow.
-      All the Buddhas of the three times, by means of transcendent wisdom, fully and<br>clearly awaken to unsurpassable,
-      true, complete enlightenment. Therefore, the great mantra of transcendent wisdom, the mantra of great insight,
-      the unsurpassed mantra, the mantra that equals the unequaled, the mantra that calms all suffering, should be known
-      as truth, since there is no deception. The mantra of transcendent wisdom is said in this way: <br>‘OM GATE GATE
-      PARAGATE PARASAMGATE BODHI SVAHA’<br>“Thus, Shariputra, the Bodhisattva Mahasattvas should train in the
-      profound<br>transcendent wisdom.” Then the Blessed One arose from that samadhi and praised noble Avalokiteshvara,
-      the Bodhisattva Mahasattva, saying, “Good, good. Thus it is, O son of noble family, thus it is. One should practice
-      the profound transcendent wisdom just as you have taught and all the Tathagatas will rejoice.” When the Blessed
-      One had said this, venerable Shariputra and noble Avalokiteshvara, the Bodhisattva Mahasattva, that whole assembly
-      and the world with its gods, humans, asuras and gandharvas, rejoiced and praised the words of the Blessed One.</p>
+    <p>
+      Thus have I heard: Once the Blessed One was dwelling in Rajagriha at Vulture Peak Mountain
+      with a great gathering of monks, nuns and Bodhisattvas. At that time the Blessed One entered
+      the samadhi that expresses the dharma called “Profound Illumination.” At the same time, noble
+      Avalokiteshvara, the Bodhisattva Mahasattva, while engaging in the profound transcendent
+      wisdom, clearly saw the five skandhas to be empty of nature. Then, through the inspiration of
+      the Buddha, venerable Shariputra said to noble Avalokiteshvara, the Bodhisattva Mahasattva,
+      “How should a son or daughter of noble family train, who wishes to follow the profound path of
+      transcendent wisdom?”<br />Then noble Avalokiteshvara, a Bodhisattva Mahasattva, said to
+      venerable Shariputra: “O Shariputra, a son or daughter of noble family who wishes to follow
+      the profound path of transcendent wisdom should see in this way: See the five skandhas to be
+      empty of nature. Form is emptiness. Emptiness is form. Emptiness is no other than form; form
+      is no other than emptiness. In the same way, feeling, perception, formation, and consciousness
+      are emptiness.<br />“Thus, Shariputra, all phenomena are emptiness. They have no
+      characteristics. There is no birth and no cessation. There is no impurity and no purity. There
+      is no decrease and no increase. Therefore, Shariputra, in emptiness, there is no form, no
+      feeling, no perception, no formation, no consciousness; no eye, no ear, no nose, no tongue, no
+      body, no mind; no appearance, no sound, no smell, no taste, no touch, no phenomena; no quality
+      of sight, and so on until no quality of thought and no quality of mind-consciousness; no
+      ignorance, no end of ignorance up to no old age and death, no end of old age and death; no
+      suffering, no cause of suffering, no cessation of suffering and no path; no wisdom, no
+      attainment and no non-attainment. Therefore, Shariputra, since the Bodhisattvas have no
+      attainment, they abide by means of transcendent wisdom. Since there is no obscuration of mind,
+      there is no fear. They transcend falsity and attain complete nirvana, passing beyond the
+      bounds of sorrow. All the Buddhas of the three times, by means of transcendent wisdom, fully
+      and<br />clearly awaken to unsurpassable, true, complete enlightenment. Therefore, the great
+      mantra of transcendent wisdom, the mantra of great insight, the unsurpassed mantra, the mantra
+      that equals the unequaled, the mantra that calms all suffering, should be known as truth,
+      since there is no deception. The mantra of transcendent wisdom is said in this way: <br />‘OM
+      GATE GATE PARAGATE PARASAMGATE BODHI SVAHA’<br />“Thus, Shariputra, the Bodhisattva
+      Mahasattvas should train in the profound<br />transcendent wisdom.” Then the Blessed One arose
+      from that samadhi and praised noble Avalokiteshvara, the Bodhisattva Mahasattva, saying,
+      “Good, good. Thus it is, O son of noble family, thus it is. One should practice the profound
+      transcendent wisdom just as you have taught and all the Tathagatas will rejoice.” When the
+      Blessed One had said this, venerable Shariputra and noble Avalokiteshvara, the Bodhisattva
+      Mahasattva, that whole assembly and the world with its gods, humans, asuras and gandharvas,
+      rejoiced and praised the words of the Blessed One.
+    </p>
 
     <div>
-      <h2 id="the-prajnaparamita-heart-sutra">The Prajnaparamita Heart Sutra: &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+      &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+      <h2 id="the-prajnaparamita-heart-sutra">The Prajnaparamita Heart Sutra:</h2>
 
-      <p>When the Bodhisattva Avalokitesvara was coursing in the deep prajnaparamita, <br>he perceived that all five
-        skandhas are empty, thereby transcending all sufferings.</p>
+      <p>
+        When the Bodhisattva Avalokitesvara was coursing in the deep prajnaparamita, <br />he
+        perceived that all five skandhas are empty, thereby transcending all sufferings.
+      </p>
 
-      <p>Sariputra, form is not other than emptiness and emptiness not other than form.<br>Form is precisely emptiness
-        and emptiness precisely form.<br>So also are sensation, perception, volition, and consciousness.<br>Sariputra,
-        this voidness of all dharmas is not born, not destroyed, <br>not impure, not pure, does not increase or
-        decrease.</p>
+      <p>
+        Sariputra, form is not other than emptiness and emptiness not other than form.<br />Form is
+        precisely emptiness and emptiness precisely form.<br />So also are sensation, perception,
+        volition, and consciousness.<br />Sariputra, this voidness of all dharmas is not born, not
+        destroyed, <br />not impure, not pure, does not increase or decrease.
+      </p>
 
-      <p>In voidness there is no form, and no sensation, <br>perception, volition or consciousness;<br>no eye, ear, nose,
-        tongue, body, mind;<br>no sight, sound, smell, taste, touch, thought;<br>there is no realm of the eye, all the
-        way up to no realm of mental cognition.</p>
+      <p>
+        In voidness there is no form, and no sensation, <br />perception, volition or
+        consciousness;<br />no eye, ear, nose, tongue, body, mind;<br />no sight, sound, smell,
+        taste, touch, thought;<br />there is no realm of the eye, all the way up to no realm of
+        mental cognition.
+      </p>
 
       <div>
-        <p>There is no ignorance and there is no ending of ignorance,<br>through to no aging and death and no ending of
-          aging and death.<br>There is no suffering, no cause of suffering, no cessation of suffering, and no
-          path.<br>There is no wisdom or any attainment.<br>With nothing to attain, bodhisattvas relying on
-          prajnaparamita have no obstructions in their minds.<br>Having no obstructions, there is no fear and departing
-          far from confusion and imagining, they reach ultimate nirvana.<br><br>All past, present and future Buddhas,
-          <br>relying on prajnaparamita, attain anuttara-samyak-sambodhi.<br>Therefore, know that prajnaparamita is the
-          great mantra of power, <br>the great mantra of wisdom, the supreme mantra, the unequalled mantra, <br>which is
-          able to remove all sufferings. It is real and not false.<br>Therefore, recite the mantra of prajnaparamita:<br><br>Gate,
-          Gate. Paragate. Parasamgate. Bodhi Svaha.</p>
+        <p>
+          There is no ignorance and there is no ending of ignorance,<br />through to no aging and
+          death and no ending of aging and death.<br />There is no suffering, no cause of suffering,
+          no cessation of suffering, and no path.<br />There is no wisdom or any attainment.<br />With
+          nothing to attain, bodhisattvas relying on prajnaparamita have no obstructions in their
+          minds.<br />Having no obstructions, there is no fear and departing far from confusion and
+          imagining, they reach ultimate nirvana.<br /><br />All past, present and future Buddhas,
+          <br />relying on prajnaparamita, attain anuttara-samyak-sambodhi.<br />Therefore, know
+          that prajnaparamita is the great mantra of power, <br />the great mantra of wisdom, the
+          supreme mantra, the unequalled mantra, <br />which is able to remove all sufferings. It is
+          real and not false.<br />Therefore, recite the mantra of prajnaparamita:<br /><br />Gate,
+          Gate. Paragate. Parasamgate. Bodhi Svaha.
+        </p>
       </div>
     </div>
 
     <div>
-      <h2 id="the-heart-sutra-expanded"><strong>The Heart Sutra</strong> (expanded) &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+      &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+      <h2 id="the-heart-sutra-expanded"><strong>The Heart Sutra</strong> (expanded)</h2>
 
-      <p>Thus, have I heard Avalokitesvara, the Bodhisattva Majasattva, while practicing the prajna-paramita, clearly saw
-        all phenomena to be empty of nature.</p>
+      <p>
+        Thus, have I heard Avalokitesvara, the Bodhisattva Majasattva, while practicing the
+        prajna-paramita, clearly saw all phenomena to be empty of nature.
+      </p>
 
-      <p>Listen Sariputra! Form is emptiness and emptiness is form. Emptiness is no other than form and form is no other
-        than emptiness. All phenomena are empty of any characteristics, or inherent or intrinsic qualities.</p>
+      <p>
+        Listen Sariputra! Form is emptiness and emptiness is form. Emptiness is no other than form
+        and form is no other than emptiness. All phenomena are empty of any characteristics, or
+        inherent or intrinsic qualities.
+      </p>
 
-      <p>In emptiness there is no birth and no death, no impurity, no purity, no increase, no decrease, no feeling,
-        perception, formation, or consciousness.</p>
+      <p>
+        In emptiness there is no birth and no death, no impurity, no purity, no increase, no
+        decrease, no feeling, perception, formation, or consciousness.
+      </p>
 
-      <p>No eye, ear, nose, tongue, body, mind, sight, sound, smell, taste, touch, no objects of mind; no realms of the
-        eye, ear, nose, tongue, body, and mind-consciousness.</p>
+      <p>
+        No eye, ear, nose, tongue, body, mind, sight, sound, smell, taste, touch, no objects of
+        mind; no realms of the eye, ear, nose, tongue, body, and mind-consciousness.
+      </p>
 
-      <p>Sariputra, there is no ignorance, and no ending of ignorance. There are no actions and no non-actions. No
-        actions like walking, chanting, thinking, feeling, or perceiving.</p>
+      <p>
+        Sariputra, there is no ignorance, and no ending of ignorance. There are no actions and no
+        non-actions. No actions like walking, chanting, thinking, feeling, or perceiving.
+      </p>
 
-      <p>There is no intention, and no paying attention, no choosing and non-choosing. There is no consciousness, no
-        awareness of thoughts, emotions, sensations, and no cessation of awareness, thoughts and emotions.</p>
+      <p>
+        There is no intention, and no paying attention, no choosing and non-choosing. There is no
+        consciousness, no awareness of thoughts, emotions, sensations, and no cessation of
+        awareness, thoughts and emotions.
+      </p>
 
-      <p>Sariputra, there are no forms and no names for these forms, no labels, no designations, no characteristics or
-        appearance of things and also no things.&nbsp;There are no six sense organs, nor contact with the senses. Thus,
-        no sensation, no desire, no grasping, no existence, no birth, no aging, no old age and no death; also, no ending
-        to birth, existence, aging and death.</p>
+      <p>
+        Sariputra, there are no forms and no names for these forms, no labels, no designations, no
+        characteristics or appearance of things and also no things.&nbsp;There are no six sense
+        organs, nor contact with the senses. Thus, no sensation, no desire, no grasping, no
+        existence, no birth, no aging, no old age and no death; also, no ending to birth, existence,
+        aging and death.
+      </p>
 
-      <p>There is no suffering, no cause of suffering, no cessation of suffering and no path. There is no wisdom and no
-        attainment. Therefore, with nothing to attain, bodhisattvas realize the ultimate nature of reality, transcening
-        all words and concepts, all hindrences and vexations, they abide in the perfection of wisdom, the
-        prajna-paramita.</p>
+      <p>
+        There is no suffering, no cause of suffering, no cessation of suffering and no path. There
+        is no wisdom and no attainment. Therefore, with nothing to attain, bodhisattvas realize the
+        ultimate nature of reality, transcening all words and concepts, all hindrences and
+        vexations, they abide in the perfection of wisdom, the prajna-paramita.
+      </p>
 
-      <p>Having no more hindrances in their mind, they have no fear. They transcend all illusion and delusion, and dwell
-        in complete and ultimate nirvana. All buddhas of the past, present and future rely on prajna-paramita to fully
-        and completely awaken. Therefore, we honor the prajna-paramita with a great transcendent mantra, the great
-        mantra of insight, the supreme mantra, the unequalled mantra, the mantra that can end all suffering and since
-        there is no deception it is known as truth. So let us recite the prajna-paramita mantra in this way:</p>
-_
+      <p>
+        Having no more hindrances in their mind, they have no fear. They transcend all illusion and
+        delusion, and dwell in complete and ultimate nirvana. All buddhas of the past, present and
+        future rely on prajna-paramita to fully and completely awaken. Therefore, we honor the
+        prajna-paramita with a great transcendent mantra, the great mantra of insight, the supreme
+        mantra, the unequalled mantra, the mantra that can end all suffering and since there is no
+        deception it is known as truth. So let us recite the prajna-paramita mantra in this way:
+      </p>
+      _
       <p>Om gate, gate, paragate, parasamgate, bodhi, svaha!&nbsp;</p>
     </div>
 
-    <h2 id="metta-sutta">Metta Sutta &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="metta-sutta">Metta Sutta</h2>
 
-    <p>He or she who wants to attain peace should practice being upright, humble, and capable of using loving speech. He
-      or she will know how to live simply and happily, with senses calmed, without being covetous and carried away by
-      the emotions of the majority. Let him or her not do anything that will be disapproved of by the wise ones.</p>
+    <p>
+      He or she who wants to attain peace should practice being upright, humble, and capable of
+      using loving speech. He or she will know how to live simply and happily, with senses calmed,
+      without being covetous and carried away by the emotions of the majority. Let him or her not do
+      anything that will be disapproved of by the wise ones.
+    </p>
 
-    <p><strong>And this is what he or she contemplates:</strong><br>May everyone be happy and safe, and may their hearts
-      be filled with joy.<br>May all living beings live in security and peace- beings who are frail or strong, tall or
-      short, big or small, visible or not visible, near or far away, already born or yet to be born. May all of them
-      dwell in perfect tranquility.<br>Let no one do harm to anyone. Let no one put the life of anyone in danger. Let no
-      one, out of anger or ill will, wish anyone any harm.<br>Just as a mother loves and protects her only child at the
-      risk of her own life, we should cultivate boundless love to offer to all living beings in the entire cosmos. We
-      should let our boundless love pervade the whole universe, above, below and across. Our love will know no
-      obstacles; our heart will be absolutely free from hatred and enmity. Whether standing or walking, sitting or
-      lying, as long as we are awake, we should maintain this mindfulness of love in our own heart.<br>This is the
-      noblest way of living. Free from wrong views, greed and sensual desires, living in beauty and realizing perfect
-      understanding, those who practice boundless love will certainly transcend birth and death.</p>
+    <p>
+      <strong>And this is what he or she contemplates:</strong><br />May everyone be happy and safe,
+      and may their hearts be filled with joy.<br />May all living beings live in security and
+      peace- beings who are frail or strong, tall or short, big or small, visible or not visible,
+      near or far away, already born or yet to be born. May all of them dwell in perfect
+      tranquility.<br />Let no one do harm to anyone. Let no one put the life of anyone in danger.
+      Let no one, out of anger or ill will, wish anyone any harm.<br />Just as a mother loves and
+      protects her only child at the risk of her own life, we should cultivate boundless love to
+      offer to all living beings in the entire cosmos. We should let our boundless love pervade the
+      whole universe, above, below and across. Our love will know no obstacles; our heart will be
+      absolutely free from hatred and enmity. Whether standing or walking, sitting or lying, as long
+      as we are awake, we should maintain this mindfulness of love in our own heart.<br />This is
+      the noblest way of living. Free from wrong views, greed and sensual desires, living in beauty
+      and realizing perfect understanding, those who practice boundless love will certainly
+      transcend birth and death.
+    </p>
 
     <h1 id="meditation-contemplation-passages">Meditation &amp; Contemplation Passages</h1>
 
-    <h2 id="verses-of-the-elder-nuns">Verses of the Elder Nuns &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="verses-of-the-elder-nuns">Verses of the Elder Nuns</h2>
 
-    <p>Engage with the Buddha’s teaching!<br>One who does so has no regrets.<br>Quickly wipe the dust from your
-      feet,<br>And sit yourself down to one side.<br>Practicing mental tranquility,<br>Engage with the Buddha’s teaching.
+    <p>
+      Engage with the Buddha’s teaching!<br />One who does so has no regrets.<br />Quickly wipe the
+      dust from your feet,<br />And sit yourself down to one side.<br />Practicing mental
+      tranquility,<br />Engage with the Buddha’s teaching.
     </p>
 
     <ul>
-      <li>Preparing to practice and setting the intention
+      <li>
+        Preparing to practice and setting the intention
         <ul>
-          <li>What does it feel like to deliberately prepare for practice and set the intention <em>to engage with the
-              Buddha’s teaching?</em></li>
+          <li>
+            What does it feel like to deliberately prepare for practice and set the intention
+            <em>to engage with the Buddha’s teaching?</em>
+          </li>
         </ul>
       </li>
-      <li>Observe the breath without controlling it; notice its rise and fall
+      <li>
+        Observe the breath without controlling it; notice its rise and fall
         <ul>
-          <li><em>Does breath awareness shift your mental state toward tranquility and presence?</em></li>
+          <li>
+            <em>Does breath awareness shift your mental state toward tranquility and presence?</em>
+          </li>
         </ul>
       </li>
-      <li>Scan the body and observe sensations—pleasant, unpleasant, neutral
+      <li>
+        Scan the body and observe sensations—pleasant, unpleasant, neutral
         <ul>
           <li>What does “engagement” mean when you’re not judging, resisting, or reacting?</li>
         </ul>
       </li>
-      <li>Watch thoughts arise and pass without following their content
+      <li>
+        Watch thoughts arise and pass without following their content
         <ul>
-          <li>Can you notice the difference between being caught in thought and observing it with clarity?</li>
+          <li>
+            Can you notice the difference between being caught in thought and observing it with
+            clarity?
+          </li>
         </ul>
       </li>
-      <li><em>Say phrases like “settle,” “relax,” or “be at peace” to guide the mind toward calm.</em>
+      <li>
+        <em>Say phrases like “settle,” “relax,” or “be at peace” to guide the mind toward calm.</em>
         <ul>
           <li>What helps you move from restlessness to tranquility?</li>
         </ul>
       </li>
-      <li>Sit with relaxed attention—alert but letting everything be
+      <li>
+        Sit with relaxed attention—alert but letting everything be
         <ul>
-          <li>How does tranquility enhance clarity <em>and deepen engagement with the teaching</em>?</li>
+          <li>
+            How does tranquility enhance clarity <em>and deepen engagement with the teaching</em>?
+          </li>
         </ul>
       </li>
-      <li>Reflect on the week and how you’ve engaged with the teachings
+      <li>
+        Reflect on the week and how you’ve engaged with the teachings
         <ul>
-          <li><em>Choose one way to carry this engagement into daily life—such as mindful walking, compassionate speech,
-              or intentional pauses.</em></li>
+          <li>
+            <em
+              >Choose one way to carry this engagement into daily life—such as mindful walking,
+              compassionate speech, or intentional pauses.</em
+            >
+          </li>
         </ul>
       </li>
     </ul>
 
-    <h2 id="breathing-in-and-out"><strong>Breathing in and out</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="breathing-in-and-out"><strong>Breathing in and out</strong></h2>
 
-    <p>Mindful, one breaths in; mindful, one breathes out.<br>Breathing in long, one is aware: ‘I breathe in long’,
-      or,<br>breathing out long, one is aware: ‘I breathe out long’, or,<br>breathing in short, one is aware: ‘I breathe
-      in short’, or,<br>breathing out short, one is aware: ‘I breathe out short.<br>One trains thus: ‘I shall breathe in
-      experiencing the whole body’.<br>One trains thus: ‘I shall breathe out experiencing the whole body’.<br>One trains
-      thus: ‘I shall breath in calming bodily activities’.<br>One trains thus: ‘I shall breath out calming bodily
-      activities’.<br>Just as a skilled wood-turner or a wood-turner’s apprentice:<br>when making a long turn, is aware:
-      ‘I make a long turn’, or,<br>when making a short turn, is aware: ‘I make a short turn’</p>
+    <p>
+      Mindful, one breaths in; mindful, one breathes out.<br />Breathing in long, one is aware: ‘I
+      breathe in long’, or,<br />breathing out long, one is aware: ‘I breathe out long’, or,<br />breathing
+      in short, one is aware: ‘I breathe in short’, or,<br />breathing out short, one is aware: ‘I
+      breathe out short.<br />One trains thus: ‘I shall breathe in experiencing the whole body’.<br />One
+      trains thus: ‘I shall breathe out experiencing the whole body’.<br />One trains thus: ‘I shall
+      breath in calming bodily activities’.<br />One trains thus: ‘I shall breath out calming bodily
+      activities’.<br />Just as a skilled wood-turner or a wood-turner’s apprentice:<br />when
+      making a long turn, is aware: ‘I make a long turn’, or,<br />when making a short turn, is
+      aware: ‘I make a short turn’
+    </p>
 
-    <h2 id="body-awareness"><strong>Body awareness</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="body-awareness"><strong>Body awareness</strong></h2>
 
-    <p>Furthermore, a person:<br>When walking, is aware: ‘I am walking’.<br>When standing, is aware: ‘I am
-      standing’.<br>When sitting, is aware: ‘I am sitting’.<br>When lying down, is aware: “I am lying down.”<br>In
-      whatever way the body is arranged, one is aware of that.<br>Furthermore, a person: is one who acts with full
-      awareness when…<br>…going forward and returning;<br>…looking ahead and looking away;<br>…flexing and extending
-      one’s limbs;<br>…wearing one’s clothing and carrying one’s meal;<br>…eating, drinking, consuming food, and
-      tasting;<br>…defecating and urinating;<br>…walking, standing, sitting,<br>…falling asleep, waking up,<br>…talking
-      and keeping silent.</p>
+    <p>
+      Furthermore, a person:<br />When walking, is aware: ‘I am walking’.<br />When standing, is
+      aware: ‘I am standing’.<br />When sitting, is aware: ‘I am sitting’.<br />When lying down, is
+      aware: “I am lying down.”<br />In whatever way the body is arranged, one is aware of that.<br />Furthermore,
+      a person: is one who acts with full awareness when…<br />…going forward and returning;<br />…looking
+      ahead and looking away;<br />…flexing and extending one’s limbs;<br />…wearing one’s clothing
+      and carrying one’s meal;<br />…eating, drinking, consuming food, and tasting;<br />…defecating
+      and urinating;<br />…walking, standing, sitting,<br />…falling asleep, waking up,<br />…talking
+      and keeping silent.
+    </p>
 
-    <h2 id="feelings"><strong>Feelings</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="feelings"><strong>Feelings</strong></h2>
 
-    <p>Furthermore here a person:<br>When feeling a pleasant feeling, is aware: ‘I feel a pleasant feeling’.<br>When
-      feeling a painful feeling, is aware: ‘I feel a painful feeling’.<br>When feeling a feeling that is neither
-      pleasant nor painful,<br>is aware: I feel a feeling that is neither pleasant nor painful.</p>
+    <p>
+      Furthermore here a person:<br />When feeling a pleasant feeling, is aware: ‘I feel a pleasant
+      feeling’.<br />When feeling a painful feeling, is aware: ‘I feel a painful feeling’.<br />When
+      feeling a feeling that is neither pleasant nor painful,<br />is aware: I feel a feeling that
+      is neither pleasant nor painful.
+    </p>
 
-    <h2 id="wordly-and-unwordly-feelings"><strong>Wordly and unwordly Feelings</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="wordly-and-unwordly-feelings"><strong>Wordly and unwordly Feelings</strong></h2>
 
-    <p>There are these five cords of sensual pleasure:<br>forms cognizable by the eye…<br>sounds cognizable by the
-      ear…<br>odors cognizable by the nose…<br>flavors cognizable by the tongue…<br>tangibles cognizable by the
-      body…<br>that are wished for, desired, agreeable, and likable, connected with sensual desire and provocative of
-      lust.<br>The pleasure and happiness that arises dependent on these five cords of sensual pleasure is called a
-      sensual pleasure,<br>a tainted pleasure, a common pleasure, an ignoble pleasure.<br>I say of this kind of pleasure:
-      it is not be practiced,<br>it is not be developed, it is not be cultivated, and it is to be feared.<br>When a
-      person, quite secluded from sensual pleasures,<br>secluded from unwholesome states,<br>enters and abides in the
-      first jhāna…<br>the second jhāna… the third jhāna …<br>the fourth jhāna … this is called<br>the pleasure of
-      renunciation, the pleasure of seclusion,<br>the pleasure of peace, the pleasure of awakening,<br>I say of this kind
-      of pleasure:<br>it is to be practiced, it is to be developed,<br>it is to be cultivated, and it is not to be
-      feared.</p>
+    <p>
+      There are these five cords of sensual pleasure:<br />forms cognizable by the eye…<br />sounds
+      cognizable by the ear…<br />odors cognizable by the nose…<br />flavors cognizable by the
+      tongue…<br />tangibles cognizable by the body…<br />that are wished for, desired, agreeable,
+      and likable, connected with sensual desire and provocative of lust.<br />The pleasure and
+      happiness that arises dependent on these five cords of sensual pleasure is called a sensual
+      pleasure,<br />a tainted pleasure, a common pleasure, an ignoble pleasure.<br />I say of this
+      kind of pleasure: it is not be practiced,<br />it is not be developed, it is not be
+      cultivated, and it is to be feared.<br />When a person, quite secluded from sensual
+      pleasures,<br />secluded from unwholesome states,<br />enters and abides in the first
+      jhāna…<br />the second jhāna… the third jhāna …<br />the fourth jhāna … this is called<br />the
+      pleasure of renunciation, the pleasure of seclusion,<br />the pleasure of peace, the pleasure
+      of awakening,<br />I say of this kind of pleasure:<br />it is to be practiced, it is to be
+      developed,<br />it is to be cultivated, and it is not to be feared.
+    </p>
 
-    <h2 id="the-five-precepts"><strong>The Five Precepts</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="the-five-precepts"><strong>The Five Precepts</strong></h2>
 
-    <p>pāṇātipātā veramaṇī sikkhāpadaṃ samādiyāmi<br>adinnādānā…<br>kāmesu micchācārā…<br>musāvādā…<br>surāmeraya
-      majja-pamādaṭṭhānā…<br>idam me silaṃ magga phala ñānassa paccayo hotu</p>
+    <p>
+      pāṇātipātā veramaṇī sikkhāpadaṃ samādiyāmi<br />adinnādānā…<br />kāmesu micchācārā…<br />musāvādā…<br />surāmeraya
+      majja-pamādaṭṭhānā…<br />idam me silaṃ magga phala ñānassa paccayo hotu
+    </p>
 
-    <p>Knowing how deeply our lives intertwine, I undertake the training to protect life.<br>…to take only that which is
-      offered to me.<br>…to express my sexual energy wisely.<br>…to speak the truth with kindness.<br>…to abstain from
-      intoxicants that cloud the mind.<br>Through the discipline of ethics may I realize the Path &amp; Fruit of
-      practice.</p>
+    <p>
+      Knowing how deeply our lives intertwine, I undertake the training to protect life.<br />…to
+      take only that which is offered to me.<br />…to express my sexual energy wisely.<br />…to
+      speak the truth with kindness.<br />…to abstain from intoxicants that cloud the mind.<br />Through
+      the discipline of ethics may I realize the Path &amp; Fruit of practice.
+    </p>
 
-    <h2 id="the-five-recollections"><strong>The Five Recollections</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="the-five-recollections"><strong>The Five Recollections</strong></h2>
 
-    <p>I am of the nature to age; I have not gone beyond aging.<br>I am of the nature to sicken; I have not gone beyond
-      sickness.<br>I am of the nature to die; I have not gone beyond dying.<br>All that is mine, beloved and pleasing,
-      will become otherwise,<br>will be separated from me.<br>I am the owner of my actions, heir to my actions, born of
-      my actions,<br>related to my actions, abide supported by my actions.<br>Whatever action I do, for good or for ill,
-      of that I will be the heir.</p>
+    <p>
+      I am of the nature to age; I have not gone beyond aging.<br />I am of the nature to sicken; I
+      have not gone beyond sickness.<br />I am of the nature to die; I have not gone beyond
+      dying.<br />All that is mine, beloved and pleasing, will become otherwise,<br />will be
+      separated from me.<br />I am the owner of my actions, heir to my actions, born of my
+      actions,<br />related to my actions, abide supported by my actions.<br />Whatever action I do,
+      for good or for ill, of that I will be the heir.
+    </p>
 
-    <h2 id="positive-precepts"><strong>Positive Precepts</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="positive-precepts"><strong>Positive Precepts</strong></h2>
 
-    <p>With deeds of loving kindness, I purify my body<br>With open handed generosity I purify my body<br>With stillness
-      simplicity and contentment, I purify my body<br>With truthful communication I purify my speech<br>With mindfulness
-      clear and radiant I purify my mind<br>May all beings find happiness and the root of happiness.<br>May they be free
-      from suffering and the root of suffering.<br>May they not be separated from the Great Happiness,&nbsp;devoid of
-      suffering.<br>May they dwell in the Great Equanimity, free from craving, aggression and delusion.</p>
+    <p>
+      With deeds of loving kindness, I purify my body<br />With open handed generosity I purify my
+      body<br />With stillness simplicity and contentment, I purify my body<br />With truthful
+      communication I purify my speech<br />With mindfulness clear and radiant I purify my mind<br />May
+      all beings find happiness and the root of happiness.<br />May they be free from suffering and
+      the root of suffering.<br />May they not be separated from the Great Happiness,&nbsp;devoid of
+      suffering.<br />May they dwell in the Great Equanimity, free from craving, aggression and
+      delusion.
+    </p>
 
-    <h2 id="gatha-on-aversion"><strong>Gatha on Aversion</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="gatha-on-aversion"><strong>Gatha on Aversion</strong></h2>
 
-    <p>Aversion arises by resisting what is already here and now.<br>Unsupervised aversion creates vexations and leads to
-      suffering.<br>Beginning with right intention, I renounce all expectations and desires.<br>Cultivating
-      loving-kindness, I welcome each moment as a precious guest.<br>Practicing non-harming, I do not fight with any
-      experience.<br>Letting in, letting be, letting through—I remain curious and aware of each moment.</p>
+    <p>
+      Aversion arises by resisting what is already here and now.<br />Unsupervised aversion creates
+      vexations and leads to suffering.<br />Beginning with right intention, I renounce all
+      expectations and desires.<br />Cultivating loving-kindness, I welcome each moment as a
+      precious guest.<br />Practicing non-harming, I do not fight with any experience.<br />Letting
+      in, letting be, letting through—I remain curious and aware of each moment.
+    </p>
 
-    <h2 id="gatha-on-craving">Gatha on Craving &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="gatha-on-craving">Gatha on Craving</h2>
 
-    <p>Craving arises by wanting something different than what is here now.<br>Craving leads to suffering. Unsupervised
-      craving creates vexations.<br>Beginning with right intention, I renounce expectations and desires.<br>Cultivating
-      loving-kindness, I welcome each moment as a precious guest.<br>Practicing non-harming, I do not fight with any
-      experience.<br>Letting in, letting be, letting through—I remain curious and aware of each moment.</p>
+    <p>
+      Craving arises by wanting something different than what is here now.<br />Craving leads to
+      suffering. Unsupervised craving creates vexations.<br />Beginning with right intention, I
+      renounce expectations and desires.<br />Cultivating loving-kindness, I welcome each moment as
+      a precious guest.<br />Practicing non-harming, I do not fight with any experience.<br />Letting
+      in, letting be, letting through—I remain curious and aware of each moment.
+    </p>
 
-    <h2 id="these-are-the-five-remembrances"><strong>These are the Five Remembrances. </strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="these-are-the-five-remembrances"><strong>These are the Five Remembrances. </strong></h2>
 
     <p>These are the truths that we should reflect on and accept. They are the essential:</p>
 
-    <p>This body is not mine. It is subject to aging, illness, injury, and death. <br>There is no way to prevent, avoid,
-      or evade these.<br>All that is dear to me is subject to change, separation, and loss. <br>There is no way to keep,
-      hold, or cling to anything.<br>My actions, either wholesome or unwholesome, are my only belongings, <br>and I will
-      bear all consequences, and this will shape the course of this life.</p>
+    <p>
+      This body is not mine. It is subject to aging, illness, injury, and death. <br />There is no
+      way to prevent, avoid, or evade these.<br />All that is dear to me is subject to change,
+      separation, and loss. <br />There is no way to keep, hold, or cling to anything.<br />My
+      actions, either wholesome or unwholesome, are my only belongings, <br />and I will bear all
+      consequences, and this will shape the course of this life.
+    </p>
 
-    <h2 id="the-four-noble-truths"><strong>The Four Noble Truths</strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="the-four-noble-truths"><strong>The Four Noble Truths</strong></h2>
 
-    <p> Now this, bhikkhus, is the noble truth of suffering: birth, aging, death, sorrow, lamentation, pain, grief,
-      &amp; despair are suffering; association with the unbeloved is suffering; separation from the loved is suffering;
-      not getting what is wanted is suffering. In short, the five aggregates subject to clinging are suffering.<br>The
-      five aggregates consist of form, sensations, perceptions, mental formations (including desires, wishes, and
-      tendencies), and consciousness.<br> Now this, bhikkhus, is the noble truth of the origin of suffering: it is this
-      craving which leads to re-becoming, accompanied by delight and lust, seeking delight here and there; that is,
-      craving for sensual pleasures, craving for becoming, craving for non-becoming.<br>Now this, bhikkhus, is the noble
-      truth of the cessation of suffering: understanding the truth of life, the fading away and cessation of craving,
-      the giving up and relinquishing of it, freedom from it, non-reliance on it.<br> Now this, bhikkhus, is the noble
-      truth of the way leading to the cessation of suffering: it is this Noble Eightfold Path which is nourished by
-      living mindfully. Mindfulness leads to concentration and understanding which liberates you from every pain and
-      sorrow and leads to peace and joy. I will guide you along this path of realization of right view, right resolve,
-      right speech, right action, right livelihood, right effort, right mindfulness, right concentration.</p>
+    <p>
+      Now this, bhikkhus, is the noble truth of suffering: birth, aging, death, sorrow, lamentation,
+      pain, grief, &amp; despair are suffering; association with the unbeloved is suffering;
+      separation from the loved is suffering; not getting what is wanted is suffering. In short, the
+      five aggregates subject to clinging are suffering.<br />The five aggregates consist of form,
+      sensations, perceptions, mental formations (including desires, wishes, and tendencies), and
+      consciousness.<br />
+      Now this, bhikkhus, is the noble truth of the origin of suffering: it is this craving which
+      leads to re-becoming, accompanied by delight and lust, seeking delight here and there; that
+      is, craving for sensual pleasures, craving for becoming, craving for non-becoming.<br />Now
+      this, bhikkhus, is the noble truth of the cessation of suffering: understanding the truth of
+      life, the fading away and cessation of craving, the giving up and relinquishing of it, freedom
+      from it, non-reliance on it.<br />
+      Now this, bhikkhus, is the noble truth of the way leading to the cessation of suffering: it is
+      this Noble Eightfold Path which is nourished by living mindfully. Mindfulness leads to
+      concentration and understanding which liberates you from every pain and sorrow and leads to
+      peace and joy. I will guide you along this path of realization of right view, right resolve,
+      right speech, right action, right livelihood, right effort, right mindfulness, right
+      concentration.
+    </p>
 
-    <h2 id="the-noble-eightfold-path"><strong>The Noble Eightfold Path </strong> &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">↑</a></h2>
+    &nbsp;<a routerLink="." fragment="toc" title="Back to top" class="back-to-top">..Up...</a>
+    <h2 id="the-noble-eightfold-path"><strong>The Noble Eightfold Path </strong></h2>
 
-    <p>is the fourth noble truth, the way to enlightenment. The Buddha taught that we must follow this path to overcome
-      ignorance, attachment, and aversion, the root causes of suffering. The path consists of eight practices that we
-      should cultivate in our everyday lives. They are:</p>
+    <p>
+      is the fourth noble truth, the way to enlightenment. The Buddha taught that we must follow
+      this path to overcome ignorance, attachment, and aversion, the root causes of suffering. The
+      path consists of eight practices that we should cultivate in our everyday lives. They are:
+    </p>
 
-    <p><strong>Right View</strong>: To see clearly the true nature of reality, the four noble truths, the law of karma,
-      and the three marks of existence (impermanence, suffering, and non-self).<br><strong>Right Intention</strong>: To
-      have the unselfish desire to realize enlightenment for the benefit of all beings, to renounce worldly pleasures
-      and harmful thoughts, and to cultivate loving-kindness and compassion.<br><strong>Right Speech</strong>: To use
-      speech wisely and kindly, to avoid lying, slandering, harsh words, and idle chatter, and to speak truthfully,
-      respectfully, gently, and beneficially.<br><strong>Right Action</strong>: To act ethically and harmlessly, to
-      avoid killing, stealing, sexual misconduct, and intoxicants, and to protect life, property, purity, and
-      clarity.<br><strong>Right Livelihood</strong>: To earn a living in a way that does not cause harm or suffering to
-      oneself or others, to avoid occupations that involve killing, exploiting, cheating, or deceiving, and to engage
-      in work that is honest, useful, and supportive of the path.<br><strong>Right Effort</strong>: To apply oneself
-      diligently and energetically to the practice of the path, to prevent and overcome unwholesome states of mind, and
-      to develop and maintain wholesome states of mind.<br><strong>Right Mindfulness</strong>: To be aware of the present
-      moment with discernment, to observe the body, feelings, mind, and phenomena as they are, without attachment or
-      aversion, and to understand their impermanent, suffering, and empty nature.<br><strong>Right
-        Concentration</strong>: To train the mind in meditation, to focus on a single object or concept, to attain
-      mental stability, clarity, and calmness, and to experience the various stages of absorption and insight.</p>
+    <p>
+      <strong>Right View</strong>: To see clearly the true nature of reality, the four noble truths,
+      the law of karma, and the three marks of existence (impermanence, suffering, and non-self).<br /><strong
+        >Right Intention</strong
+      >: To have the unselfish desire to realize enlightenment for the benefit of all beings, to
+      renounce worldly pleasures and harmful thoughts, and to cultivate loving-kindness and
+      compassion.<br /><strong>Right Speech</strong>: To use speech wisely and kindly, to avoid
+      lying, slandering, harsh words, and idle chatter, and to speak truthfully, respectfully,
+      gently, and beneficially.<br /><strong>Right Action</strong>: To act ethically and harmlessly,
+      to avoid killing, stealing, sexual misconduct, and intoxicants, and to protect life, property,
+      purity, and clarity.<br /><strong>Right Livelihood</strong>: To earn a living in a way that
+      does not cause harm or suffering to oneself or others, to avoid occupations that involve
+      killing, exploiting, cheating, or deceiving, and to engage in work that is honest, useful, and
+      supportive of the path.<br /><strong>Right Effort</strong>: To apply oneself diligently and
+      energetically to the practice of the path, to prevent and overcome unwholesome states of mind,
+      and to develop and maintain wholesome states of mind.<br /><strong>Right Mindfulness</strong>:
+      To be aware of the present moment with discernment, to observe the body, feelings, mind, and
+      phenomena as they are, without attachment or aversion, and to understand their impermanent,
+      suffering, and empty nature.<br /><strong>Right Concentration</strong>: To train the mind in
+      meditation, to focus on a single object or concept, to attain mental stability, clarity, and
+      calmness, and to experience the various stages of absorption and insight.
+    </p>
 
-    <p>This is the Noble Eightfold Path of Buddhism. It is the middle way between the extremes of indulgence and
-      asceticism. It is the path of wisdom, ethics, and mental discipline. It is the path that leads to the cessation of
-      suffering and the realization of nirvana.</p>
-
-  </div>
-</main>
+    <p>
+      This is the Noble Eightfold Path of Buddhism. It is the middle way between the extremes of
+      indulgence and asceticism. It is the path of wisdom, ethics, and mental discipline. It is the
+      path that leads to the cessation of suffering and the realization of nirvana.
+    </p>
+  </main>
+</div>
