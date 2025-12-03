@@ -1,4 +1,12 @@
- .sticky-header {
+.logo-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .header-logo {
+      height: 40px;
+    }
+     .sticky-header {
       position: sticky;
       top: 0;
       z-index: 1000;
@@ -12,4 +20,8 @@
     }
     nav {
       margin-right: 16px;
+    }
+
+    :host-context(body.dark-theme) .header-logo {
+      filter: invert(1);
     }
