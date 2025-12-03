@@ -1,7 +1,10 @@
 @use '@angular/material' as mat;
 
-// Define the theme object.
-$timer-theme: mat.define-theme((
+// Include the core styles.
+@include mat.core();
+
+// Define the light theme.
+$timer-light-theme: mat.define-theme((
   color: (
     theme-type: light,
     primary: mat.$azure-palette,
@@ -9,13 +12,17 @@ $timer-theme: mat.define-theme((
   )
 ));
 
-// Include the core styles.
-@include mat.core();
+// Define the dark theme.
+$timer-dark-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$azure-palette,
+    tertiary: mat.$blue-palette,
+  )
+));
 
-// Include the theme styles for all components.
-html {
-  @include mat.all-component-themes($timer-theme);
-}
+// Apply the light theme by default.
+@include mat.all-component-themes($timer-light-theme);
 
 :root {
   --timer-font: 'Courier New', Courier, monospace;
@@ -28,17 +35,11 @@ body {
   color: #333;
 }
 
+// When the dark-theme class is present, apply the dark theme styles.
 body.dark-theme {
   background-color: #303030;
   color: #fff;
 
-  $timer-dark-theme: mat.define-theme((
-    color: (
-      theme-type: dark,
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
-    )
-  ));
-
+  // Apply the dark theme to all Angular Material components.
   @include mat.all-component-themes($timer-dark-theme);
 }
