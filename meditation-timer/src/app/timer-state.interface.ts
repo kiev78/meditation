@@ -5,5 +5,4 @@ export interface TimerState {
   intervals: number; // Interval bell frequency in minutes
   theme: 'light' | 'dark';
   isRunning: boolean;
-  backgroundImage?: string;
 }
