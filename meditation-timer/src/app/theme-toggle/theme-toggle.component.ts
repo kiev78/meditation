@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe } from '@angular/common';
@@ -14,25 +14,16 @@ import { TimerService } from '../timer.service';
     </button>
   `
 })
-export class ThemeToggleComponent {
+export class ThemeToggleComponent implements OnInit {
   constructor(public timerService: TimerService) {}
 
   toggleTheme() {
     this.timerService.toggleTheme();
-    this.updateBodyClass();
-  }
-
-  private updateBodyClass() {
-    const isDark = this.timerService['stateSubject'].value.theme === 'dark';
-    if (isDark) {
-      document.body.classList.add('dark-theme');
-    } else {
-      document.body.classList.remove('dark-theme');
-    }
+    // No manual body update needed here as subscription handles it
   }
 
   ngOnInit() {
-    // Initialize correct class on load
+    // Initialize correct class on load and react to changes
     this.timerService.state$.subscribe(state => {
       if (state.theme === 'dark') {
         document.body.classList.add('dark-theme');
