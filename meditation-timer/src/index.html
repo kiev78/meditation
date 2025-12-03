@@ -8,25 +8,11 @@
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-  <link rel="manifest" href="site.webmanifest">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#1976d2">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <script>
-    (function() {
-      try {
-        const settings = localStorage.getItem('meditation_timer_settings');
-        if (settings) {
-          const parsedSettings = JSON.parse(settings);
-          if (parsedSettings && parsedSettings.theme === 'dark') {
-            document.body.classList.add('dark-theme');
-          }
-        }
-      } catch (e) {
-        console.error('Error applying initial theme', e);
-      }
-    })();
-  </script>
 </head>
 <body>
   <app-root></app-root>
