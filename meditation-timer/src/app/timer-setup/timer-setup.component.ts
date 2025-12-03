@@ -3,12 +3,14 @@ import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { TimerService } from '../timer.service';
 
 @Component({
   selector: 'app-timer-setup',
   standalone: true,
-  imports: [MatFormFieldModule, MatInputModule, MatSelectModule, FormsModule],
+  imports: [MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule, FormsModule],
   templateUrl: 'timer-setup.html',
   styleUrls: ['timer-setup.css']
 })
