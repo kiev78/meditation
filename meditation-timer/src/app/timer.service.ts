@@ -53,58 +53,72 @@ export class TimerService {
     this.requestWakeLock();
 
     const currentState = this.stateSubject.value;
+    const duration = currentState.duration;
+    const remaining = currentState.remainingTime;
+    const delay = currentState.delay;
 
-    // We want to count up from -delay to 0, then from duration down to 0.
-    const delaySeconds = currentState.delay;
-    const durationSeconds = currentState.remainingTime > 0 && currentState.remainingTime < currentState.duration
-                          ? currentState.remainingTime // Resume functionality: if paused, resume from where we left off
-                          : currentState.duration;     // Start fresh
+    const isFreshStart = (remaining === duration);
+    const isPausedInDelay = (remaining < 0);
+
+    let delayStream = null;
+
+    if (delay > 0) {
+      if (isFreshStart) {
+        // Fresh start: Count from -delay to -1
+        delayStream = timer(0, 1000).pipe(
+          map(i => -delay + i),
+          take(delay)
+        );
+      } else if (isPausedInDelay) {
+        // Resume delay: Count from current remaining (negative) to -1
+        const ticks = Math.abs(remaining);
+        delayStream = timer(0, 1000).pipe(
+          map(i => remaining + i),
+          take(ticks)
+        );
+      }
+    }
+
+    // Determine the starting duration for the main timer phase
+    // If we have a delay stream (or it's a fresh start), we'll be starting the duration phase from the top.
+    // Otherwise, we are resuming the duration phase.
+    const durationToUse = (delayStream || isFreshStart) ? duration : remaining;
+
+    const durationStream = of(0).pipe(
+      tap(() => {
+        // Only play the start bell if we are starting a fresh session or transitioning from delay
+        const shouldPlayBell = (delayStream !== null) || isFreshStart;
+        if (shouldPlayBell) {
+          this.bellService.playBell();
+          this.updateState({ remainingTime: duration });
+        }
+      }),
+      switchMap(() => interval(1000).pipe(
+        map(tick => durationToUse - (tick + 1)),
+        takeWhile(val => val >= 0)
+      ))
+    );
 
     let stream;
-
-    if (delaySeconds > 0) {
-      // Delay Sequence: -delay, ..., -1
-      const delayTickerImmediate = timer(0, 1000).pipe(
-        map(i => -delaySeconds + i),
-        take(delaySeconds)
-      );
-
+    if (delayStream) {
       stream = concat(
-        delayTickerImmediate.pipe(
+        delayStream.pipe(
           tap(val => this.updateState({ remainingTime: val }))
         ),
-        of(0).pipe(
-          // Transition point: Play bell, immediately set remainingTime to duration to avoid flicker, then switch to main timer
-          tap(() => {
-             this.bellService.playBell();
-             this.updateState({ remainingTime: durationSeconds }); // Ensure UI jumps to full time/resume time
-          }),
-          switchMap(() => interval(1000).pipe(
-            map(tick => durationSeconds - (tick + 1)),
-            takeWhile(remaining => remaining >= 0)
-          ))
-        )
+        durationStream
       );
     } else {
-      // No delay
-      stream = of(0).pipe(
-        tap(() => this.bellService.playBell()),
-        switchMap(() => interval(1000).pipe(
-          map(tick => durationSeconds - (tick + 1)),
-          takeWhile(remaining => remaining >= 0)
-        ))
-      );
+      stream = durationStream;
     }
 
     this.timerSubscription = stream.subscribe({
-      next: (remaining: any) => {
-        // remaining can be negative or positive
-        if (typeof remaining === 'number') {
-           this.updateState({ remainingTime: remaining });
+      next: (val: any) => {
+        if (typeof val === 'number') {
+           this.updateState({ remainingTime: val });
 
-           if (remaining >= 0) {
-             this.checkInterval(remaining);
-             if (remaining === 0) {
+           if (val >= 0) {
+             this.checkInterval(val);
+             if (val === 0) {
                this.bellService.playBell();
                this.stop();
              }
