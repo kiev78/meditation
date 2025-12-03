@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { TimerService } from '../timer.service';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 @Component({
   selector: 'app-timer-display',
   standalone: true,
-  imports: [AsyncPipe, DatePipe, NgIf],
+  imports: [AsyncPipe],
   template: `
     <div class="display-container">
       <h1 class="timer-digits">
