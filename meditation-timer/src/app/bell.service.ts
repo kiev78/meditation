@@ -4,22 +4,38 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class BellService {
-  private audio: HTMLAudioElement;
+  private activeAudios: Set<HTMLAudioElement> = new Set();
+  private readonly BELL_PATH = 'sounds/bell.mp3';
 
   constructor() {
-    this.audio = new Audio('sounds/bell.mp3');
-    this.audio.load();
+    // Preload one instance to ensure browser caches it
+    const preload = new Audio(this.BELL_PATH);
+    preload.load();
   }
 
   playBell() {
-    this.audio.currentTime = 0;
-    this.audio.play().catch(error => {
+    const audio = new Audio(this.BELL_PATH);
+
+    // Track this audio instance
+    this.activeAudios.add(audio);
+
+    // Remove from tracking when it finishes playing
+    audio.onended = () => {
+      this.activeAudios.delete(audio);
+    };
+
+    audio.play().catch(error => {
       console.warn('Bell audio playback failed. User interaction might be required.', error);
+      // Clean up if playback fails
+      this.activeAudios.delete(audio);
     });
   }
 
   stopBell() {
-    this.audio.pause();
-    this.audio.currentTime = 0;
+    this.activeAudios.forEach(audio => {
+      audio.pause();
+      audio.currentTime = 0;
+    });
+    this.activeAudios.clear();
   }
 }

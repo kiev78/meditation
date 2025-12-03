@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Subscription, interval, timer, of, concat } from 'rxjs';
-import { switchMap, takeWhile, tap, map, filter, take } from 'rxjs/operators';
+import { BehaviorSubject, Subscription, interval, timer, of, concat, Subject, merge } from 'rxjs';
+import { switchMap, takeWhile, tap, map, filter, take, takeUntil } from 'rxjs/operators';
 import { TimerState } from './timer-state.interface';
 import { BellService } from './bell.service';
 import { SettingsService } from './settings.service';
@@ -17,6 +17,10 @@ export class TimerService {
     remainingTime: 1800,
     delay: 5,
     intervals: 0,
+    startBells: 1,
+    startBellInterval: 5,
+    endBells: 1,
+    endBellInterval: 5,
     theme: 'light',
     isRunning: false,
   };
@@ -30,6 +34,7 @@ export class TimerService {
   }
 
   private timerSubscription: Subscription | null = null;
+  private bellSequenceSubscription: Subscription | null = null;
   private wakeLock: any = null; // WakeLockSentinel
 
   constructor() {
@@ -80,8 +85,6 @@ export class TimerService {
     }
 
     // Determine the starting duration for the main timer phase
-    // If we have a delay stream (or it's a fresh start), we'll be starting the duration phase from the top.
-    // Otherwise, we are resuming the duration phase.
     const durationToUse = (delayStream || isFreshStart) ? duration : remaining;
 
     const durationStream = of(0).pipe(
@@ -89,7 +92,8 @@ export class TimerService {
         // Only play the start bell if we are starting a fresh session or transitioning from delay
         const shouldPlayBell = (delayStream !== null) || isFreshStart;
         if (shouldPlayBell) {
-          this.bellService.playBell();
+          const state = this.stateSubject.value;
+          this.playBellSequence(state.startBells, state.startBellInterval);
           this.updateState({ remainingTime: duration });
         }
       }),
@@ -119,7 +123,8 @@ export class TimerService {
            if (val >= 0) {
              this.checkInterval(val);
              if (val === 0) {
-               this.bellService.playBell();
+               const state = this.stateSubject.value;
+               this.playBellSequence(state.endBells, state.endBellInterval);
                this.stop();
              }
            }
@@ -131,6 +136,10 @@ export class TimerService {
   pause() {
     this._stopTimer();
     this.bellService.stopBell();
+    if (this.bellSequenceSubscription) {
+        this.bellSequenceSubscription.unsubscribe();
+        this.bellSequenceSubscription = null;
+    }
   }
 
   // Called when timer ends naturally
@@ -164,6 +173,21 @@ export class TimerService {
     if (passedTime > 0 && remainingTime > 0 && passedTime % intervalSeconds === 0) {
       this.bellService.playBell();
     }
+  }
+
+  private playBellSequence(count: number, intervalSeconds: number) {
+    // If there is an existing sequence (e.g., start bells overlapped with end bells logic?? Unlikely but safe to clear), clear it.
+    // Actually, start and end sequences shouldn't overlap in normal usage, but if we call this, we probably want to start a new sequence.
+    if (this.bellSequenceSubscription) {
+        this.bellSequenceSubscription.unsubscribe();
+    }
+
+    // Create a stream that emits 'count' times with 'intervalSeconds' delay
+    this.bellSequenceSubscription = timer(0, intervalSeconds * 1000).pipe(
+        take(count)
+    ).subscribe(() => {
+        this.bellService.playBell();
+    });
   }
 
   updateState(newState: Partial<TimerState>) {

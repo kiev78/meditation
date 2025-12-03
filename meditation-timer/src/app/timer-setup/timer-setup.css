@@ -18,6 +18,22 @@
       flex: 1 1 150px;
     }
 
+    .bells-config {
+      display: flex;
+      flex-direction: row;
+      gap: 0.5rem;
+      align-items: baseline;
+      flex: 1 1 200px; /* Take up space similar to other fields */
+    }
+
+    .bells-count {
+      flex: 1 1 100px;
+    }
+
+    .bell-interval {
+      flex: 1 1 80px;
+    }
+
     /* Hide default number input spinners */
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button {

@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -10,7 +11,7 @@ import { TimerService } from '../timer.service';
 @Component({
   selector: 'app-timer-setup',
   standalone: true,
-  imports: [MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule, FormsModule],
+  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule, FormsModule],
   templateUrl: 'timer-setup.html',
   styleUrls: ['timer-setup.css']
 })
@@ -43,5 +44,39 @@ export class TimerSetupComponent {
 
   set intervalMinutes(val: number) {
     this.timerService.updateState({ intervals: val });
+  }
+
+  // Start Bells
+  get startBells(): number {
+    return this.timerService.stateSubjectValue.startBells;
+  }
+
+  set startBells(val: number) {
+    this.timerService.updateState({ startBells: val });
+  }
+
+  get startBellInterval(): number {
+    return this.timerService.stateSubjectValue.startBellInterval;
+  }
+
+  set startBellInterval(val: number) {
+    this.timerService.updateState({ startBellInterval: val });
+  }
+
+  // End Bells
+  get endBells(): number {
+    return this.timerService.stateSubjectValue.endBells;
+  }
+
+  set endBells(val: number) {
+    this.timerService.updateState({ endBells: val });
+  }
+
+  get endBellInterval(): number {
+    return this.timerService.stateSubjectValue.endBellInterval;
+  }
+
+  set endBellInterval(val: number) {
+    this.timerService.updateState({ endBellInterval: val });
   }
 }
