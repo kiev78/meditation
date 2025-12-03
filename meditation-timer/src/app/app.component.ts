@@ -1,11 +1,12 @@
 import { Component, HostListener, inject } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
+import { HelpButtonComponent } from './help-button/help-button.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent],
+  imports: [RouterOutlet, HeaderComponent, HelpButtonComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
