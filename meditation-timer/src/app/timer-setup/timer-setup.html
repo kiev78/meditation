@@ -1,59 +1,42 @@
 <div class="setup-container">
-  <h3 matTooltip="Settings (?)">Timer Setup</h3>
-  <mat-form-field appearance="fill">
-    <mat-label>Duration (minutes)</mat-label>
-    <button mat-icon-button matPrefix (click)="durationMinutes = durationMinutes - 1" [disabled]="durationMinutes <= 1 || timerService.stateSubjectValue.isRunning">
-      <mat-icon>remove</mat-icon>
-    </button>
-    <input matInput type="number" #durationInput [(ngModel)]="durationMinutes" [disabled]="timerService.stateSubjectValue.isRunning">
-    <button mat-icon-button matSuffix (click)="durationMinutes = durationMinutes + 1" [disabled]="timerService.stateSubjectValue.isRunning">
-      <mat-icon>add</mat-icon>
-    </button>
-  </mat-form-field>
+  <h3 matTooltip="Settings (s)">Timer Setup</h3>
 
-  <mat-form-field appearance="fill">
-    <mat-label>Delay (seconds)</mat-label>
-    <button mat-icon-button matPrefix (click)="delaySeconds = delaySeconds - 1" [disabled]="delaySeconds <= 0 || timerService.stateSubjectValue.isRunning">
-      <mat-icon>remove</mat-icon>
-    </button>
-    <input matInput type="number" [(ngModel)]="delaySeconds" [disabled]="timerService.stateSubjectValue.isRunning">
-    <button mat-icon-button matSuffix (click)="delaySeconds = delaySeconds + 1" [disabled]="timerService.stateSubjectValue.isRunning">
-      <mat-icon>add</mat-icon>
-    </button>
-  </mat-form-field>
-
-  <mat-form-field appearance="fill">
-    <mat-label>Interval Bells</mat-label>
-    <mat-select [(ngModel)]="intervalMinutes" [disabled]="timerService.stateSubjectValue.isRunning">
-      <mat-option [value]="0">None</mat-option>
-      <mat-option [value]="5">Every 5 mins</mat-option>
-      <mat-option [value]="10">Every 10 mins</mat-option>
-      <mat-option [value]="15">Every 15 mins</mat-option>
-      <mat-option [value]="20">Every 20 mins</mat-option>
-    </mat-select>
-  </mat-form-field>
-
-  <div class="bells-config">
-    <mat-form-field appearance="fill" class="bells-count">
-      <mat-label>Start Bells</mat-label>
-      <input matInput type="number" min="0" max="10" [(ngModel)]="startBells" [disabled]="timerService.stateSubjectValue.isRunning">
-    </mat-form-field>
-
-    <mat-form-field appearance="fill" class="bell-interval" *ngIf="startBells > 1">
-        <mat-label>Interval (s)</mat-label>
-        <input matInput type="number" min="1" [(ngModel)]="startBellInterval" [disabled]="timerService.stateSubjectValue.isRunning">
-    </mat-form-field>
+  <!-- Duration Slider -->
+  <div class="control-row">
+    <mat-label>Duration (min)</mat-label>
+    <div class="slider-input-group">
+      <mat-slider min="1" max="180" step="1" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
+        <input matSliderThumb [(ngModel)]="durationMinutes">
+      </mat-slider>
+      <mat-form-field appearance="outline" class="value-input">
+        <input matInput type="number" #durationInput [(ngModel)]="durationMinutes" [disabled]="timerService.stateSubjectValue.isRunning">
+      </mat-form-field>
+    </div>
   </div>
 
-  <div class="bells-config">
-    <mat-form-field appearance="fill" class="bells-count">
-      <mat-label>End Bells</mat-label>
-      <input matInput type="number" min="0" max="10" [(ngModel)]="endBells" [disabled]="timerService.stateSubjectValue.isRunning">
-    </mat-form-field>
+  <!-- Delay Slider -->
+  <div class="control-row">
+    <mat-label>Delay (sec)</mat-label>
+    <div class="slider-input-group">
+      <mat-slider min="0" max="60" step="1" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
+        <input matSliderThumb [(ngModel)]="delaySeconds">
+      </mat-slider>
+      <mat-form-field appearance="outline" class="value-input">
+        <input matInput type="number" [(ngModel)]="delaySeconds" [disabled]="timerService.stateSubjectValue.isRunning">
+      </mat-form-field>
+    </div>
+  </div>
 
-    <mat-form-field appearance="fill" class="bell-interval" *ngIf="endBells > 1">
-        <mat-label>Interval (s)</mat-label>
-        <input matInput type="number" min="1" [(ngModel)]="endBellInterval" [disabled]="timerService.stateSubjectValue.isRunning">
-    </mat-form-field>
+  <!-- Interval Bells Slider -->
+  <div class="control-row">
+    <mat-label>Interval Bells (min)</mat-label>
+    <div class="slider-input-group">
+      <mat-slider min="0" max="60" step="5" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
+        <input matSliderThumb [(ngModel)]="intervalMinutes">
+      </mat-slider>
+      <mat-form-field appearance="outline" class="value-input">
+        <input matInput type="number" [(ngModel)]="intervalMinutes" [disabled]="timerService.stateSubjectValue.isRunning">
+      </mat-form-field>
+    </div>
   </div>
 </div>

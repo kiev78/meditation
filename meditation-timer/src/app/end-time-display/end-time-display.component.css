@@ -1,0 +1,15 @@
+.end-time {
+  text-align: center;
+  font-size: 1rem;
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0 0 1rem 0;
+}
+
+.end-time span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.end-time mat-icon {
+  margin-left: 5px;
+}

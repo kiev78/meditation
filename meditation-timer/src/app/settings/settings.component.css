@@ -1,33 +1,88 @@
 .settings-container {
-  padding: 2rem;
+  padding: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.form-group {
+.settings-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.settings-section h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #333; /* Or use theme color if available */
+}
+
+/* Dark mode support logic usually handled by global theme styles,
+   but we can try to be neutral or rely on material classes */
+
+.control-group {
+  display: flex;
   margin-bottom: 1.5rem;
 }
 
-.radio-group label {
-  margin-right: 1rem;
-}
-
-.form-control {
-  width: 100%;
-  padding: 0.5rem;
+.control-group h4 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
   font-size: 1rem;
+  opacity: 0.8;
 }
 
-.button-group {
-  margin-top: 1.5rem;
+.control-row {
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.slider-input-group {
   display: flex;
+  flex-direction: row;
+  align-items: center;
   gap: 1rem;
 }
 
+.slider {
+  flex-grow: 1;
+}
+
+/* Background Section */
+.form-group {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.url-input-group {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.full-width {
+  flex-grow: 1;
+}
+
+.action-buttons {
+  margin-top: 1rem;
+}
+.action-buttons button {
+  margin-right: 1rem;
+}
 .preview {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
 }
 
 .preview img {
   max-width: 100%;
-  max-height: 200px;
-  border: 1px solid #ccc;
+  max-height: 300px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+mat-radio-group {
+  display: flex;
+  gap: 1rem;
 }
