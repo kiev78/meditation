@@ -1,13 +1,11 @@
 import { Component, inject, HostListener } from '@angular/core';
-import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
 import { TimerSetupComponent } from '../timer-setup/timer-setup.component';
 import { TimerDisplayComponent } from '../timer-display/timer-display.component';
 import { ControlButtonsComponent } from '../control-buttons/control-buttons.component';
 import { TimerService } from '../timer.service';
 import { map } from 'rxjs/operators';
 import { Observable, timer } from 'rxjs';
-import { MatIcon } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.component';
 
 @Component({
   selector: 'app-timer-container',
@@ -16,28 +14,18 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     TimerSetupComponent,
     TimerDisplayComponent,
     ControlButtonsComponent,
-    AsyncPipe,
-    DatePipe,
-    NgIf,
-    MatIcon,
-    MatTooltipModule
+    EndTimeDisplayComponent,
   ],
   template: `
     <div class="timer-page">
       <app-timer-display></app-timer-display>
       <app-control-buttons></app-control-buttons>
 
-      <p class="end-time" *ngIf="endTime$ | async as endTime; else showCurrentTime">
-        <i>Timer will end at {{ endTime | date : 'shortTime' }}</i>
-        @if (timerService.state$ | async; as state) { @if (state.isWakeLockActive) {
-        <mat-icon class="header-icon" matTooltip="Screen will stay awake">lightbulb</mat-icon>
-        } }
-      </p>
-      <ng-template #showCurrentTime>
-        <p class="end-time">
-          <i>Current Time: {{ currentTime$ | async | date : 'shortTime' }}</i>
-        </p>
-      </ng-template>
+      <app-end-time-display
+        [endTime$]="endTime$"
+        [currentTime$]="currentTime$"
+        [timerService]="timerService"
+      ></app-end-time-display>
 
       <app-timer-setup></app-timer-setup>
     </div>
@@ -49,12 +37,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         font-size: 1rem;
         color: var(--mat-sys-on-surface-variant);
         margin: 0 0 1rem 0;
-      }
-
-      .wake-icon {
-        vertical-align: middle;
-        margin-right: 8px;
-        color: var(--mat-toolbar-standard-text-color, white);
       }
     `,
   ],

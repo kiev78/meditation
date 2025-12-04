@@ -31,7 +31,10 @@ export class BellService {
 
     let initialVolume = 1;
     if (savedVolume !== null) { // Check for null or undefined
-      initialVolume = parseFloat(savedVolume); // Use parseFloat for safety
+      const parsedVolume = parseFloat(savedVolume);
+      if (!isNaN(parsedVolume)) {
+        initialVolume = parsedVolume;
+      }
     }
 
     // Apply settings

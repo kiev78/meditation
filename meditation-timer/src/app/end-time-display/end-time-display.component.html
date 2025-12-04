@@ -1,0 +1,14 @@
+@if (endTime$ | async; as endTime) {
+  <p class="end-time">
+    <span>
+      <i>Timer will end at {{ endTime | date : 'shortTime' }}</i>
+      <!-- @if ((timerService.state$ | async)?.isWakeLockActive) {
+        <mat-icon class="header-icon" matTooltip="Screen will stay awake">lightbulb</mat-icon>
+      } -->
+    </span>
+  </p>
+} @else {
+  <p class="end-time">
+    <i>Current Time: {{ currentTime$ | async | date : 'shortTime' }}</i>
+  </p>
+}
