@@ -10,24 +10,19 @@
       <div class="control-row">
         <mat-label>Count</mat-label>
         <div class="slider-input-group">
-          <mat-slider min="0" max="10" step="1" class="expanded-slider">
+          <mat-slider min="0" max="5" step="1" class="slider">
             <input matSliderThumb [(ngModel)]="startBells" (valueChange)="updateBellSettings()">
           </mat-slider>
-          <mat-form-field appearance="outline" class="value-input">
-            <input matInput type="number" [(ngModel)]="startBells" (change)="updateBellSettings()">
-          </mat-form-field>
+         
         </div>
       </div>
 
       <div class="control-row" *ngIf="startBells > 1">
         <mat-label>Interval (sec)</mat-label>
         <div class="slider-input-group">
-          <mat-slider min="1" max="60" step="1" class="expanded-slider">
+          <mat-slider min="1" max="60" step="1" class="slider">
             <input matSliderThumb [(ngModel)]="startBellInterval" (valueChange)="updateBellSettings()">
           </mat-slider>
-          <mat-form-field appearance="outline" class="value-input">
-             <input matInput type="number" [(ngModel)]="startBellInterval" (change)="updateBellSettings()">
-          </mat-form-field>
         </div>
       </div>
     </div>
@@ -37,24 +32,20 @@
       <div class="control-row">
         <mat-label>Count</mat-label>
         <div class="slider-input-group">
-          <mat-slider min="0" max="10" step="1" class="expanded-slider">
+          <mat-slider min="0" max="10" step="1" class="slider">
             <input matSliderThumb [(ngModel)]="endBells" (valueChange)="updateBellSettings()">
           </mat-slider>
-          <mat-form-field appearance="outline" class="value-input">
-            <input matInput type="number" [(ngModel)]="endBells" (change)="updateBellSettings()">
-          </mat-form-field>
+         
         </div>
       </div>
 
       <div class="control-row" *ngIf="endBells > 1">
         <mat-label>Interval (sec)</mat-label>
         <div class="slider-input-group">
-          <mat-slider min="1" max="60" step="1" class="expanded-slider">
+          <mat-slider min="1" max="60" step="1" class="slider">
             <input matSliderThumb [(ngModel)]="endBellInterval" (valueChange)="updateBellSettings()">
           </mat-slider>
-          <mat-form-field appearance="outline" class="value-input">
-            <input matInput type="number" [(ngModel)]="endBellInterval" (change)="updateBellSettings()">
-          </mat-form-field>
+       
         </div>
       </div>
     </div>
@@ -88,12 +79,13 @@
     </div>
 
     <div class="action-buttons">
-      <button mat-stroked-button color="warn" (click)="clearBackground()">Clear Background</button>
+      <button mat-raised-button color="primary" (click)="clearBackground()">Clear Background</button>
+      <button mat-raised-button color="primary" (click)="saveSettings()">Save Settings</button>
     </div>
-
     <div *ngIf="backgroundImageUrl" class="preview">
       <p>Current background:</p>
       <img [src]="backgroundImageUrl" alt="Background preview" />
     </div>
+
   </section>
 </div>

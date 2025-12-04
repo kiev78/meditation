@@ -103,5 +103,11 @@ export class SettingsComponent implements OnInit {
     this.backgroundImageUrl = '';
     this.settingsService.saveSettings({ backgroundImage: '' });
     this.imageStorageService.clearImage();
+    this.saveSettings();
+  }
+
+  saveSettings() {
+    // redirect to home
+    window.location.href = '/';
   }
 }
