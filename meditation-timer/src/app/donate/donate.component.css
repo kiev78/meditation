@@ -1,0 +1,29 @@
+.donate-container {
+  padding: 2rem;
+}
+
+.donation-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.qr-code, .paypal {
+  text-align: center;
+}
+
+.qr-code img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #ccc;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+}
