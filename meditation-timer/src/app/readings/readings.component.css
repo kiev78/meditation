@@ -104,3 +104,5 @@ a:hover {
 :host-context(body.dark-theme) a {
   color: var(--mat-primary-A100, #e8ebfc9d);
 }
+
+img{float: right;}
