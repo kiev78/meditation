@@ -11,6 +11,7 @@ export class BellService {
   private readonly MUTE_KEY = 'meditation-timer-muted';
   private readonly PREV_VOLUME_KEY = 'meditation-timer-prev-volume';
 
+  private previousVolume = 1;
   private volumeSubject = new BehaviorSubject<number>(1);
   volume$ = this.volumeSubject.asObservable();
 
@@ -29,29 +30,25 @@ export class BellService {
     const savedMute = localStorage.getItem(this.MUTE_KEY);
 
     let initialVolume = 1;
-    if (savedVolume !== null) {
-      initialVolume = parseFloat(savedVolume);
-    }
-
-    let initialMute = false;
-    if (savedMute !== null) {
-      initialMute = savedMute === 'true';
+    if (savedVolume !== null) { // Check for null or undefined
+      initialVolume = parseFloat(savedVolume); // Use parseFloat for safety
     }
 
     // Apply settings
-    this.audio.volume = initialVolume;
     this.volumeSubject.next(initialVolume);
-    this.isMutedSubject.next(initialMute);
 
-    // Ensure consistency: if volume is 0, it's effectively muted
-    if (initialVolume === 0) {
-        this.isMutedSubject.next(true);
+    // Mute state is derived from volume.
+    const isMuted = initialVolume === 0;
+    this.isMutedSubject.next(isMuted);
+
+    // Load the last non-zero volume for un-muting.
+    const prevVolumeStr = localStorage.getItem(this.PREV_VOLUME_KEY);
+    if (prevVolumeStr) {
+      this.previousVolume = parseFloat(prevVolumeStr) || 1;
     }
   }
 
   playBell() {
-
-
     const audio = new Audio(this.BELL_PATH);
 
     // Track this audio instance
@@ -84,47 +81,15 @@ export class BellService {
     // Clamp volume between 0 and 1
     const newVolume = Math.max(0, Math.min(1, volume));
 
-    this.audio.volume = newVolume;
-    this.volumeSubject.next(newVolume);
-
-    // Update mute state based on volume
-    const isMuted = newVolume === 0;
-    this.isMutedSubject.next(isMuted);
-
-    localStorage.setItem(this.VOLUME_KEY, newVolume.toString());
-    localStorage.setItem(this.MUTE_KEY, isMuted.toString());
-  }
-
-  toggleMute() {
-    const isMuted = this.isMutedSubject.value;
-    const currentVolume = this.volumeSubject.value;
-
-    if (isMuted) {
-      // Unmute
-      // Retrieve previous volume or default to 100%
-      const prevVolumeStr = localStorage.getItem(this.PREV_VOLUME_KEY);
-      let restoreVolume = prevVolumeStr ? parseFloat(prevVolumeStr) : 1;
-
-      // Edge case: if stored prev volume is 0 (shouldn't happen with correct logic, but safe guard), set to 1
-      if (restoreVolume === 0) restoreVolume = 1;
-
-      this.setVolume(restoreVolume);
-    } else {
-      // Mute
-      // Store current volume before muting, so we can restore it
-      // Only store if it's > 0, otherwise we lose the "previous" state
-      if (currentVolume > 0) {
-        localStorage.setItem(this.PREV_VOLUME_KEY, currentVolume.toString());
-      }
-      this.setVolume(0);
+    // Store the last non-zero volume for the mute toggle
+    if (newVolume > 0) {
+      this.previousVolume = newVolume;
     }
-  }
 
-  setVolume(volume: number) {
-    // Clamp volume between 0 and 1
-    const newVolume = Math.max(0, Math.min(1, volume));
+    this.activeAudios.forEach(audio => {
+      audio.volume = newVolume;
+    });
 
-    this.audio.volume = newVolume;
     this.volumeSubject.next(newVolume);
 
     // Update mute state based on volume
@@ -133,7 +98,7 @@ export class BellService {
 
     localStorage.setItem(this.VOLUME_KEY, newVolume.toString());
     localStorage.setItem(this.MUTE_KEY, isMuted.toString());
-  }
+  } 
 
   toggleMute() {
     const isMuted = this.isMutedSubject.value;

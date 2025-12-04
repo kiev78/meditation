@@ -19,7 +19,7 @@ import { Observable } from 'rxjs';
       <p class="end-time" *ngIf="(endTime$ | async) as endTime">
         <i>Timer will end at {{ endTime | date:'shortTime' }}</i>
       </p>
-
+  
       <app-timer-setup></app-timer-setup>
     </div>
   `,

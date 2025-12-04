@@ -81,6 +81,7 @@ export class TimerSetupComponent {
 
   set endBellInterval(val: number) {
     this.timerService.updateState({ endBellInterval: val });
+  }
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     // Check for '?' key (shift + /)
@@ -96,3 +97,4 @@ export class TimerSetupComponent {
     }
   }
 }
+

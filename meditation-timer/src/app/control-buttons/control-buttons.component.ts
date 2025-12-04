@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { MatSliderModule } from '@angular/material/slider';
 import { FormsModule } from '@angular/forms';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -8,6 +8,11 @@ import { TimerService } from '../timer.service';
 import { BellService } from '../bell.service';
 import { AsyncPipe } from '@angular/common';
 
+interface MatSliderDragEvent {
+  source: unknown;
+  parent: unknown;
+  value: number;
+}
 @Component({
   selector: 'app-control-buttons',
   standalone: true,
@@ -47,22 +52,26 @@ import { AsyncPipe } from '@angular/common';
       </div>
     }
 
-    <div class="volume-container">
-      <button mat-icon-button (click)="bellService.toggleMute()" [attr.aria-label]="(bellService.isMuted$ | async) ? 'Unmute' : 'Mute'">
-        <mat-icon>{{ getVolumeIcon((bellService.volume$ | async)!) }}</mat-icon>
-      </button>
-
-      <mat-slider
-        min="0"
-        max="1"
-        step="0.01"
-        >
-        <input matSliderThumb
-               [value]="bellService.volume$ | async"
-               (input)="onVolumeChange($event)">
-      </mat-slider>
-      <span style="min-width: 2rem; text-align: center;">{{ formatVolumeLabel((bellService.volume$ | async)!) }}%</span>
-    </div>
+    @if ({ volume: bellService.volume$ | async }; as data) {
+      @if (data.volume !== null) {
+        <div class="volume-container">
+          <button mat-icon-button (click)="bellService.toggleMute()" [attr.aria-label]="(bellService.isMuted$ | async) ? 'Unmute' : 'Mute'">
+            <mat-icon>{{ getVolumeIcon(data.volume) }}</mat-icon>
+          </button>
+    
+          <mat-slider
+            min="0"
+            max="1"
+            step="0.01"
+            >
+            <input matSliderThumb
+                  [value]="data.volume"
+                  (input)="onVolumeChange($event)">
+          </mat-slider>
+          <span style="min-width: 2rem; text-align: center;">{{ formatVolumeLabel(data.volume) }}%</span>
+        </div>
+      }
+    }
   `,
   styles: [`
     .controls-container {
@@ -94,11 +103,8 @@ export class ControlButtonsComponent {
     public bellService: BellService
   ) {}
 
-  onVolumeChange(event: Event | number) {
-    // The `input` event from matSliderThumb is a MatSliderDragEvent, which is not easily typed here.
-    // It has a `value` property. We check if the event is a number (from valueChange) or an object.
-    const value = typeof event === 'number' ? event : (event.target as HTMLInputElement)?.value;
-    this.bellService.setVolume(Number(value));
+  onVolumeChange(event: MatSliderDragEvent | Event) {
+    this.bellService.setVolume((event as MatSliderDragEvent).value);
   }
 
   getVolumeIcon(volume: number): string {
