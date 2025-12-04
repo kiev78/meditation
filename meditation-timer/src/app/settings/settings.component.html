@@ -1,53 +1,99 @@
 <div class="settings-container">
   <h2>Settings</h2>
 
-  <div class="form-group">
-    <label>Background Source</label>
-    <div class="radio-group">
-      <label>
-        <input type="radio" name="mode" value="url" [(ngModel)]="mode" />
-        URL
-      </label>
-      <label>
-        <input type="radio" name="mode" value="upload" [(ngModel)]="mode" />
-        Upload
-      </label>
+  <!-- Bell Configuration Section -->
+  <section class="settings-section">
+    <h3>Bell Configuration</h3>
+
+    <div class="control-group">
+      <h4>Start Bells</h4>
+      <div class="control-row">
+        <mat-label>Count</mat-label>
+        <div class="slider-input-group">
+          <mat-slider min="0" max="10" step="1" class="expanded-slider">
+            <input matSliderThumb [(ngModel)]="startBells" (valueChange)="updateBellSettings()">
+          </mat-slider>
+          <mat-form-field appearance="outline" class="value-input">
+            <input matInput type="number" [(ngModel)]="startBells" (change)="updateBellSettings()">
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="control-row" *ngIf="startBells > 1">
+        <mat-label>Interval (sec)</mat-label>
+        <div class="slider-input-group">
+          <mat-slider min="1" max="60" step="1" class="expanded-slider">
+            <input matSliderThumb [(ngModel)]="startBellInterval" (valueChange)="updateBellSettings()">
+          </mat-slider>
+          <mat-form-field appearance="outline" class="value-input">
+             <input matInput type="number" [(ngModel)]="startBellInterval" (change)="updateBellSettings()">
+          </mat-form-field>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div *ngIf="mode === 'url'" class="form-group">
-    <label for="background-url">Background Image URL</label>
-    <input
-      type="text"
-      id="background-url"
-      class="form-control"
-      [(ngModel)]="backgroundImageUrl"
-      placeholder="Enter image URL"
-    />
-  </div>
+    <div class="control-group">
+      <h4>End Bells</h4>
+      <div class="control-row">
+        <mat-label>Count</mat-label>
+        <div class="slider-input-group">
+          <mat-slider min="0" max="10" step="1" class="expanded-slider">
+            <input matSliderThumb [(ngModel)]="endBells" (valueChange)="updateBellSettings()">
+          </mat-slider>
+          <mat-form-field appearance="outline" class="value-input">
+            <input matInput type="number" [(ngModel)]="endBells" (change)="updateBellSettings()">
+          </mat-form-field>
+        </div>
+      </div>
 
-  <div *ngIf="mode === 'upload'" class="form-group">
-    <input
-      type="file"
-      hidden
-      (change)="onFileSelected($event)"
-      #fileInput
-      accept="image/*"
-    />
-    <button class="btn btn-secondary" (click)="fileInput.click()">
-      Upload Image
-    </button>
-  </div>
+      <div class="control-row" *ngIf="endBells > 1">
+        <mat-label>Interval (sec)</mat-label>
+        <div class="slider-input-group">
+          <mat-slider min="1" max="60" step="1" class="expanded-slider">
+            <input matSliderThumb [(ngModel)]="endBellInterval" (valueChange)="updateBellSettings()">
+          </mat-slider>
+          <mat-form-field appearance="outline" class="value-input">
+            <input matInput type="number" [(ngModel)]="endBellInterval" (change)="updateBellSettings()">
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <div class="button-group">
-    <button class="btn btn-primary" (click)="save()">Save URL</button>
-    <button class="btn btn-danger" (click)="clearBackground()">
-      Clear Background
-    </button>
-  </div>
+  <!-- Background Image Section -->
+  <section class="settings-section">
+    <h3>Background Image</h3>
 
-  <div *ngIf="backgroundImageUrl" class="preview">
-    <p>Current background:</p>
-    <img [src]="backgroundImageUrl" alt="Background preview" />
-  </div>
+    <div class="form-group">
+      <label>Source</label>
+      <mat-radio-group [(ngModel)]="mode" aria-label="Select an option">
+        <mat-radio-button value="url">URL</mat-radio-button>
+        <mat-radio-button value="upload">Upload</mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <div *ngIf="mode === 'url'" class="form-group url-input-group">
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Image URL</mat-label>
+        <input matInput type="text" [(ngModel)]="backgroundImageUrl" placeholder="Enter image URL">
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="saveUrl()">Save URL</button>
+    </div>
+
+    <div *ngIf="mode === 'upload'" class="form-group">
+      <input type="file" hidden (change)="onFileSelected($event)" #fileInput accept="image/*" />
+      <button mat-raised-button (click)="fileInput.click()">
+        <mat-icon>upload_file</mat-icon> Upload Image
+      </button>
+    </div>
+
+    <div class="action-buttons">
+      <button mat-stroked-button color="warn" (click)="clearBackground()">Clear Background</button>
+    </div>
+
+    <div *ngIf="backgroundImageUrl" class="preview">
+      <p>Current background:</p>
+      <img [src]="backgroundImageUrl" alt="Background preview" />
+    </div>
+  </section>
 </div>

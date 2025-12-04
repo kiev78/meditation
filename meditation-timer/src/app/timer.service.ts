@@ -40,6 +40,14 @@ export class TimerService {
 
   constructor() {
     this.initSettings();
+    this.settingsService.settings$.subscribe((settings) => {
+      // Differentiate between updates originating from here vs external
+      // Since settingsService.settings$ is emitted when saveSettings is called,
+      // and we call saveSettings in updateState, we need to be careful.
+      // However, we updated saveSettings to allow suppressing emit.
+      // Here we assume any emission from settings$ is an "external" change we need to apply.
+      this.updateStateInternal(settings);
+    });
   }
 
   private initSettings() {
@@ -192,9 +200,20 @@ export class TimerService {
   }
 
   updateState(newState: Partial<TimerState>) {
+    this.updateStateInternal(newState);
+    // When updating state internally, we save to settings, but suppress emission
+    // to avoid the circular loop (SettingsService emitting back to us).
+    // Actually, if we suppress emit in saveSettings, other listeners (if any) won't hear about it.
+    // Ideally we want to emit only if the source wasn't settings$.
+    // For now, let's assume updateState is called by components.
+    // If settings$ emits, we call updateStateInternal directly, bypassing this save.
+    // So we need to split updateState and save.
+    this.settingsService.saveSettings(newState, false);
+  }
+
+  private updateStateInternal(newState: Partial<TimerState>) {
     const updatedState = { ...this.stateSubject.value, ...newState };
     this.stateSubject.next(updatedState);
-    this.settingsService.saveSettings(updatedState);
   }
 
   toggleTheme() {

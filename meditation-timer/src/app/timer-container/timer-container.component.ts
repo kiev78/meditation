@@ -7,6 +7,7 @@ import { TimerService } from '../timer.service';
 import { map } from 'rxjs/operators';
 import { Observable, timer } from 'rxjs';
 import { MatIcon } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-timer-container',
@@ -19,6 +20,7 @@ import { MatIcon } from '@angular/material/icon';
     DatePipe,
     NgIf,
     MatIcon,
+    MatTooltipModule
   ],
   template: `
     <div class="timer-page">
