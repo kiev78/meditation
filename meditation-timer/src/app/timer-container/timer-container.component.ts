@@ -5,7 +5,7 @@ import { TimerDisplayComponent } from '../timer-display/timer-display.component'
 import { ControlButtonsComponent } from '../control-buttons/control-buttons.component';
 import { TimerService } from '../timer.service';
 import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Observable, timer } from 'rxjs';
 
 @Component({
   selector: 'app-timer-container',
@@ -16,9 +16,14 @@ import { Observable } from 'rxjs';
       <app-timer-display></app-timer-display>
       <app-control-buttons></app-control-buttons>
 
-      <p class="end-time" *ngIf="(endTime$ | async) as endTime">
+      <p class="end-time" *ngIf="(endTime$ | async) as endTime; else showCurrentTime">
         <i>Timer will end at {{ endTime | date:'shortTime' }}</i>
       </p>
+      <ng-template #showCurrentTime>
+        <p class="end-time">
+          <i>Current Time: {{ currentTime$ | async | date:'shortTime' }}</i>
+        </p>
+      </ng-template>
   
       <app-timer-setup></app-timer-setup>
     </div>
@@ -34,6 +39,8 @@ import { Observable } from 'rxjs';
 })
 export class TimerContainerComponent {
   private timerService = inject(TimerService);
+
+  currentTime$ = timer(0, 1000).pipe(map(() => new Date()));
 
   endTime$: Observable<Date | null> = this.timerService.state$.pipe(
     map(state => {
