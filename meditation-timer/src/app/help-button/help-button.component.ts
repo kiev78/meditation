@@ -15,9 +15,6 @@ import { ShortcutsDialogComponent } from '../shortcuts-dialog/shortcuts-dialog.c
   `,
   styles: [`
     .help-fab {
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
       z-index: 1000;
     }
   `]

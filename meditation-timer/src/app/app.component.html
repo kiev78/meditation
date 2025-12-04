@@ -1,7 +1,12 @@
-<div class="main-container"  [style.background-image]="backgroundImageUrl ? 'url(' + backgroundImageUrl + ')' : 'none'">
+<div class="main-container" [style.background-image]="backgroundImageUrl ? 'url(' + backgroundImageUrl + ')' : 'none'">
   <app-header></app-header>
   <main class="content">
     <router-outlet></router-outlet>
   </main>
-<app-help-button></app-help-button>
+  <div class="footer-buttons">
+    <app-help-button></app-help-button>
+    <button mat-fab color="primary" class="donate-button" (click)="toggleDonateDialog()" aria-label="Donate">
+      <mat-icon>volunteer_activism</mat-icon>
+    </button>
+  </div>
 </div>

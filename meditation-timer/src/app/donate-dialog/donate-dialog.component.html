@@ -1,0 +1,35 @@
+<h2 mat-dialog-title>Donate</h2>
+<mat-dialog-content>
+  <p>
+    If you've found this meditation timer helpful, please consider a small donation.
+    Your support helps keep this project alive and ad-free.
+  </p>
+  <div class="qr-codes">
+    <div class="qr-code">
+      <img src="img/venmo.png" alt="Venmo QR Code">
+      <span>Venmo</span>
+    </div>
+    <div class="qr-code">
+      <img src="img/paypal.png" alt="PayPal QR Code">
+      <span>PayPal</span>
+    </div>
+  </div>
+  <div class="paypal-form">
+    <p>Or click the button below to donate via PayPal:</p>
+    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+        <input name="cmd" type="hidden" value="_s-xclick" />
+        <input name="hosted_button_id" type="hidden" value="6FB8X3ECTBFNY" />
+        <input
+          title="PayPal Donation"
+          alt="Donate with PayPal button"
+          name="submit"
+          src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"
+          type="image"
+        />
+        <img src="https://www.paypal.com/en_US/i/scr/pixel.gif" alt="" width="1" height="1" />
+      </form>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button (click)="onClose()">Close</button>
+</mat-dialog-actions>

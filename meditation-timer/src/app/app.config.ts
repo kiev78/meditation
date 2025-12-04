@@ -1,12 +1,16 @@
-import { ApplicationConfig, isDevMode } from '@angular/core';
+import { ApplicationConfig, isDevMode, importProvidersFrom } from '@angular/core';
 // Make sure to import withInMemoryScrolling
 import { provideRouter, withInMemoryScrolling, withHashLocation } from '@angular/router';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 import { routes } from './app.routes';
 import { provideServiceWorker } from '@angular/service-worker';
+import { MatDialogModule } from '@angular/material/dialog';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideAnimations(),
+    importProvidersFrom(MatDialogModule),
     // Add the withInMemoryScrolling option here
     provideRouter(
       routes,
