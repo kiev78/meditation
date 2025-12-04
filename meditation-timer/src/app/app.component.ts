@@ -1,6 +1,7 @@
 import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
+import { HelpButtonComponent } from './help-button/help-button.component';
 import { TimerService } from './timer.service';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -10,7 +11,7 @@ import { filter } from 'rxjs/operators';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, CommonModule],
+  imports: [RouterOutlet, HeaderComponent, CommonModule, HelpButtonComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
