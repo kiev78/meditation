@@ -23,6 +23,7 @@ export class TimerService {
     endBellInterval: 5,
     theme: 'light',
     isRunning: false,
+    isWakeLockActive: false,
   };
 
   private stateSubject = new BehaviorSubject<TimerState>(this.initialState);
@@ -205,9 +206,18 @@ export class TimerService {
     if ('wakeLock' in navigator) {
       try {
         this.wakeLock = await (navigator as any).wakeLock.request('screen');
+        this.updateState({ isWakeLockActive: true });
+        this.wakeLock.addEventListener('release', () => {
+          // Fired when the wake lock is released, e.g. by switching tabs
+          this.updateState({ isWakeLockActive: false });
+        });
       } catch (err) {
         console.warn('Wake Lock request failed:', err);
+        this.updateState({ isWakeLockActive: false });
       }
+    } else {
+      console.warn('Wake Lock API not supported.');
+      this.updateState({ isWakeLockActive: false });
     }
   }
 
@@ -215,7 +225,11 @@ export class TimerService {
     if (this.wakeLock) {
       this.wakeLock.release().then(() => {
         this.wakeLock = null;
-      }).catch((err: any) => console.warn('Wake Lock release failed:', err));
+        this.updateState({ isWakeLockActive: false });
+      }).catch((err: any) => {
+        console.warn('Wake Lock release failed:', err);
+        this.updateState({ isWakeLockActive: false });
+      });
     }
   }
 }

@@ -9,5 +9,6 @@ export interface TimerState {
   endBellInterval: number; // Seconds between end bells
   theme: 'light' | 'dark';
   isRunning: boolean;
+  isWakeLockActive: boolean;
   backgroundImage?: string;
 }
