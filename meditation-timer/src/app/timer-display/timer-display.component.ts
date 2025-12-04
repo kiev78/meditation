@@ -13,9 +13,6 @@ import { Observable } from 'rxjs';
       <h1 class="timer-digits">
         {{ formattedTime$ | async }}
       </h1>
-      <p class="status">
-        Status: {{ (timerService.state$ | async)?.isRunning ? 'Running' : 'Stopped' }}
-      </p>
     </div>
   `,
   styles: [`

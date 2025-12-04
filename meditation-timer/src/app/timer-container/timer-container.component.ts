@@ -5,38 +5,65 @@ import { TimerDisplayComponent } from '../timer-display/timer-display.component'
 import { ControlButtonsComponent } from '../control-buttons/control-buttons.component';
 import { TimerService } from '../timer.service';
 import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Observable, timer } from 'rxjs';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-timer-container',
   standalone: true,
-  imports: [TimerSetupComponent, TimerDisplayComponent, ControlButtonsComponent, AsyncPipe, DatePipe, NgIf],
+  imports: [
+    TimerSetupComponent,
+    TimerDisplayComponent,
+    ControlButtonsComponent,
+    AsyncPipe,
+    DatePipe,
+    NgIf,
+    MatIcon,
+  ],
   template: `
     <div class="timer-page">
       <app-timer-display></app-timer-display>
       <app-control-buttons></app-control-buttons>
 
-      <p class="end-time" *ngIf="(endTime$ | async) as endTime">
-        <i>Timer will end at {{ endTime | date:'shortTime' }}</i>
+      <p class="end-time" *ngIf="endTime$ | async as endTime; else showCurrentTime">
+        <i>Timer will end at {{ endTime | date : 'shortTime' }}</i>
+        @if (timerService.state$ | async; as state) { @if (state.isWakeLockActive) {
+        <mat-icon class="header-icon" matTooltip="Screen will stay awake">lightbulb</mat-icon>
+        } }
       </p>
+      <ng-template #showCurrentTime>
+        <p class="end-time">
+          <i>Current Time: {{ currentTime$ | async | date : 'shortTime' }}</i>
+        </p>
+      </ng-template>
 
       <app-timer-setup></app-timer-setup>
     </div>
   `,
-  styles: [`
-    .end-time {
-      text-align: center;
-      font-size: 1rem;
-      color: var(--mat-sys-on-surface-variant);
-      margin: 0 0 1rem 0;
-    }
-  `]
+  styles: [
+    `
+      .end-time {
+        text-align: center;
+        font-size: 1rem;
+        color: var(--mat-sys-on-surface-variant);
+        margin: 0 0 1rem 0;
+      }
+
+      .wake-icon {
+        vertical-align: middle;
+        margin-right: 8px;
+        color: var(--mat-toolbar-standard-text-color, white);
+      }
+    `,
+  ],
 })
 export class TimerContainerComponent {
-  private timerService = inject(TimerService);
+  timerService = inject(TimerService);
+
+  currentTime$ = timer(0, 1000).pipe(map(() => new Date()));
 
   endTime$: Observable<Date | null> = this.timerService.state$.pipe(
-    map(state => {
+    map((state) => {
       if (!state.isRunning) return null;
 
       let secondsLeft = 0;

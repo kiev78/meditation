@@ -32,4 +32,28 @@
       <mat-option [value]="20">Every 20 mins</mat-option>
     </mat-select>
   </mat-form-field>
+
+  <div class="bells-config">
+    <mat-form-field appearance="fill" class="bells-count">
+      <mat-label>Start Bells</mat-label>
+      <input matInput type="number" min="0" max="10" [(ngModel)]="startBells" [disabled]="timerService.stateSubjectValue.isRunning">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="bell-interval" *ngIf="startBells > 1">
+        <mat-label>Interval (s)</mat-label>
+        <input matInput type="number" min="1" [(ngModel)]="startBellInterval" [disabled]="timerService.stateSubjectValue.isRunning">
+    </mat-form-field>
+  </div>
+
+  <div class="bells-config">
+    <mat-form-field appearance="fill" class="bells-count">
+      <mat-label>End Bells</mat-label>
+      <input matInput type="number" min="0" max="10" [(ngModel)]="endBells" [disabled]="timerService.stateSubjectValue.isRunning">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="bell-interval" *ngIf="endBells > 1">
+        <mat-label>Interval (s)</mat-label>
+        <input matInput type="number" min="1" [(ngModel)]="endBellInterval" [disabled]="timerService.stateSubjectValue.isRunning">
+    </mat-form-field>
+  </div>
 </div>

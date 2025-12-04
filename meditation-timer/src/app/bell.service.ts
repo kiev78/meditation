@@ -5,11 +5,13 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class BellService {
-  private audio: HTMLAudioElement;
+  private activeAudios: Set<HTMLAudioElement> = new Set();
+  private readonly BELL_PATH = 'sounds/bell.mp3';
   private readonly VOLUME_KEY = 'meditation-timer-volume';
   private readonly MUTE_KEY = 'meditation-timer-muted';
   private readonly PREV_VOLUME_KEY = 'meditation-timer-prev-volume';
 
+  private previousVolume = 1;
   private volumeSubject = new BehaviorSubject<number>(1);
   volume$ = this.volumeSubject.asObservable();
 
@@ -17,8 +19,9 @@ export class BellService {
   isMuted$ = this.isMutedSubject.asObservable();
 
   constructor() {
-    this.audio = new Audio('sounds/bell.mp3');
-    this.audio.load();
+    // Preload one instance to ensure browser caches it
+    const preload = new Audio(this.BELL_PATH);
+    preload.load();
     this.loadSettings();
   }
 
@@ -27,46 +30,66 @@ export class BellService {
     const savedMute = localStorage.getItem(this.MUTE_KEY);
 
     let initialVolume = 1;
-    if (savedVolume !== null) {
-      initialVolume = parseFloat(savedVolume);
-    }
-
-    let initialMute = false;
-    if (savedMute !== null) {
-      initialMute = savedMute === 'true';
+    if (savedVolume !== null) { // Check for null or undefined
+      initialVolume = parseFloat(savedVolume); // Use parseFloat for safety
     }
 
     // Apply settings
-    this.audio.volume = initialVolume;
     this.volumeSubject.next(initialVolume);
-    this.isMutedSubject.next(initialMute);
 
-    // Ensure consistency: if volume is 0, it's effectively muted
-    if (initialVolume === 0) {
-        this.isMutedSubject.next(true);
+    // Mute state is derived from volume.
+    const isMuted = initialVolume === 0;
+    this.isMutedSubject.next(isMuted);
+
+    // Load the last non-zero volume for un-muting.
+    const prevVolumeStr = localStorage.getItem(this.PREV_VOLUME_KEY);
+    if (prevVolumeStr) {
+      this.previousVolume = parseFloat(prevVolumeStr) || 1;
     }
   }
 
   playBell() {
-    // Ensure volume is set correctly before playing
-    this.audio.volume = this.volumeSubject.value;
+    const audio = new Audio(this.BELL_PATH);
 
-    this.audio.currentTime = 0;
-    this.audio.play().catch(error => {
+    // Track this audio instance
+    this.activeAudios.add(audio);
+
+    // Ensure volume is set correctly before playing
+    audio.volume = this.volumeSubject.value;
+
+    // Remove from tracking when it finishes playing
+    audio.onended = () => {
+      this.activeAudios.delete(audio);
+    };
+
+    audio.play().catch(error => {
       console.warn('Bell audio playback failed. User interaction might be required.', error);
+      // Clean up if playback fails
+      this.activeAudios.delete(audio);
     });
   }
 
   stopBell() {
-    this.audio.pause();
-    this.audio.currentTime = 0;
+    this.activeAudios.forEach(audio => {
+      audio.pause();
+      audio.currentTime = 0;
+    });
+    this.activeAudios.clear();
   }
 
   setVolume(volume: number) {
     // Clamp volume between 0 and 1
     const newVolume = Math.max(0, Math.min(1, volume));
 
-    this.audio.volume = newVolume;
+    // Store the last non-zero volume for the mute toggle
+    if (newVolume > 0) {
+      this.previousVolume = newVolume;
+    }
+
+    this.activeAudios.forEach(audio => {
+      audio.volume = newVolume;
+    });
+
     this.volumeSubject.next(newVolume);
 
     // Update mute state based on volume
@@ -75,7 +98,7 @@ export class BellService {
 
     localStorage.setItem(this.VOLUME_KEY, newVolume.toString());
     localStorage.setItem(this.MUTE_KEY, isMuted.toString());
-  }
+  } 
 
   toggleMute() {
     const isMuted = this.isMutedSubject.value;

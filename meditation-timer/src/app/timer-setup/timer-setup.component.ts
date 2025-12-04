@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, inject, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,7 +12,7 @@ import { TimerService } from '../timer.service';
 @Component({
   selector: 'app-timer-setup',
   standalone: true,
-  imports: [MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule],
+  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule],
   templateUrl: 'timer-setup.html',
   styleUrls: ['timer-setup.css']
 })
@@ -48,6 +49,39 @@ export class TimerSetupComponent {
     this.timerService.updateState({ intervals: val });
   }
 
+  // Start Bells
+  get startBells(): number {
+    return this.timerService.stateSubjectValue.startBells;
+  }
+
+  set startBells(val: number) {
+    this.timerService.updateState({ startBells: val });
+  }
+
+  get startBellInterval(): number {
+    return this.timerService.stateSubjectValue.startBellInterval;
+  }
+
+  set startBellInterval(val: number) {
+    this.timerService.updateState({ startBellInterval: val });
+  }
+
+  // End Bells
+  get endBells(): number {
+    return this.timerService.stateSubjectValue.endBells;
+  }
+
+  set endBells(val: number) {
+    this.timerService.updateState({ endBells: val });
+  }
+
+  get endBellInterval(): number {
+    return this.timerService.stateSubjectValue.endBellInterval;
+  }
+
+  set endBellInterval(val: number) {
+    this.timerService.updateState({ endBellInterval: val });
+  }
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     // Check for '?' key (shift + /)
@@ -63,3 +97,4 @@ export class TimerSetupComponent {
     }
   }
 }
+

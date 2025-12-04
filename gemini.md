@@ -1,7 +1,7 @@
 ## 1. Project Overview
 - **Name:** Meditation Timer SPA  
 - **Framework:** Angular (latest stable, v21)  
-- **Purpose:** Provide a customizable meditation timer with delay, duration, interval bells, and start/stop functionality.  
+- **Purpose:** Provide a customizable meditation timer with delay, duration, interval bells, and start/stop functionality.
 - **Architecture:** Single Page Application (SPA) with modular components and RxJS-based state management.  
 Root folder is C:\dev\meditation\meditation-timer
 ---
@@ -28,7 +28,7 @@ Root folder is C:\dev\meditation\meditation-timer
 - **Theme**
   - Toggle between light and dark mode.
 - **Persistence**
-  - Save user preferences (duration, delay, bells, theme) in local storage.
+  - Save user preferences (duration, delay, bells, theme) in local storage and/or local db.
 
 ---
 
@@ -84,4 +84,5 @@ app-root
 - Preferences persist across sessions.  
 - Dark/light mode toggle works globally.  
 
- 
+## 9. Agent instructions
+- always clarify requirements and make a plan prior to executing changes.
