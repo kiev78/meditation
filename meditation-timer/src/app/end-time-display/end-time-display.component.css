@@ -3,6 +3,8 @@
   font-size: 1rem;
   color: var(--mat-sys-on-surface-variant);
   margin: 0 0 1rem 0;
+  display: flex;
+  justify-content: center;
 }
 
 .end-time span {
@@ -10,6 +12,18 @@
   align-items: center;
 }
 
-.end-time mat-icon {
-  margin-left: 5px;
+.inline-icon {
+  font-size: 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-right: 4px;
+}
+
+.wakelock-icon {
+  margin-left: 8px;
+  color: var(--mat-sys-primary); /* Highlight the active feature */
+}
+
+.separator {
+  margin: 0 8px;
 }
