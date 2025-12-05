@@ -36,9 +36,9 @@ export class SettingsComponent implements OnInit {
 
   // Bell Settings
   startBells: number = 1;
-  startBellInterval: number = 5;
+  startBellIntervals: number[] = [5];
   endBells: number = 1;
-  endBellInterval: number = 5;
+  endBellIntervals: number[] = [5];
 
   async ngOnInit() {
     const settings = this.settingsService.loadSettings();
@@ -59,9 +59,13 @@ export class SettingsComponent implements OnInit {
   private initSettings(settings: Partial<TimerState>) {
     // Bells
     this.startBells = settings.startBells ?? 1;
-    this.startBellInterval = settings.startBellInterval ?? 5;
+    this.startBellIntervals = settings.startBellIntervals || [5];
     this.endBells = settings.endBells ?? 1;
-    this.endBellInterval = settings.endBellInterval ?? 5;
+    this.endBellIntervals = settings.endBellIntervals || [5];
+
+    // Resize arrays to match bell count immediately (just in case of mismatch)
+    this.adjustIntervals(this.startBells, this.startBellIntervals);
+    this.adjustIntervals(this.endBells, this.endBellIntervals);
 
     // Background
     if (settings.backgroundImage) {
@@ -70,12 +74,47 @@ export class SettingsComponent implements OnInit {
       }
   }
 
+  onStartBellsChange(newValue: number) {
+    this.startBells = newValue; // Ensure local model is updated
+    this.adjustIntervals(newValue, this.startBellIntervals);
+    this.updateBellSettings();
+  }
+
+  onEndBellsChange(newValue: number) {
+    this.endBells = newValue; // Ensure local model is updated
+    this.adjustIntervals(newValue, this.endBellIntervals);
+    this.updateBellSettings();
+  }
+
+  // Method to adjust the intervals array based on bell count
+  private adjustIntervals(count: number, intervals: number[]) {
+      const requiredIntervals = Math.max(0, count - 1);
+
+      if (intervals.length < requiredIntervals) {
+          // Add missing intervals
+          while (intervals.length < requiredIntervals) {
+              const lastVal = intervals.length > 0 ? intervals[intervals.length - 1] : 5;
+              intervals.push(lastVal);
+          }
+      } else if (intervals.length > requiredIntervals) {
+          // Remove excess intervals
+          intervals.splice(requiredIntervals);
+      }
+  }
+
+  // Called when array values change
+  // Angular tracks arrays by reference, so mutating elements inside it is fine for bindings,
+  // but we need to trigger save.
+  trackByIndex(index: number, obj: any): any {
+    return index;
+  }
+
   updateBellSettings() {
     this.settingsService.saveSettings({
       startBells: this.startBells,
-      startBellInterval: this.startBellInterval,
+      startBellIntervals: this.startBellIntervals,
       endBells: this.endBells,
-      endBellInterval: this.endBellInterval
+      endBellIntervals: this.endBellIntervals
     });
   }
 

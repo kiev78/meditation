@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Subscription, interval, timer, of, concat, Subject, merge } from 'rxjs';
-import { switchMap, takeWhile, tap, map, filter, take, takeUntil } from 'rxjs/operators';
+import { BehaviorSubject, Subscription, interval, timer, of, concat } from 'rxjs';
+import { switchMap, takeWhile, tap, map, take } from 'rxjs/operators';
 import { TimerState } from './timer-state.interface';
 import { BellService } from './bell.service';
 import { SettingsService } from './settings.service';
@@ -18,9 +18,9 @@ export class TimerService {
     delay: 5,
     intervals: 0,
     startBells: 1,
-    startBellInterval: 5,
+    startBellIntervals: [5], // Default interval for bells > 1
     endBells: 1,
-    endBellInterval: 5,
+    endBellIntervals: [5], // Default interval for bells > 1
     theme: 'light',
     isRunning: false,
     isWakeLockActive: false,
@@ -41,11 +41,6 @@ export class TimerService {
   constructor() {
     this.initSettings();
     this.settingsService.settings$.subscribe((settings) => {
-      // Differentiate between updates originating from here vs external
-      // Since settingsService.settings$ is emitted when saveSettings is called,
-      // and we call saveSettings in updateState, we need to be careful.
-      // However, we updated saveSettings to allow suppressing emit.
-      // Here we assume any emission from settings$ is an "external" change we need to apply.
       this.updateStateInternal(settings);
     });
   }
@@ -54,6 +49,15 @@ export class TimerService {
     const saved = this.settingsService.loadSettings();
     if (saved) {
       const mergedState = { ...this.initialState, ...saved };
+
+      // Ensure arrays are initialized if missing from saved (though migration should handle it)
+      if (!mergedState.startBellIntervals || mergedState.startBellIntervals.length === 0) {
+          mergedState.startBellIntervals = [5];
+      }
+      if (!mergedState.endBellIntervals || mergedState.endBellIntervals.length === 0) {
+          mergedState.endBellIntervals = [5];
+      }
+
       mergedState.remainingTime = mergedState.duration; // Reset to full duration
       mergedState.isRunning = false;
       this.stateSubject.next(mergedState);
@@ -102,7 +106,7 @@ export class TimerService {
         const shouldPlayBell = (delayStream !== null) || isFreshStart;
         if (shouldPlayBell) {
           const state = this.stateSubject.value;
-          this.playBellSequence(state.startBells, state.startBellInterval);
+          this.playBellSequence(state.startBells, state.startBellIntervals);
           this.updateState({ remainingTime: duration });
         }
       }),
@@ -133,7 +137,7 @@ export class TimerService {
              this.checkInterval(val);
              if (val === 0) {
                const state = this.stateSubject.value;
-               this.playBellSequence(state.endBells, state.endBellInterval);
+               this.playBellSequence(state.endBells, state.endBellIntervals);
                this.stop();
              }
            }
@@ -184,30 +188,35 @@ export class TimerService {
     }
   }
 
-  private playBellSequence(count: number, intervalSeconds: number) {
-    // If there is an existing sequence (e.g., start bells overlapped with end bells logic?? Unlikely but safe to clear), clear it.
-    // Actually, start and end sequences shouldn't overlap in normal usage, but if we call this, we probably want to start a new sequence.
+  private playBellSequence(count: number, intervals: number[]) {
     if (this.bellSequenceSubscription) {
         this.bellSequenceSubscription.unsubscribe();
     }
 
-    // Create a stream that emits 'count' times with 'intervalSeconds' delay
-    this.bellSequenceSubscription = timer(0, intervalSeconds * 1000).pipe(
-        take(count)
-    ).subscribe(() => {
+    if (count <= 0) return;
+
+    const observables = [];
+
+    // First bell always rings immediately
+    observables.push(of(null));
+
+    // Subsequent bells
+    // We only have count-1 intervals
+    for (let i = 0; i < count - 1; i++) {
+        const intervalSec = intervals[i] !== undefined ? intervals[i] : 5;
+        // timer(delay) emits after delay and completes.
+        observables.push(timer(intervalSec * 1000));
+    }
+
+    // concat executes them sequentially
+    // of(null) emits, then timer(d1) waits d1 then emits, then timer(d2) waits d2 then emits...
+    this.bellSequenceSubscription = concat(...observables).subscribe(() => {
         this.bellService.playBell();
     });
   }
 
   updateState(newState: Partial<TimerState>) {
     this.updateStateInternal(newState);
-    // When updating state internally, we save to settings, but suppress emission
-    // to avoid the circular loop (SettingsService emitting back to us).
-    // Actually, if we suppress emit in saveSettings, other listeners (if any) won't hear about it.
-    // Ideally we want to emit only if the source wasn't settings$.
-    // For now, let's assume updateState is called by components.
-    // If settings$ emits, we call updateStateInternal directly, bypassing this save.
-    // So we need to split updateState and save.
     this.settingsService.saveSettings(newState, false);
   }
 
@@ -227,7 +236,6 @@ export class TimerService {
         this.wakeLock = await (navigator as any).wakeLock.request('screen');
         this.updateState({ isWakeLockActive: true });
         this.wakeLock.addEventListener('release', () => {
-          // Fired when the wake lock is released, e.g. by switching tabs
           this.updateState({ isWakeLockActive: false });
         });
       } catch (err) {
