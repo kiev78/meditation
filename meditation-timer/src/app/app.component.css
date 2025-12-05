@@ -14,3 +14,12 @@
   flex-direction: row;
   gap: 1rem;
 }
+
+@media (max-width: 600px) {
+  .footer-buttons {
+    left: auto;
+    right: 1rem;
+    bottom: 1rem;
+    flex-direction: column;
+  }
+}

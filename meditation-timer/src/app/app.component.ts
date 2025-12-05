@@ -7,8 +7,10 @@ import { TimerService } from './timer.service';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ImageStorageService } from './image-storage.service';
-import { filter } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -26,8 +28,14 @@ export class AppComponent implements OnInit, OnDestroy {
   private timerService = inject(TimerService);
   private imageStorageService = inject(ImageStorageService);
   private dialog = inject(MatDialog);
+  private breakpointObserver = inject(BreakpointObserver);
   private settingsSubscription: Subscription | undefined;
   backgroundImageUrl: string | undefined;
+
+  isMobile = toSignal(
+    this.breakpointObserver.observe('(max-width: 600px)').pipe(map(result => result.matches)),
+    { initialValue: false }
+  );
 
   toggleDonateDialog() {
     this.dialog.open(DonateDialogComponent);
@@ -71,4 +79,3 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 }
-
