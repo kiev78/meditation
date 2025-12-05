@@ -1,5 +1,5 @@
 import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
-import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd, RouterLink } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
 import { HelpButtonComponent } from './help-button/help-button.component';
 import { DonateDialogComponent } from './donate-dialog/donate-dialog.component';
@@ -16,7 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, CommonModule, HelpButtonComponent, MatButtonModule, MatIconModule],
+  imports: [RouterOutlet, RouterLink, HeaderComponent, CommonModule, HelpButtonComponent, MatButtonModule, MatIconModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
