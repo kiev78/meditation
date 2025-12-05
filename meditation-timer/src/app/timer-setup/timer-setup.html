@@ -12,6 +12,7 @@
         <mat-form-field appearance="outline" class="value-input">
           <input matInput type="number" #durationInput [(ngModel)]="durationMinutes" [disabled]="timerService.stateSubjectValue.isRunning">
         </mat-form-field>
+        <span class="value-text">{{durationMinutes}}</span>
       </div>
     </div>
 
@@ -25,6 +26,7 @@
         <mat-form-field appearance="outline" class="value-input">
           <input matInput type="number" [(ngModel)]="delaySeconds" [disabled]="timerService.stateSubjectValue.isRunning">
         </mat-form-field>
+        <span class="value-text">{{delaySeconds}}</span>
       </div>
     </div>
 
