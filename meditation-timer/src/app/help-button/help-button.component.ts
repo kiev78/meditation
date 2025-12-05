@@ -17,6 +17,12 @@ import { ShortcutsDialogComponent } from '../shortcuts-dialog/shortcuts-dialog.c
     .help-fab {
       z-index: 1000;
     }
+    @media (max-width: 600px) {
+      .help-fab {
+        width: 40px !important;
+        height: 40px !important;
+      }
+    }
   `]
 })
 export class HelpButtonComponent {
