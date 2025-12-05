@@ -8,11 +8,6 @@ import { BellService } from '../bell.service';
 import { AsyncPipe } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-interface MatSliderDragEvent {
-  source: unknown;
-  parent: unknown;
-  value: number;
-}
 @Component({
   selector: 'app-control-buttons',
   standalone: true,
@@ -105,8 +100,10 @@ interface MatSliderDragEvent {
 export class ControlButtonsComponent {
   constructor(public timerService: TimerService, public bellService: BellService) {}
 
-  onVolumeChange(event: MatSliderDragEvent | Event) {
-    this.bellService.setVolume((event as MatSliderDragEvent).value);
+  onVolumeChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const value = parseFloat(target.value);
+    this.bellService.setVolume(value);
   }
 
   getVolumeIcon(volume: number): string {
@@ -120,8 +117,10 @@ export class ControlButtonsComponent {
   }
 
   formatVolumeLabel(value: number): string {
-    let volume = Math.round(value * 100);
-    console.log(volume);
+    if (isNaN(value)) {
+      return '0%';
+    }
+    const volume = Math.round(value * 100);
     return `${volume}%`;
   }
 
