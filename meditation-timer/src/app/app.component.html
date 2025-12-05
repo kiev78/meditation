@@ -5,15 +5,8 @@
   </main>
   <div class="footer-buttons">
     <app-help-button></app-help-button>
-
-    @if (isMobile()) {
-      <button mat-mini-fab color="primary" class="donate-button" (click)="toggleDonateDialog()" aria-label="Donate">
-        <mat-icon>volunteer_activism</mat-icon>
-      </button>
-    } @else {
-      <button mat-fab color="primary" class="donate-button" (click)="toggleDonateDialog()" aria-label="Donate">
-        <mat-icon>volunteer_activism</mat-icon>
-      </button>
-    }
+    <button mat-fab color="primary" class="donate-button" (click)="toggleDonateDialog()" aria-label="Donate">
+      <mat-icon>volunteer_activism</mat-icon>
+    </button>
   </div>
 </div>
