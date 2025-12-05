@@ -10,6 +10,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { SettingsService } from '../settings.service';
 import { ImageStorageService } from '../image-storage.service';
 import { TimerState } from '../timer-state.interface';
+import { TimerService } from '../timer.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-settings',
@@ -30,29 +32,44 @@ import { TimerState } from '../timer-state.interface';
 export class SettingsComponent implements OnInit {
   private settingsService = inject(SettingsService);
   private imageStorageService = inject(ImageStorageService);
+  timerService = inject(TimerService);
 
   backgroundImageUrl: string | undefined;
   mode: 'url' | 'upload' = 'url';
+  isRunning = false;
+  private timerStateSubscription: Subscription | undefined;
 
   // Bell Settings
   startBells: number = 1;
   startBellIntervals: number[] = [5];
   endBells: number = 1;
   endBellIntervals: number[] = [5];
+  intervalMinutes: number = 0;
 
-  async ngOnInit() {
+  ngOnInit() {
     const settings = this.settingsService.loadSettings();
     if (settings) {
       this.initSettings(settings);
     }
 
+    this.timerStateSubscription = this.timerService.state$.subscribe(state => {
+      this.isRunning = state.isRunning;
+    });
+
     // Check IndexedDB for image if no URL is set or mode implies it
     if (!this.backgroundImageUrl) {
-        const imageFile = await this.imageStorageService.getImage();
-        if (imageFile) {
-            this.backgroundImageUrl = URL.createObjectURL(imageFile);
-            this.mode = 'upload';
-        }
+        this.imageStorageService.getImage().then(imageFile => {
+            if (imageFile) {
+                this.backgroundImageUrl = URL.createObjectURL(imageFile);
+                this.mode = 'upload';
+            }
+        });
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.timerStateSubscription) {
+      this.timerStateSubscription.unsubscribe();
     }
   }
 
@@ -62,6 +79,7 @@ export class SettingsComponent implements OnInit {
     this.startBellIntervals = settings.startBellIntervals || [5];
     this.endBells = settings.endBells ?? 1;
     this.endBellIntervals = settings.endBellIntervals || [5];
+    this.intervalMinutes = settings.intervals ?? 0;
 
     // Resize arrays to match bell count immediately (just in case of mismatch)
     this.adjustIntervals(this.startBells, this.startBellIntervals);
@@ -72,6 +90,10 @@ export class SettingsComponent implements OnInit {
         this.backgroundImageUrl = settings.backgroundImage;
         this.mode = 'url';
       }
+  }
+  
+  updateIntervalMinutes() {
+    this.settingsService.saveSettings({ intervals: this.intervalMinutes });
   }
 
   onStartBellsChange(newValue: number) {

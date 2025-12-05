@@ -28,17 +28,5 @@
       </div>
     </div>
 
-    <!-- Interval Bells Slider -->
-    <div class="control-row">
-      <mat-label>Interval Bells (min)</mat-label>
-      <div class="slider-input-group">
-        <mat-slider min="0" max="60" step="5" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
-          <input matSliderThumb [(ngModel)]="intervalMinutes">
-        </mat-slider>
-        <mat-form-field appearance="outline" class="value-input">
-          <input matInput type="number" [(ngModel)]="intervalMinutes" [disabled]="timerService.stateSubjectValue.isRunning">
-        </mat-form-field>
-      </div>
-    </div>
   </div>
 </div>
