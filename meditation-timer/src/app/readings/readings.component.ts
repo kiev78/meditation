@@ -75,6 +75,6 @@ export class ReadingsComponent implements AfterViewInit, OnDestroy {
   }
 
   scrollTo(fragment: string): void {
-    this.contentEl.nativeElement.querySelector('#' + fragment)?.scrollIntoView({ behavior: 'smooth' });
+    this.contentEl.nativeElement.querySelector('#' + fragment)?.scrollIntoView({ behavior: 'auto' });
   }
 }
