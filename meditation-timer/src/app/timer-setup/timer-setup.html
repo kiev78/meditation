@@ -1,42 +1,44 @@
 <div class="setup-container">
   <h3 matTooltip="Settings (s)">Timer Setup</h3>
 
-  <!-- Duration Slider -->
-  <div class="control-row">
-    <mat-label>Duration (min)</mat-label>
-    <div class="slider-input-group">
-      <mat-slider min="1" max="180" step="1" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
-        <input matSliderThumb [(ngModel)]="durationMinutes">
-      </mat-slider>
-      <mat-form-field appearance="outline" class="value-input">
-        <input matInput type="number" #durationInput [(ngModel)]="durationMinutes" [disabled]="timerService.stateSubjectValue.isRunning">
-      </mat-form-field>
+  <div class="controls-wrapper">
+    <!-- Duration Slider -->
+    <div class="control-row">
+      <mat-label>Duration (min)</mat-label>
+      <div class="slider-input-group">
+        <mat-slider min="1" max="180" step="1" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
+          <input matSliderThumb [(ngModel)]="durationMinutes">
+        </mat-slider>
+        <mat-form-field appearance="outline" class="value-input">
+          <input matInput type="number" #durationInput [(ngModel)]="durationMinutes" [disabled]="timerService.stateSubjectValue.isRunning">
+        </mat-form-field>
+      </div>
     </div>
-  </div>
 
-  <!-- Delay Slider -->
-  <div class="control-row">
-    <mat-label>Delay (sec)</mat-label>
-    <div class="slider-input-group">
-      <mat-slider min="0" max="60" step="1" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
-        <input matSliderThumb [(ngModel)]="delaySeconds">
-      </mat-slider>
-      <mat-form-field appearance="outline" class="value-input">
-        <input matInput type="number" [(ngModel)]="delaySeconds" [disabled]="timerService.stateSubjectValue.isRunning">
-      </mat-form-field>
+    <!-- Delay Slider -->
+    <div class="control-row">
+      <mat-label>Delay (sec)</mat-label>
+      <div class="slider-input-group">
+        <mat-slider min="0" max="60" step="1" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
+          <input matSliderThumb [(ngModel)]="delaySeconds">
+        </mat-slider>
+        <mat-form-field appearance="outline" class="value-input">
+          <input matInput type="number" [(ngModel)]="delaySeconds" [disabled]="timerService.stateSubjectValue.isRunning">
+        </mat-form-field>
+      </div>
     </div>
-  </div>
 
-  <!-- Interval Bells Slider -->
-  <div class="control-row">
-    <mat-label>Interval Bells (min)</mat-label>
-    <div class="slider-input-group">
-      <mat-slider min="0" max="60" step="5" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
-        <input matSliderThumb [(ngModel)]="intervalMinutes">
-      </mat-slider>
-      <mat-form-field appearance="outline" class="value-input">
-        <input matInput type="number" [(ngModel)]="intervalMinutes" [disabled]="timerService.stateSubjectValue.isRunning">
-      </mat-form-field>
+    <!-- Interval Bells Slider -->
+    <div class="control-row">
+      <mat-label>Interval Bells (min)</mat-label>
+      <div class="slider-input-group">
+        <mat-slider min="0" max="60" step="5" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
+          <input matSliderThumb [(ngModel)]="intervalMinutes">
+        </mat-slider>
+        <mat-form-field appearance="outline" class="value-input">
+          <input matInput type="number" [(ngModel)]="intervalMinutes" [disabled]="timerService.stateSubjectValue.isRunning">
+        </mat-form-field>
+      </div>
     </div>
   </div>
 </div>
