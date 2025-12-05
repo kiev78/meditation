@@ -106,3 +106,18 @@ a:hover {
 }
 
 img{float: right;}
+@media (max-width: 600px) {
+  .page-container {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .toc-nav {
+    position: static;
+    max-height: none;
+    padding-right: 0;
+    overflow-y: visible;
+    margin-bottom: 1rem;
+  }
+}
