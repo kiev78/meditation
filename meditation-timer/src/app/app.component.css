@@ -22,4 +22,9 @@
     bottom: 1rem;
     flex-direction: column;
   }
+
+  .donate-button {
+    width: 40px !important;
+    height: 40px !important;
+  }
 }
