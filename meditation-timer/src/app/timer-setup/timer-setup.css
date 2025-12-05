@@ -3,18 +3,11 @@
   flex-direction: column;
   gap: 1rem;
   padding: 1rem;
-  max-width: 800px; 
+  width: 100%; /* Ensure container takes full width */
   margin: 0 auto;
   text-align: center;
   align-items: center;
   box-sizing: border-box; /* Include padding in width */
-}
-
-@media (max-width: 800px) {
-  .setup-container {
-    padding: 0.5rem;
-    width: 100%;
-  }
 }
 
 .setup-container h3 {
@@ -47,10 +40,19 @@
 
 .expanded-slider {
   flex-grow: 1;
+  min-width: 50px; /* Allow slider to shrink properly */
 }
 
 .value-input {
   width: 80px;
+}
+
+.value-text {
+  display: none; /* Hidden by default */
+  font-weight: 500;
+  font-size: 1.1rem;
+  min-width: 2rem;
+  text-align: right;
 }
 
 /* Hide default number input spinners */
@@ -64,7 +66,7 @@ input[type=number] {
   text-align: center;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 600px) {
   .controls-wrapper {
     flex-direction: column; /* Stack vertically */
     gap: 1.5rem;
@@ -73,5 +75,15 @@ input[type=number] {
   .control-row {
     width: 100%;
     max-width: none; /* Ensure full width */
+  }
+}
+
+@media (max-width: 450px) {
+  .value-input {
+    display: none;
+  }
+
+  .value-text {
+    display: block;
   }
 }

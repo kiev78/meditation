@@ -59,7 +59,15 @@
   }
 
   .footer-actions {
-    flex-direction: row;
+    flex-direction: row; /* Keep buttons side-by-side or stack them? "stack them" was for sliders, but previously buttons stacked. */
+    /* User said "move the buttons to the footer... and then make sliders fit on one line... until 600 px breakpoint and then stack them"
+       The "stack them" likely referred to sliders.
+       However, memory says "On mobile screens (<600px), the Help and Donate buttons... shift to the bottom-right, stack vertically".
+       Since they are now in the footer, maybe side-by-side is better for height?
+       But let's look at the request: "header shifts... can we try creating a footer... and move the buttons to the footer".
+       The user didn't explicitly say "stack buttons in footer".
+       I'll keep them side-by-side in footer for compactness unless space is tight.
+    */
     justify-content: center;
   }
 
