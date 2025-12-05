@@ -40,7 +40,22 @@ export class SettingsService {
   loadSettings(): Partial<TimerState> | null {
     try {
       const stored = localStorage.getItem(this.STORAGE_KEY);
-      return stored ? JSON.parse(stored) : null;
+      if (!stored) return null;
+
+      const parsed = JSON.parse(stored);
+
+      // Migration: Convert single number intervals to arrays if needed
+      if (typeof parsed.startBellInterval === 'number' && !parsed.startBellIntervals) {
+        parsed.startBellIntervals = [parsed.startBellInterval];
+        delete parsed.startBellInterval;
+      }
+
+      if (typeof parsed.endBellInterval === 'number' && !parsed.endBellIntervals) {
+        parsed.endBellIntervals = [parsed.endBellInterval];
+        delete parsed.endBellInterval;
+      }
+
+      return parsed;
     } catch (e) {
       console.error('Error loading settings from localStorage', e);
       return null;

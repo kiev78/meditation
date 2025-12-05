@@ -4,9 +4,9 @@ export interface TimerState {
   delay: number; // Start delay in seconds
   intervals: number; // Interval bell frequency in minutes
   startBells: number; // Number of bells to ring at start
-  startBellInterval: number; // Seconds between start bells
+  startBellIntervals: number[]; // Seconds between start bells (array)
   endBells: number; // Number of bells to ring at end
-  endBellInterval: number; // Seconds between end bells
+  endBellIntervals: number[]; // Seconds between end bells (array)
   theme: 'light' | 'dark';
   isRunning: boolean;
   isWakeLockActive: boolean;

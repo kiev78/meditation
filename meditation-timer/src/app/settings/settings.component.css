@@ -13,26 +13,24 @@
 .settings-section h3 {
   margin-top: 0;
   margin-bottom: 1rem;
-  color: #333; /* Or use theme color if available */
 }
 
-/* Dark mode support logic usually handled by global theme styles,
-   but we can try to be neutral or rely on material classes */
-
 .control-group {
+  margin-bottom: 2rem;
   display: flex;
-  margin-bottom: 1.5rem;
+  flex-direction: column;
 }
 
 .control-group h4 {
   margin-top: 0;
-  margin-bottom: 0.5rem;
-  font-size: 1rem;
-  opacity: 0.8;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 500;
 }
 
 .control-row {
-  gap: 0.25rem;
+  display: flex;
+  flex-direction: column;
   margin-bottom: 1rem;
 }
 
@@ -45,6 +43,11 @@
 
 .slider {
   flex-grow: 1;
+}
+
+.value-display {
+    min-width: 30px;
+    text-align: right;
 }
 
 /* Background Section */

@@ -40,15 +40,6 @@ export class TimerSetupComponent {
     this.timerService.updateState({ delay: val });
   }
 
-  // Helper to handle intervals in minutes
-  get intervalMinutes(): number {
-    return this.timerService.stateSubjectValue.intervals;
-  }
-
-  set intervalMinutes(val: number) {
-    this.timerService.updateState({ intervals: val });
-  }
-
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     // Check for '?' key (shift + /)

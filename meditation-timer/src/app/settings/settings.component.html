@@ -6,28 +6,55 @@
     <h3>Bell Configuration</h3>
 
     <div class="control-group">
+
+      <!-- Interval Bells Slider -->
+      <div class="control-row">
+        <mat-label>Interval Bells (min)</mat-label>
+        <div class="slider-input-group">
+          <mat-slider min="0" max="60" step=".5" [disabled]="isRunning" class="slider">
+            <input
+              matSliderThumb
+              [(ngModel)]="intervalMinutes"
+              (ngModelChange)="updateIntervalMinutes()"
+            />
+          </mat-slider>
+          <span class="value-display">{{ intervalMinutes }}</span>
+        </div>
+      </div>
+
+      <!-- Start Bells Slider -->
       <h4>Start Bells</h4>
       <div class="control-row">
         <mat-label>Count</mat-label>
         <div class="slider-input-group">
-          <mat-slider min="0" max="5" step="1" class="slider">
-            <input matSliderThumb [(ngModel)]="startBells" (valueChange)="updateBellSettings()" />
+          <mat-slider min="0" max="10" step="1" [disabled]="isRunning" class="slider">
+            <input
+              matSliderThumb
+              [(ngModel)]="startBells"
+              (valueChange)="onStartBellsChange($event)"
+            />
           </mat-slider>
+          <span class="value-display">{{ startBells }}</span>
         </div>
       </div>
 
-      <div class="control-row" *ngIf="startBells > 1">
-        <mat-label>Interval (sec)</mat-label>
-        <div class="slider-input-group">
-          <mat-slider min="1" max="60" step="1" class="slider">
-            <input
-              matSliderThumb
-              [(ngModel)]="startBellInterval"
-              (valueChange)="updateBellSettings()"
-            />
-          </mat-slider>
+      <ng-container
+        *ngFor="let interval of startBellIntervals; let i = index; trackBy: trackByIndex"
+      >
+        <div class="control-row">
+          <mat-label>Interval {{ i + 1 }} (sec)</mat-label>
+          <div class="slider-input-group">
+            <mat-slider min="1" max="60" step="1" [disabled]="isRunning" class="slider">
+              <input
+                matSliderThumb
+                [(ngModel)]="startBellIntervals[i]"
+                (valueChange)="updateBellSettings()"
+              />
+            </mat-slider>
+            <span class="value-display">{{ startBellIntervals[i] }}s</span>
+          </div>
         </div>
-      </div>
+      </ng-container>
     </div>
 
     <div class="control-group">
@@ -35,24 +62,28 @@
       <div class="control-row">
         <mat-label>Count</mat-label>
         <div class="slider-input-group">
-          <mat-slider min="0" max="10" step="1" class="slider">
-            <input matSliderThumb [(ngModel)]="endBells" (valueChange)="updateBellSettings()" />
+          <mat-slider min="0" max="10" step="1" [disabled]="isRunning" class="slider">
+            <input matSliderThumb [(ngModel)]="endBells" (valueChange)="onEndBellsChange($event)" />
           </mat-slider>
+          <span class="value-display">{{ endBells }}</span>
         </div>
       </div>
 
-      <div class="control-row" *ngIf="endBells > 1">
-        <mat-label>Interval (sec)</mat-label>
-        <div class="slider-input-group">
-          <mat-slider min="1" max="60" step="1" class="slider">
-            <input
-              matSliderThumb
-              [(ngModel)]="endBellInterval"
-              (valueChange)="updateBellSettings()"
-            />
-          </mat-slider>
+      <ng-container *ngFor="let interval of endBellIntervals; let i = index; trackBy: trackByIndex">
+        <div class="control-row">
+          <mat-label>Interval {{ i + 1 }} (sec)</mat-label>
+          <div class="slider-input-group">
+            <mat-slider min="1" max="60" step="1" [disabled]="isRunning" class="slider">
+              <input
+                matSliderThumb
+                [(ngModel)]="endBellIntervals[i]"
+                (valueChange)="updateBellSettings()"
+              />
+            </mat-slider>
+            <span class="value-display">{{ endBellIntervals[i] }}s</span>
+          </div>
         </div>
-      </div>
+      </ng-container>
     </div>
   </section>
 
@@ -94,7 +125,7 @@
       <button mat-raised-button color="primary" (click)="clearBackground()">
         Clear Background
       </button>
-      <button mat-raised-button color="primary" (click)="saveSettings()">Save Settings</button>
+      <button mat-raised-button color="primary" (click)="saveSettings()">Save Background</button>
     </div>
     @if(backgroundImageUrl){
     <div class="preview">
