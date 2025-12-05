@@ -3,11 +3,18 @@
   flex-direction: column;
   gap: 1rem;
   padding: 1rem;
-  width: 100%; /* Ensure container takes full width */
+  max-width: 800px; 
   margin: 0 auto;
   text-align: center;
   align-items: center;
   box-sizing: border-box; /* Include padding in width */
+}
+
+@media (max-width: 800px) {
+  .setup-container {
+    padding: 0.5rem;
+    width: 100%;
+  }
 }
 
 .setup-container h3 {
@@ -57,7 +64,7 @@ input[type=number] {
   text-align: center;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 800px) {
   .controls-wrapper {
     flex-direction: column; /* Stack vertically */
     gap: 1.5rem;
