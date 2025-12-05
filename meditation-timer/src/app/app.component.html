@@ -3,10 +3,16 @@
   <main class="content">
     <router-outlet></router-outlet>
   </main>
-  <div class="footer-buttons">
-    <app-help-button></app-help-button>
-    <button mat-fab color="primary" class="donate-button" (click)="toggleDonateDialog()" aria-label="Donate">
-      <mat-icon>volunteer_activism</mat-icon>
-    </button>
-  </div>
+  <footer class="app-footer">
+    <div class="footer-content">
+      <span>Copyright BSBC 2025</span>
+      <a routerLink="/" class="footer-link">BSBC</a>
+    </div>
+    <div class="footer-actions">
+      <app-help-button></app-help-button>
+      <button mat-fab color="primary" class="donate-button" (click)="toggleDonateDialog()" aria-label="Donate">
+        <mat-icon>volunteer_activism</mat-icon>
+      </button>
+    </div>
+  </footer>
 </div>
