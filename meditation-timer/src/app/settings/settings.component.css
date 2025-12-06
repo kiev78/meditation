@@ -15,17 +15,44 @@
   margin-bottom: 1rem;
 }
 
-.control-group {
-  margin-bottom: 2rem;
+/* Bell Configuration Layout */
+.bell-config-container {
   display: flex;
   flex-direction: column;
+  gap: 2rem;
 }
 
-.control-group h4 {
+.bell-section {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.count-column {
+  flex: 0 0 40%; /* Left column takes 40% width */
+  min-width: 250px;
+}
+
+.intervals-column {
+  flex: 1; /* Right column takes remaining space */
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+:host-context(body.dark-theme) .intervals-column {
+  border-color: rgba(255, 255, 255, 0.12);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.intervals-column h4 {
   margin-top: 0;
   margin-bottom: 1rem;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 500;
+  opacity: 0.8;
 }
 
 .control-row {
@@ -88,4 +115,21 @@
 mat-radio-group {
   display: flex;
   gap: 1rem;
+}
+
+@media (max-width: 700px) {
+  .bell-section {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .count-column {
+    width: 100%;
+    flex: none;
+  }
+
+  .intervals-column {
+    width: 100%;
+    box-sizing: border-box; /* Ensure padding doesn't overflow width */
+  }
 }

@@ -1,27 +1,32 @@
 .logo-title-group {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .header-logo {
-      height: 40px;
-    }
-     .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    .spacer {
-      flex: 1 1 auto;
-    }
-    .title {
-      cursor: pointer;
-      font-weight: 500;
-    }
-    nav {
-      margin-right: 16px;
-    }
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.header-logo {
+  height: 40px;
+}
+.spacer {
+  flex: 1 1 auto;
+}
+.title {
+  cursor: pointer;
+  font-weight: 500;
+}
+nav {
+  margin-right: 16px;
+}
 
-    :host-context(body.dark-theme) .header-logo {
-      filter: invert(1);
-    }
+:host-context(body.dark-theme) .header-logo {
+  filter: invert(1);
+}
+
+/* Make the header sticky on desktop */
+@media (min-width: 600px) {
+  :host {
+    display: block; /* Ensure it behaves like a block for sticky positioning */
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+}

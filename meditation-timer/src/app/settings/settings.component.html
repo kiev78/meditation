@@ -5,9 +5,9 @@
   <section class="settings-section">
     <h3>Bell Configuration</h3>
 
-    <div class="control-group">
+    <div class="bell-config-container">
 
-      <!-- Interval Bells Slider -->
+      <!-- Interval Bells -->
       <div class="control-row">
         <mat-label>Interval Bells (min)</mat-label>
         <div class="slider-input-group">
@@ -22,68 +22,82 @@
         </div>
       </div>
 
-      <!-- Start Bells Slider -->
+      <!-- Start Bells -->
       <h4>Start Bells</h4>
-      <div class="control-row">
-        <mat-label>Count</mat-label>
-        <div class="slider-input-group">
-          <mat-slider min="0" max="10" step="1" [disabled]="isRunning" class="slider">
-            <input
-              matSliderThumb
-              [(ngModel)]="startBells"
-              (valueChange)="onStartBellsChange($event)"
-            />
-          </mat-slider>
-          <span class="value-display">{{ startBells }}</span>
+      <div class="bell-section">
+        <div class="count-column">
+           <div class="control-row">
+            <mat-label>Count</mat-label>
+            <div class="slider-input-group">
+              <mat-slider min="0" max="10" step="1" [disabled]="isRunning" class="slider">
+                <input
+                  matSliderThumb
+                  [(ngModel)]="startBells"
+                  (valueChange)="onStartBellsChange($event)"
+                />
+              </mat-slider>
+              <span class="value-display">{{ startBells }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="intervals-column" *ngIf="startBellIntervals.length > 0">
+          <h4>Intervals between bells</h4>
+          <ng-container
+            *ngFor="let interval of startBellIntervals; let i = index; trackBy: trackByIndex"
+          >
+            <div class="control-row">
+              <mat-label>Interval {{ i + 1 }} (sec)</mat-label>
+              <div class="slider-input-group">
+                <mat-slider min="1" max="60" step="1" [disabled]="isRunning" class="slider">
+                  <input
+                    matSliderThumb
+                    [(ngModel)]="startBellIntervals[i]"
+                    (valueChange)="updateBellSettings()"
+                  />
+                </mat-slider>
+                <span class="value-display">{{ startBellIntervals[i] }}s</span>
+              </div>
+            </div>
+          </ng-container>
         </div>
       </div>
 
-      <ng-container
-        *ngFor="let interval of startBellIntervals; let i = index; trackBy: trackByIndex"
-      >
-        <div class="control-row">
-          <mat-label>Interval {{ i + 1 }} (sec)</mat-label>
-          <div class="slider-input-group">
-            <mat-slider min="1" max="60" step="1" [disabled]="isRunning" class="slider">
-              <input
-                matSliderThumb
-                [(ngModel)]="startBellIntervals[i]"
-                (valueChange)="updateBellSettings()"
-              />
-            </mat-slider>
-            <span class="value-display">{{ startBellIntervals[i] }}s</span>
-          </div>
-        </div>
-      </ng-container>
-    </div>
-
-    <div class="control-group">
+      <!-- End Bells -->
       <h4>End Bells</h4>
-      <div class="control-row">
-        <mat-label>Count</mat-label>
-        <div class="slider-input-group">
-          <mat-slider min="0" max="10" step="1" [disabled]="isRunning" class="slider">
-            <input matSliderThumb [(ngModel)]="endBells" (valueChange)="onEndBellsChange($event)" />
-          </mat-slider>
-          <span class="value-display">{{ endBells }}</span>
+      <div class="bell-section">
+        <div class="count-column">
+          <div class="control-row">
+            <mat-label>Count</mat-label>
+            <div class="slider-input-group">
+              <mat-slider min="0" max="10" step="1" [disabled]="isRunning" class="slider">
+                <input matSliderThumb [(ngModel)]="endBells" (valueChange)="onEndBellsChange($event)" />
+              </mat-slider>
+              <span class="value-display">{{ endBells }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="intervals-column" *ngIf="endBellIntervals.length > 0">
+          <h4>Intervals between bells</h4>
+          <ng-container *ngFor="let interval of endBellIntervals; let i = index; trackBy: trackByIndex">
+            <div class="control-row">
+              <mat-label>Interval {{ i + 1 }} (sec)</mat-label>
+              <div class="slider-input-group">
+                <mat-slider min="1" max="60" step="1" [disabled]="isRunning" class="slider">
+                  <input
+                    matSliderThumb
+                    [(ngModel)]="endBellIntervals[i]"
+                    (valueChange)="updateBellSettings()"
+                  />
+                </mat-slider>
+                <span class="value-display">{{ endBellIntervals[i] }}s</span>
+              </div>
+            </div>
+          </ng-container>
         </div>
       </div>
 
-      <ng-container *ngFor="let interval of endBellIntervals; let i = index; trackBy: trackByIndex">
-        <div class="control-row">
-          <mat-label>Interval {{ i + 1 }} (sec)</mat-label>
-          <div class="slider-input-group">
-            <mat-slider min="1" max="60" step="1" [disabled]="isRunning" class="slider">
-              <input
-                matSliderThumb
-                [(ngModel)]="endBellIntervals[i]"
-                (valueChange)="updateBellSettings()"
-              />
-            </mat-slider>
-            <span class="value-display">{{ endBellIntervals[i] }}s</span>
-          </div>
-        </div>
-      </ng-container>
     </div>
   </section>
 
