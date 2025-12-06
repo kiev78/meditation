@@ -3,13 +3,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ShortcutsDialogComponent } from '../shortcuts-dialog/shortcuts-dialog.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-help-button',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule, MatDialogModule],
+  imports: [MatButtonModule, MatIconModule, MatDialogModule, MatTooltipModule],
   template: `
-    <button mat-fab color="primary" class="help-fab" (click)="openHelp()" aria-label="Keyboard Shortcuts">
+    <button mat-fab color="primary" class="help-fab" (click)="openHelp()" aria-label="Keyboard Shortcuts" matTooltip="Keyboard Shortcuts (?)">
       <mat-icon>keyboard</mat-icon>
     </button>
   `,
