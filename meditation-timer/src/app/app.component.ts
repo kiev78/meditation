@@ -1,24 +1,19 @@
 import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd, RouterLink } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
-import { HelpButtonComponent } from './help-button/help-button.component';
+import { FooterComponent } from './footer/footer.component';
+import { CommonModule } from '@angular/common';
+import { MatDialog } from '@angular/material/dialog';
+import { Subscription, filter } from 'rxjs';
+import { TimerService } from './timer.service';
+import { ImageStorageService } from './image-storage.service';
 import { DonateDialogComponent } from './donate-dialog/donate-dialog.component';
 import { ShortcutsDialogComponent } from './shortcuts-dialog/shortcuts-dialog.component';
-import { TimerService } from './timer.service';
-import { Subscription } from 'rxjs';
-import { CommonModule } from '@angular/common';
-import { ImageStorageService } from './image-storage.service';
-import { filter } from 'rxjs/operators';
-import { MatDialog } from '@angular/material/dialog';
-
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, CommonModule, HelpButtonComponent, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [RouterOutlet, HeaderComponent, CommonModule, FooterComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

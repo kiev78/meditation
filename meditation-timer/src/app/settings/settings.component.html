@@ -11,7 +11,7 @@
       <div class="control-row">
         <mat-label>Interval Bells (sound the bell every x minutes)</mat-label>
         <div class="slider-input-group">
-          <mat-slider min="0" max="60" step=".5" [disabled]="isRunning" class="slider">
+          <mat-slider min="0" max="30" step="1" [disabled]="isRunning" class="slider">
             <input
               matSliderThumb
               [(ngModel)]="intervalMinutes"
@@ -28,7 +28,7 @@
            <div class="control-row">
             <mat-label>How many starting bells:</mat-label>
             <div class="slider-input-group">
-              <mat-slider min="0" max="10" step="1" [disabled]="isRunning" class="slider">
+              <mat-slider min="0" max="5" step="1" [disabled]="isRunning" class="slider">
                 <input
                   matSliderThumb
                   [(ngModel)]="startBells"
@@ -48,7 +48,7 @@
             <div class="control-row">
               <mat-label>Interval {{ i + 1 }} (sec)</mat-label>
               <div class="slider-input-group">
-                <mat-slider min="1" max="60" step="1" [disabled]="isRunning" class="slider">
+                <mat-slider min="1" max="30" step="1" [disabled]="isRunning" class="slider">
                   <input
                     matSliderThumb
                     [(ngModel)]="startBellIntervals[i]"
@@ -68,7 +68,7 @@
           <div class="control-row">
             <mat-label>How many ending bells:</mat-label>
             <div class="slider-input-group">
-              <mat-slider min="0" max="10" step="1" [disabled]="isRunning" class="slider">
+              <mat-slider min="0" max="5" step="1" [disabled]="isRunning" class="slider">
                 <input matSliderThumb [(ngModel)]="endBells" (valueChange)="onEndBellsChange($event)" />
               </mat-slider>
               <span class="value-display">{{ endBells }}</span>
@@ -82,7 +82,7 @@
             <div class="control-row">
               <mat-label>Interval {{ i + 1 }} (sec)</mat-label>
               <div class="slider-input-group">
-                <mat-slider min="1" max="60" step="1" [disabled]="isRunning" class="slider">
+                <mat-slider min="1" max="30" step="1" [disabled]="isRunning" class="slider">
                   <input
                     matSliderThumb
                     [(ngModel)]="endBellIntervals[i]"

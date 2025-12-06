@@ -21,7 +21,7 @@ export class TimerService {
     startBellIntervals: [5], // Default interval for bells > 1
     endBells: 1,
     endBellIntervals: [5], // Default interval for bells > 1
-    theme: 'light',
+    theme: 'dark',
     isRunning: false,
     isWakeLockActive: false,
   };
