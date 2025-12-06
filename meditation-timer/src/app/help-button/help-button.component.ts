@@ -15,7 +15,10 @@ import { ShortcutsDialogComponent } from '../shortcuts-dialog/shortcuts-dialog.c
   `,
   styles: [`
     .help-fab {
-      z-index: 1000;
+      z-index: 1000;    
+      background-color: transparent !important;
+      border: 2px solid currentColor !important;
+      box-shadow: none !important;
     }
     @media (max-width: 600px) {
       .help-fab {

@@ -70,14 +70,14 @@
 
 /* Target the outline to make it pill-shaped */
 .value-input ::ng-deep .mdc-notched-outline__leading {
-  border-top-left-radius: 999px !important;
-  border-bottom-left-radius: 999px !important;
+  border-top-left-radius: 12px !important;
+  border-bottom-left-radius: 12px !important;
   width: 12px !important;
 }
 
 .value-input ::ng-deep .mdc-notched-outline__trailing {
-  border-top-right-radius: 999px !important;
-  border-bottom-right-radius: 999px !important;
+  border-top-right-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
 }
 
 .value-input ::ng-deep .mdc-notched-outline__notch {

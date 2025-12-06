@@ -23,11 +23,10 @@
       </div>
 
       <!-- Start Bells -->
-      <h4>Start Bells</h4>
       <div class="bell-section">
         <div class="count-column">
            <div class="control-row">
-            <mat-label>Count</mat-label>
+            <mat-label>How many starting bells:</mat-label>
             <div class="slider-input-group">
               <mat-slider min="0" max="10" step="1" [disabled]="isRunning" class="slider">
                 <input
@@ -42,7 +41,7 @@
         </div>
 
         <div class="intervals-column" *ngIf="startBellIntervals.length > 0">
-          <h4>Intervals between bells</h4>
+          <h4>Intervals between starting bells</h4>
           <ng-container
             *ngFor="let interval of startBellIntervals; let i = index; trackBy: trackByIndex"
           >
@@ -64,11 +63,10 @@
       </div>
 
       <!-- End Bells -->
-      <h4>End Bells</h4>
       <div class="bell-section">
         <div class="count-column">
           <div class="control-row">
-            <mat-label>Count</mat-label>
+            <mat-label>How many ending bells:</mat-label>
             <div class="slider-input-group">
               <mat-slider min="0" max="10" step="1" [disabled]="isRunning" class="slider">
                 <input matSliderThumb [(ngModel)]="endBells" (valueChange)="onEndBellsChange($event)" />
@@ -79,7 +77,7 @@
         </div>
 
         <div class="intervals-column" *ngIf="endBellIntervals.length > 0">
-          <h4>Intervals between bells</h4>
+          <h4>Intervals between ending bells</h4>
           <ng-container *ngFor="let interval of endBellIntervals; let i = index; trackBy: trackByIndex">
             <div class="control-row">
               <mat-label>Interval {{ i + 1 }} (sec)</mat-label>
