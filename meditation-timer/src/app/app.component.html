@@ -5,12 +5,13 @@
   </main>
   <footer class="app-footer">
     <div class="footer-content">
-      <span>Copyright BSBC 2025</span>
-      <a routerLink="/" class="footer-link">BSBC</a>
+      <img src="logo.png" alt="Meditation Timer Logo" class="footer-logo" routerLink="/" />
+      <a href="https://buddhistsangha.com/" class="footer-link">Buddhist Sangha of Bucks County</a> 2025
     </div>
     <div class="footer-actions">
       <app-help-button></app-help-button>
-      <button mat-fab color="primary" class="donate-button" (click)="toggleDonateDialog()" aria-label="Donate" matTooltip="Donate (d)">
+      <button mat-fab class="donate-button"
+       (click)="toggleDonateDialog()" aria-label="Donate" matTooltip="Donate (d)">
         <mat-icon>volunteer_activism</mat-icon>
       </button>
     </div>
