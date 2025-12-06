@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { Component, inject, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -38,16 +38,5 @@ export class TimerSetupComponent {
 
   set delaySeconds(val: number) {
     this.timerService.updateState({ delay: val });
-  }
-
-  @HostListener('document:keydown', ['$event'])
-  handleKeyboardEvent(event: KeyboardEvent) {
-    // Check for '?' key (shift + /)
-    if (event.key === '?') {
-       if (document.activeElement?.tagName !== 'INPUT') {
-          event.preventDefault();
-          this.durationInput.nativeElement.focus();
-       }
-    }
   }
 }

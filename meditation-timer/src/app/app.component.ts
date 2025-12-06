@@ -3,6 +3,7 @@ import { RouterOutlet, Router, NavigationEnd, RouterLink } from '@angular/router
 import { HeaderComponent } from './header/header.component';
 import { HelpButtonComponent } from './help-button/help-button.component';
 import { DonateDialogComponent } from './donate-dialog/donate-dialog.component';
+import { ShortcutsDialogComponent } from './shortcuts-dialog/shortcuts-dialog.component';
 import { TimerService } from './timer.service';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -12,11 +13,12 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, HeaderComponent, CommonModule, HelpButtonComponent, MatButtonModule, MatIconModule],
+  imports: [RouterOutlet, RouterLink, HeaderComponent, CommonModule, HelpButtonComponent, MatButtonModule, MatIconModule, MatTooltipModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -31,6 +33,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
   toggleDonateDialog() {
     this.dialog.open(DonateDialogComponent);
+  }
+
+  openShortcutsDialog() {
+    this.dialog.open(ShortcutsDialogComponent, {
+        width: '400px',
+        autoFocus: false
+    });
   }
 
   ngOnInit() {
@@ -63,11 +72,23 @@ export class AppComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    // Navigation shortcuts
+    // Ignore keyboard shortcuts when typing in an input field
+    const activeElement = document.activeElement as HTMLElement;
+    if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.isContentEditable)) {
+      return;
+    }
+
+    // Navigation and Action shortcuts
     if (event.key === 't' || event.key === 'T') {
       this.router.navigate(['/']);
     } else if (event.key === 'r' || event.key === 'R') {
       this.router.navigate(['/readings']);
+    } else if (event.key === 'd' || event.key === 'D') {
+      this.toggleDonateDialog();
+    } else if (event.key === 's' || event.key === 'S') {
+      this.router.navigate(['/settings']);
+    } else if (event.key === '?') {
+      this.openShortcutsDialog();
     }
   }
 }
