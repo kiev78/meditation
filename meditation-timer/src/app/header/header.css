@@ -1,55 +1,75 @@
-:host-context(body) {
-  border-bottom: 1px solid #b5b5b5;
-}
 .logo-title-group {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-}
-.header-logo {
-  height: 40px;
   cursor: pointer;
 }
+
+.header-logo {
+  height: 40px;
+  margin-right: 12px;
+}
+
+.title {
+  font-weight: 500;
+  font-size: 1.2rem;
+}
+
 .spacer {
   flex: 1 1 auto;
 }
-.title {
-  cursor: pointer;
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Ensure MatButton text is visible and aligned */
+nav button {
+  text-transform: uppercase;
   font-weight: 500;
 }
-nav {
-  margin-right: 16px;
+
+app-theme-toggle {
+  margin-left: 8px;
 }
 
-:host-context(body.dark-theme) .header-logo {
-  filter: invert(1);
+/* Dropdown styling */
+.preference-select {
+  /* Override some Material default sizes to fit in toolbar */
+  width: 120px;
+  font-size: 14px;
 }
 
-/* Make the header sticky on desktop */
-@media (min-width: 600px) {
-  :host {
-    display: block; /* Ensure it behaves like a block for sticky positioning */
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-  }
+/* Adjust form field density to fit nicely */
+::ng-deep .preference-select .mat-mdc-form-field-wrapper {
+  padding-bottom: 0;
 }
 
-@media (max-width: 600px) {
-  .title {
-    font-size: medium;
-  }
-  .logo-title-group {
-    gap: 0;
-  }
-  .header-logo {
-    display: none;
-  }
- .mat-toolbar-single-row  {
-    padding-left: 10px;
-    padding-right: 5px;
-  }
-  nav {
-    margin-right: 0px;
-  }
+::ng-deep .preference-select .mat-mdc-form-field-infix {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  min-height: unset;
+}
+
+/* Ensure the select text color matches the toolbar (white usually for primary) */
+::ng-deep .preference-select .mat-mdc-select-value {
+  color: white; /* Assuming primary toolbar is dark/colored */
+}
+
+::ng-deep .preference-select .mat-mdc-select-arrow {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Specific override for outline appearance to make it look good on primary color */
+::ng-deep .preference-select .mdc-notched-outline__leading,
+::ng-deep .preference-select .mdc-notched-outline__notch,
+::ng-deep .preference-select .mdc-notched-outline__trailing {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+::ng-deep .preference-select:hover .mdc-notched-outline__leading,
+::ng-deep .preference-select:hover .mdc-notched-outline__notch,
+::ng-deep .preference-select:hover .mdc-notched-outline__trailing {
+  border-color: rgba(255, 255, 255, 0.8) !important;
 }

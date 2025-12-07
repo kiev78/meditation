@@ -1,12 +1,34 @@
 <mat-toolbar color="primary">
   <div class="logo-title-group">
-    <img src="logo.png" alt="Meditation Timer Logo" class="header-logo" routerLink="/" />
-    <span routerLink="/" class="title">Meditation Timer</span>
+    <ng-container *ngIf="!isReadingsPage; else readingsTitle">
+      <img src="logo.png" alt="Meditation Timer Logo" class="header-logo" routerLink="/" />
+      <span routerLink="/" class="title">Meditation Timer</span>
+    </ng-container>
+    <ng-template #readingsTitle>
+      <span class="title">Readings</span>
+    </ng-template>
   </div>
+
   <span class="spacer"></span>
+
   <nav>
-    <button mat-button routerLink="/readings" matTooltip="Readings (r)">Readings</button>
-    <button mat-button routerLink="/settings" matTooltip="Settings (s)">Settings</button>
+    <ng-container *ngIf="!isReadingsPage; else readingsNav">
+      <button mat-button routerLink="/readings" matTooltip="Readings (r)">Readings</button>
+      <button mat-button routerLink="/settings" matTooltip="Settings (s)">Settings</button>
+    </ng-container>
+
+    <ng-template #readingsNav>
+      <mat-form-field appearance="outline" class="preference-select">
+        <mat-select [value]="readingPreference" (selectionChange)="onPreferenceChange($event.value)">
+          <mat-option value="all">All</mat-option>
+          <mat-option value="chan">Chan</mat-option>
+          <mat-option value="tibetan">Tibetan</mat-option>
+          <mat-option value="zen">Zen</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button mat-button routerLink="/" matTooltip="Timer (t)">Timer</button>
+    </ng-template>
   </nav>
+
   <app-theme-toggle></app-theme-toggle>
 </mat-toolbar>
