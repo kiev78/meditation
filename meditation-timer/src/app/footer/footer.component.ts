@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DonateDialogComponent } from '../donate-dialog/donate-dialog.component';
 import { HelpButtonComponent } from '../help-button/help-button.component';
+import { InstallDialogComponent } from '../install-dialog/install-dialog.component';
 
 @Component({
   selector: 'app-footer',
@@ -27,5 +28,12 @@ export class FooterComponent {
 
   toggleDonateDialog() {
     this.dialog.open(DonateDialogComponent);
+  }
+
+  openInstallDialog() {
+    this.dialog.open(InstallDialogComponent, {
+      width: '400px',
+      autoFocus: false
+    });
   }
 }

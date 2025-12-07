@@ -44,6 +44,12 @@
   border: 1px solid #e91e63;
 }
 
+.install-button {
+  background-color: transparent;
+  color: #4caf50;
+  border: 1px solid #4caf50;
+}
+
 @media (max-width: 600px) {
   .app-footer {
     flex-direction: column;
@@ -60,7 +66,7 @@
     flex-direction: row;
     justify-content: center;
   }
-  .donate-button {
+  .donate-button, .install-button {
     width: 40px !important;
     height: 40px !important;
   }
