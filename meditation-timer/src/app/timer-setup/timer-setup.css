@@ -1,35 +1,30 @@
 .setup-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
   width: 100%;
-  max-width: 800px; /* Max width to match settings page */
+  max-width: 800px;
   margin: 0 auto;
-  text-align: center;
-  align-items: center;
   box-sizing: border-box;
-}
-
-.setup-container h3 {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
 }
 
 .controls-wrapper {
   display: flex;
-  justify-content: space-between;
-  gap: 2rem;
+  flex-direction: column;
+  gap: 1.5rem;
   width: 100%;
-  flex-wrap: nowrap;
+  padding-top: 1rem;
 }
 
 .control-row {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  flex: 1;
   width: 100%;
+}
+
+.guided-row {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
 }
 
 .slider-input-group {
@@ -45,13 +40,13 @@
 }
 
 .value-input {
-  width: 60px; /* Reduced width */
+  width: 60px;
 }
 
 /* Custom styling for the mat-form-field to look like a pill */
 .value-input ::ng-deep .mat-mdc-text-field-wrapper {
   padding: 0 8px !important;
-  height: 36px !important; /* Smaller height */
+  height: 36px !important;
 }
 
 .value-input ::ng-deep .mat-mdc-form-field-flex {
@@ -68,7 +63,6 @@
   align-items: center;
 }
 
-/* Target the outline to make it pill-shaped */
 .value-input ::ng-deep .mdc-notched-outline__leading {
   border-top-left-radius: 12px !important;
   border-bottom-left-radius: 12px !important;
@@ -81,10 +75,9 @@
 }
 
 .value-input ::ng-deep .mdc-notched-outline__notch {
-  border-top-width: 1px !important; /* Ensure the top border is continuous if label is floating */
+  border-top-width: 1px !important;
 }
 
-/* Adjust input text alignment and size */
 .value-input input {
   text-align: center;
   font-size: 0.9rem;
@@ -106,18 +99,6 @@ input[type=number]::-webkit-outer-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
   text-align: center;
-}
-
-@media (max-width: 600px) {
-  .controls-wrapper {
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .control-row {
-    width: 100%;
-    max-width: none;
-  }
 }
 
 @media (max-width: 450px) {

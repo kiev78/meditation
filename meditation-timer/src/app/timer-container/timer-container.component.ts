@@ -1,7 +1,9 @@
 import { Component, inject, HostListener } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { TimerSetupComponent } from '../timer-setup/timer-setup.component';
 import { TimerDisplayComponent } from '../timer-display/timer-display.component';
 import { ControlButtonsComponent } from '../control-buttons/control-buttons.component';
+import { GuidedMeditationComponent } from '../guided-meditation/guided-meditation.component';
 import { TimerService } from '../timer.service';
 import { map } from 'rxjs/operators';
 import { Observable, timer } from 'rxjs';
@@ -11,21 +13,29 @@ import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.co
   selector: 'app-timer-container',
   standalone: true,
   imports: [
+    CommonModule,
     TimerSetupComponent,
     TimerDisplayComponent,
     ControlButtonsComponent,
     EndTimeDisplayComponent,
+    GuidedMeditationComponent
   ],
   template: `
     <div class="timer-page">
-      <app-timer-display></app-timer-display>
-      <app-control-buttons></app-control-buttons>
+      <ng-container *ngIf="!(timerService.state$ | async)?.isGuided; else guidedMode">
+        <app-timer-display></app-timer-display>
+        <app-control-buttons></app-control-buttons>
 
-      <app-end-time-display
-        [endTime$]="endTime$"
-        [currentTime$]="currentTime$"
-        [timerService]="timerService"
-      ></app-end-time-display>
+        <app-end-time-display
+          [endTime$]="endTime$"
+          [currentTime$]="currentTime$"
+          [timerService]="timerService"
+        ></app-end-time-display>
+      </ng-container>
+
+      <ng-template #guidedMode>
+        <app-guided-meditation></app-guided-meditation>
+      </ng-template>
 
       <app-timer-setup></app-timer-setup>
     </div>
@@ -67,6 +77,14 @@ export class TimerContainerComponent {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
+    // Only handle global shortcuts if NOT in guided mode, OR if guided mode doesn't consume them.
+    // The requirement didn't specify that Space/X should work for guided mode,
+    // but typically users expect Space to pause whatever is playing.
+    // However, GuidedMeditationComponent handles its own logic.
+    // For now, I will disable the global timer shortcuts when in guided mode to avoid confusion.
+
+    if (this.timerService.stateSubjectValue.isGuided) return;
+
     if (event.key === ' ') {
       if (event.repeat) return; // Prevent rapid toggling
       event.preventDefault(); // Prevent scrolling

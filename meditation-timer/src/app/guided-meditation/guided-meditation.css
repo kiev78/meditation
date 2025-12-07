@@ -1,0 +1,26 @@
+.guided-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.time-display {
+  font-size: 2rem;
+  font-family: monospace;
+  margin-bottom: 2rem;
+  color: var(--mat-sys-on-surface);
+}
+
+.button-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+button[mat-fab] {
+  transform: scale(1.2);
+}
