@@ -5,12 +5,25 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSliderModule } from '@angular/material/slider';
 import { FormsModule } from '@angular/forms';
 import { TimerService } from '../timer.service';
-import { MEDITATION_TEXT } from './meditation-text';
+import { BellService } from '../bell.service';
 import { Subscription } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { take } from 'rxjs/operators';
+
+// New Interfaces for the structured JSON
+interface MeditationPart {
+  say?: string;
+  pause?: number;
+}
+
+interface MeditationSection {
+  type: 'intro' | 'poke';
+  content: MeditationPart[];
+}
 
 interface ScheduledEvent {
   time: number; // Trigger time in seconds (elapsed)
-  text: string;
+  content: MeditationPart[]; // The content to be spoken
   type: 'intro' | 'poke';
 }
 
@@ -23,12 +36,14 @@ interface ScheduledEvent {
 })
 export class GuidedMeditationComponent implements OnInit, OnDestroy {
   timerService = inject(TimerService);
+  private http = inject(HttpClient);
+  bellService = inject(BellService);
 
   private timerSub: Subscription | null = null;
   private schedule: ScheduledEvent[] = [];
-  private lastSpokenIndex = -1; // Track which event was last spoken
+  private lastSpokenIndex = -1;
+  private meditationScript: MeditationSection[] = [];
 
-  // To handle the split-message recursion
   private currentTimeout: any = null;
 
   constructor() {}
@@ -42,32 +57,33 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   }
 
   get currentTime(): number {
-    // Elapsed time = duration - remaining
-    // Handle delay phase where remainingTime is negative
-    const rem = this.timerService.stateSubjectValue.remainingTime;
-    if (rem < 0) return 0;
-    return Math.max(0, this.duration - rem);
+    return this.duration - this.timerService.stateSubjectValue.remainingTime;
   }
 
   ngOnInit() {
-    this.calculateSchedule();
-
-    this.timerSub = this.timerService.state$.subscribe(state => {
-      if (state.isRunning) {
-        let elapsed = state.duration - state.remainingTime;
-        if (state.remainingTime < 0) elapsed = 0;
-        this.checkSchedule(elapsed);
-      } else {
-        // Paused
-        this.stopSpeaking();
-      }
-
-      // Re-calculate if duration changes (and not running to be safe,
-      // though changing duration usually happens when stopped)
-      if (state.duration !== this.scheduleDurationCache) {
+    this.http.get<MeditationSection[]>('meditation/meditation-text.json')
+      .pipe(take(1))
+      .subscribe(data => {
+        this.meditationScript = data;
         this.calculateSchedule();
-      }
-    });
+
+        if (this.timerSub) {
+          this.timerSub.unsubscribe();
+        }
+
+        this.timerSub = this.timerService.state$.subscribe(state => {
+          if (state.isRunning) {
+            const elapsed = state.duration - state.remainingTime;
+            this.checkSchedule(elapsed);
+          } else {
+            this.stopSpeaking();
+          }
+
+          if (state.duration !== this.scheduleDurationCache) {
+            this.calculateSchedule();
+          }
+        });
+      });
   }
 
   private scheduleDurationCache = 0;
@@ -83,7 +99,11 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     if (this.isPlaying) {
       this.timerService.pause();
     } else {
+      this.bellService.playBell();
+      //wait 10 seconds before starting timer to allow bell to play
+      setTimeout(() => {
       this.timerService.start();
+      }, 10000);  
     }
   }
 
@@ -91,7 +111,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     const currentRem = this.timerService.stateSubjectValue.remainingTime;
     const newRem = Math.min(this.duration, currentRem + 10);
     this.timerService.updateState({ remainingTime: newRem });
-    this.stopSpeaking(); // Reset speech if we jump
+    this.stopSpeaking();
     this.resetSpeechIndex(this.duration - newRem);
   }
 
@@ -112,31 +132,22 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     this.resetSpeechIndex(elapsed);
   }
 
-  // --- Scheduler Logic ---
-
   private calculateSchedule() {
     const duration = this.duration;
     this.scheduleDurationCache = duration;
     this.schedule = [];
 
-    // Parse text
-    // We expect sections separated by /intro or /p
-    // However, the file is one big string.
-
-    const introMatch = MEDITATION_TEXT.match(/\/intro([\s\S]*?)(?=\/p|$)/);
-    const introText = introMatch ? introMatch[1].trim() : '';
-
-    const pokeMatches = [...MEDITATION_TEXT.matchAll(/\/p([\s\S]*?)(?=\/p|$)/g)];
-    const pokes = pokeMatches.map(m => m[1].trim());
-
-    // 1. Schedule Intro at T=0
-    if (introText) {
-      this.schedule.push({ time: 0, text: introText, type: 'intro' });
+    if (!this.meditationScript || this.meditationScript.length === 0) {
+      return;
     }
 
-    // 2. Schedule Pokes
-    // Rule: "divide it into a few pokes in first 10m (or active window) and last 5m silence"
-    // Active Window:
+    const intro = this.meditationScript.find(s => s.type === 'intro');
+    if (intro) {
+      this.schedule.push({ time: 0, content: intro.content, type: 'intro' });
+    }
+
+    const pokes = this.meditationScript.filter(s => s.type === 'poke');
+    
     let activeWindow = 0;
     if (duration > 600) { // > 10 mins
       activeWindow = duration - 300; // Last 5 mins silence
@@ -145,13 +156,6 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     }
 
     if (pokes.length > 0) {
-       // "progressively longer intervals"
-       // Start after intro (say 30s buffer?) No, user logic implies gaps.
-       // Let's assume we distribute them in the active window.
-       // Intervals: x, x+d, x+2d ...
-       // Simple approach: Fractions of Active Window.
-       // 3 Pokes: 25%, 55%, 90% of Active Window.
-
        const count = pokes.length;
        for (let i = 0; i < count; i++) {
          let fraction = 0;
@@ -159,27 +163,20 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
          else if (count === 2) fraction = i === 0 ? 0.3 : 0.7;
          else if (count === 3) fraction = i === 0 ? 0.25 : (i === 1 ? 0.55 : 0.9);
          else {
-           // Generic distribution
            fraction = (i + 1) / (count + 1);
          }
 
          const time = Math.floor(activeWindow * fraction);
-         // Ensure it doesn't overlap intro too much (intro usually < 30s)
          const safeTime = Math.max(30, time);
 
-         this.schedule.push({ time: safeTime, text: pokes[i], type: 'poke' });
+         this.schedule.push({ time: safeTime, content: pokes[i].content, type: 'poke' });
        }
     }
 
-    // Sort schedule just in case
     this.schedule.sort((a, b) => a.time - b.time);
   }
 
   private resetSpeechIndex(elapsed: number) {
-    // If we seek, we should set lastSpokenIndex to the last event that *passed*
-    // so we don't replay old stuff immediately, but wait for next.
-    // OR should we play the one we jumped onto?
-    // Let's assume we wait for the next boundary.
     this.lastSpokenIndex = -1;
     for (let i = 0; i < this.schedule.length; i++) {
       if (this.schedule[i].time <= elapsed) {
@@ -189,28 +186,15 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   }
 
   private checkSchedule(elapsed: number) {
-    // We check if we just passed a schedule time
-    // Because checking exact second might miss if interval drifts (unlikely with 1s checks),
-    // we check: is there an event > lastSpoken and <= elapsed?
-
-    // Actually, simple exact second check usually works if component updates often.
-    // But better: Find first event that hasn't been spoken AND is due (time <= elapsed).
-
-    // Note: If we seek forward, resetSpeechIndex handles marking old ones as done.
-    // If time ticks naturally:
-
     const nextIndex = this.lastSpokenIndex + 1;
     if (nextIndex < this.schedule.length) {
       const event = this.schedule[nextIndex];
-      // Allow 1s window or check inequality
       if (elapsed >= event.time) {
-        this.speakMessage(event.text);
+        this.speakMessage(event.content);
         this.lastSpokenIndex = nextIndex;
       }
     }
   }
-
-  // --- TTS Engine ---
 
   private stopSpeaking() {
     if (this.currentTimeout) {
@@ -220,18 +204,8 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     window.speechSynthesis.cancel();
   }
 
-  private speakMessage(message: string) {
-    this.stopSpeaking(); // Cancel any overlapping
-
-    // Parse message for pauses: /5s, /2m
-    // Regex to split:
-    // We want to keep the delimiters or process them.
-    // Let's replace delimiters with a special separator we can split by.
-    // Matches: /5s, /10m
-    const regex = /(\/\d+[sm])/g;
-
-    // Split: "Hello /5s World" -> ["Hello ", "/5s", " World"]
-    const parts = message.split(regex).map(p => p.trim()).filter(p => p.length > 0);
+  private speakMessage(parts: MeditationPart[]) {
+    this.stopSpeaking();
 
     let currentIndex = 0;
 
@@ -240,30 +214,20 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
       const part = parts[currentIndex];
 
-      // Check if it's a pause command
-      const pauseMatch = part.match(/^\/(\d+)([sm])$/);
-
-      if (pauseMatch) {
-        const val = parseInt(pauseMatch[1], 10);
-        const unit = pauseMatch[2];
-        const ms = (unit === 'm' ? val * 60 : val) * 1000;
-
-        // Wait then next
-        currentIndex++;
+      if (part.pause) {
+        const ms = part.pause * 1000;
         this.currentTimeout = setTimeout(() => {
+          currentIndex++;
           speakNext();
         }, ms);
-      } else {
-        // Speak text
-        // Use the user's "comma split" logic?
-        // "use this code sample to loop the text and add pauses"
-        // The user provided logic splits by comma. I should integrate that too
-        // for micro-pauses within the text block.
-
-        this.speakInternal(part, () => {
+      } else if (part.say) {
+        this.speakInternal(part.say, () => {
           currentIndex++;
           speakNext();
         });
+      } else {
+        currentIndex++;
+        speakNext();
       }
     };
 
@@ -276,7 +240,6 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // User's comma logic:
     const subParts = text.split(',');
     let subIndex = 0;
 
@@ -294,12 +257,10 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
       }
 
       const msg = new SpeechSynthesisUtterance();
-      const voices = window.speechSynthesis.getVoices();
-      // Try to pick a nice voice? Default is usually [0].
-      msg.voice = voices[0];
+      msg.voice = this.setVoice();
       msg.volume = 1;
-      msg.rate = 1;
-      msg.pitch = 1; // Default pitch
+      msg.rate = 0.9;
+      msg.pitch = 0.5;
       msg.text = subText;
       msg.lang = 'en-US';
 
@@ -308,7 +269,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
         if (subIndex < subParts.length) {
            this.currentTimeout = setTimeout(() => {
              speakSub();
-           }, 500); // 500ms pause for commas
+           }, 500);
         } else {
           onComplete();
         }
@@ -316,7 +277,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
       msg.onerror = (e) => {
           console.error('TTS Error', e);
-          onComplete(); // Skip on error
+          onComplete();
       };
 
       window.speechSynthesis.speak(msg);
@@ -325,11 +286,18 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     speakSub();
   }
 
-  // --- UI Helpers ---
+  private setVoice() {
+    const voices = window.speechSynthesis.getVoices();
+    // Prefer "Microsoft Brian" as requested, with fallbacks.
+    var voice = voices.find(v => v.name.includes('Brian')) ||
+                 voices.find(v => v.lang.startsWith('en-US')) ||
+                 voices[0];
+     return voice;
+  }
 
   formatTime(seconds: number): string {
     if (!seconds && seconds !== 0) return '00:00';
-    seconds = Math.max(0, Math.floor(seconds)); // Ensure positive
+    seconds = Math.max(0, Math.floor(seconds));
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
@@ -341,13 +309,6 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    // Only handle if this component is active/visible?
-    // The Container conditionally renders this, so @HostListener should be fine.
-
-    // Ignore interactive elements to prevent double-firing or conflict
-    const target = event.target as HTMLElement;
-    if (target.tagName === 'BUTTON' || target.tagName === 'INPUT' || target.tagName === 'MAT-SLIDER') return;
-
     if (event.key === ' ') {
       event.preventDefault();
       this.togglePlay();

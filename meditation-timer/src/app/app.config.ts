@@ -1,4 +1,5 @@
 import { ApplicationConfig, isDevMode, importProvidersFrom } from '@angular/core';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 // Make sure to import withInMemoryScrolling
 import { provideRouter, withInMemoryScrolling, withHashLocation } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -11,6 +12,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideAnimations(),
     importProvidersFrom(MatDialogModule),
+    provideHttpClient(withFetch()),
     // Add the withInMemoryScrolling option here
     provideRouter(
       routes,
