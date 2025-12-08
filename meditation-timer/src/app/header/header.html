@@ -1,25 +1,11 @@
 <mat-toolbar color="primary">
   <div class="logo-title-group">
-    <ng-container *ngIf="!isReadingsPage; else readingsTitle">
-      <img src="logo.png" alt="Meditation Timer Logo" class="header-logo" routerLink="/" />
-      <span routerLink="/" class="title">Meditation Timer</span>
-    </ng-container>
-    <ng-template #readingsTitle>
-      <span class="title">Readings</span>
-    </ng-template>
+    <img src="logo.png" alt="Meditation Timer Logo" class="header-logo" routerLink="/" />
+    <span routerLink="/" class="title">Meditation Timer</span>
   </div>
-
   <span class="spacer"></span>
-
   <nav>
-    <ng-container *ngIf="!isReadingsPage; else readingsNav">
-      <button mat-button routerLink="/readings" matTooltip="Readings (r)">Readings</button>
-    </ng-container>
-
-    <ng-template #readingsNav>
-      <button mat-button routerLink="/" matTooltip="Timer (t)">Timer</button>
-    </ng-template>
+    <button mat-button routerLink="/readings" matTooltip="Readings (r)">Readings</button>
   </nav>
-
   <app-theme-toggle></app-theme-toggle>
 </mat-toolbar>
