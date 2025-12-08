@@ -1,7 +1,12 @@
 <div class="guided-container">
   <div class="audio-controls">
-    <div class="time-display">
-      {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
+
+    <div class="timeline-row">
+      <span class="time-text">{{ formatTime(currentTime) }}</span>
+      <mat-slider [min]="0" [max]="duration" step="1" [displayWith]="formatLabel" class="timeline-slider">
+        <input matSliderThumb [value]="currentTime" (input)="seek($event)">
+      </mat-slider>
+      <span class="time-text">{{ formatTime(duration) }}</span>
     </div>
 
     <div class="button-row">
@@ -18,6 +23,5 @@
       </button>
     </div>
 
-    <button mat-button (click)="reset()">Reset</button>
   </div>
 </div>

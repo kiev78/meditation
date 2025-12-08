@@ -1,12 +1,14 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSliderModule } from '@angular/material/slider';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-guided-meditation',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatSliderModule, FormsModule],
   templateUrl: './guided-meditation.html',
   styleUrls: ['./guided-meditation.css']
 })
@@ -49,13 +51,6 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     this.isPlaying = !this.isPlaying;
   }
 
-  reset() {
-    this.audio.pause();
-    this.audio.currentTime = 0;
-    this.isPlaying = false;
-    this.currentTime = 0;
-  }
-
   skipBack() {
     this.audio.currentTime = Math.max(0, this.audio.currentTime - 10);
   }
@@ -64,10 +59,21 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     this.audio.currentTime = Math.min(this.duration, this.audio.currentTime + 10);
   }
 
+  seek(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const value = Number(target.value);
+    this.audio.currentTime = value;
+    this.currentTime = value;
+  }
+
   formatTime(seconds: number): string {
     if (!seconds && seconds !== 0) return '00:00';
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+
+  formatLabel = (value: number): string => {
+    return this.formatTime(value);
   }
 }
