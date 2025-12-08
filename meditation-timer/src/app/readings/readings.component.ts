@@ -1,6 +1,8 @@
 import { Component, AfterViewInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TtsService } from '../tts.service';
+import { Subscription } from 'rxjs';
 
 interface TocItem {
   id: string;
@@ -23,9 +25,19 @@ export class ReadingsComponent implements AfterViewInit, OnDestroy {
 
   tocItems: TocItem[] = [];
   activeFragment: string | null = null;
+  isSpeaking = false;
   private observer: IntersectionObserver | null = null;
+  private ttsSubscription: Subscription;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private ttsService: TtsService
+  ) {
+    this.ttsSubscription = this.ttsService.speaking$.subscribe(speaking => {
+      this.isSpeaking = speaking;
+      this.cdr.detectChanges();
+    });
+  }
 
   ngAfterViewInit(): void {
     this.createToc();
@@ -34,6 +46,8 @@ export class ReadingsComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.observer?.disconnect();
+    this.ttsSubscription.unsubscribe();
+    this.ttsService.cancel(); // Stop any speech when leaving the component
   }
 
   private createToc(): void {
@@ -76,5 +90,14 @@ export class ReadingsComponent implements AfterViewInit, OnDestroy {
 
   scrollTo(fragment: string): void {
     this.contentEl.nativeElement.querySelector('#' + fragment)?.scrollIntoView({ behavior: 'auto' });
+  }
+
+  speakFullText(): void {
+    const text = this.contentEl.nativeElement.innerText;
+    this.ttsService.speak(text);
+  }
+
+  stopSpeaking(): void {
+    this.ttsService.cancel();
   }
 }
