@@ -36,7 +36,7 @@ export class ReadingsComponent implements AfterViewInit, OnDestroy {
   private settingsSubscription?: Subscription;
 
   // Default to all just in case, but will load from settings
-  currentPreferences: string[] = ['chan', 'tibetan', 'zen', 'triratna'];
+  currentPreferences: string[] = ['chan', 'tibetan', 'zen', 'triratna', 'other'];
 
   constructor(private cdr: ChangeDetectorRef) {}
 
