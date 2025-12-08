@@ -10,7 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   standalone: true,
   imports: [MatButtonModule, MatIconModule, MatDialogModule, MatTooltipModule],
   template: `
-    <button mat-fab color="primary" class="help-fab" (click)="openHelp()" aria-label="Keyboard Shortcuts" matTooltip="Keyboard Shortcuts (?)">
+    <button mat-mini-fab color="primary" class="help-fab" (click)="openHelp()" aria-label="Keyboard Shortcuts" matTooltip="Keyboard Shortcuts (?)">
       <mat-icon>keyboard</mat-icon>
     </button>
   `,
@@ -23,8 +23,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     }
     @media (max-width: 600px) {
       .help-fab {
-        width: 40px !important;
-        height: 40px !important;
       }
     }
   `]
