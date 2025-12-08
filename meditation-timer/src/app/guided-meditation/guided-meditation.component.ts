@@ -194,12 +194,13 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     // If effectiveElapsed is negative, we are before the start of speech.
     if (effectiveElapsed < 0) return;
 
+    let foundIndex = -1;
     for (let i = 0; i < this.schedule.length; i++) {
-      // Use strict inequality to allow replaying an event if we seek exactly to its start time.
-      if (this.schedule[i].time < effectiveElapsed) {
-        this.lastSpokenIndex = i;
+      if (this.schedule[i].time <= effectiveElapsed) {
+        foundIndex = i;
       }
     }
+    this.lastSpokenIndex = Math.max(-1, foundIndex - 1);
   }
 
   private get bellSequenceDuration(): number {
