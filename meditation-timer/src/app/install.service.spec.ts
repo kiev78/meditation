@@ -14,7 +14,7 @@ describe('InstallService', () => {
   });
 
   it('should detect platform', () => {
-    expect(service.platform()).toMatch(/android|ios|desktop|unknown/);
+    expect(service.platform()).toMatch(/android|ios|edge|desktop|unknown/);
   });
 
   it('should start with installable false', () => {

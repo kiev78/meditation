@@ -6,7 +6,7 @@ import { Injectable, signal } from '@angular/core';
 export class InstallService {
   private deferredPrompt: any = null;
   installable = signal(false);
-  platform = signal<'android' | 'ios' | 'desktop' | 'unknown'>('unknown');
+  platform = signal<'android' | 'ios' | 'edge' | 'desktop' | 'unknown'>('unknown');
 
   constructor() {
     this.detectPlatform();
@@ -33,6 +33,8 @@ export class InstallService {
       this.platform.set('ios');
     } else if (/android/.test(userAgent)) {
       this.platform.set('android');
+    } else if (/edg/.test(userAgent)) {
+      this.platform.set('edge');
     } else {
       this.platform.set('desktop');
     }
