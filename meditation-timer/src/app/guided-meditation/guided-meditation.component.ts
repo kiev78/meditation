@@ -78,7 +78,9 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
         this.timerSub = this.timerService.state$.subscribe(state => {
           if (state.isRunning) {
-            const elapsed = state.duration - state.remainingTime;
+            // Using this.currentTime ensures we handle start delays (negative remainingTime) correctly.
+            // If remainingTime < 0, currentTime returns 0.
+            const elapsed = this.currentTime;
             this.checkSchedule(elapsed);
           } else {
             this.stopSpeaking();
@@ -110,10 +112,16 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
   skipBack() {
     const currentRem = this.timerService.stateSubjectValue.remainingTime;
+    // If we are in delay phase (<0), skipping back doesn't make sense or should extend delay?
+    // Let's assume we just clamp to duration.
     const newRem = Math.min(this.duration, currentRem + 10);
     this.timerService.updateState({ remainingTime: newRem });
     this.stopSpeaking();
-    this.resetSpeechIndex(this.duration - newRem);
+
+    // We need to calculate the new elapsed time to reset speech index correctly.
+    // If newRem is negative (still in delay), elapsed is 0.
+    const elapsed = (newRem < 0) ? 0 : (this.duration - newRem);
+    this.resetSpeechIndex(elapsed);
   }
 
   skipForward() {
@@ -121,7 +129,9 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     const newRem = Math.max(0, currentRem - 10);
     this.timerService.updateState({ remainingTime: newRem });
     this.stopSpeaking();
-    this.resetSpeechIndex(this.duration - newRem);
+
+    const elapsed = (newRem < 0) ? 0 : (this.duration - newRem);
+    this.resetSpeechIndex(elapsed);
   }
 
   seek(event: Event) {
@@ -179,8 +189,13 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
   private resetSpeechIndex(elapsed: number) {
     this.lastSpokenIndex = -1;
+    const effectiveElapsed = elapsed - this.bellSequenceDuration;
+
+    // If effectiveElapsed is negative, we are before the start of speech.
+    if (effectiveElapsed < 0) return;
+
     for (let i = 0; i < this.schedule.length; i++) {
-      if (this.schedule[i].time <= elapsed) {
+      if (this.schedule[i].time <= effectiveElapsed) {
         this.lastSpokenIndex = i;
       }
     }
