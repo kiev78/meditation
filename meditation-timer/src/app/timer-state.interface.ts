@@ -11,5 +11,5 @@ export interface TimerState {
   isRunning: boolean;
   isWakeLockActive: boolean;
   backgroundImage?: string;
-  readingPreference?: 'chan' | 'tibetan' | 'zen' | 'all';
+  readingPreferences?: string[];
 }

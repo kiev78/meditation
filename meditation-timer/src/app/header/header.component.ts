@@ -6,9 +6,6 @@ import { RouterLink, Router, NavigationEnd } from '@angular/router';
 import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { MatSelectModule } from '@angular/material/select';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { SettingsService } from '../settings.service';
 import { Subscription, filter } from 'rxjs';
 
 @Component({
@@ -21,19 +18,16 @@ import { Subscription, filter } from 'rxjs';
     MatTooltipModule,
     RouterLink,
     ThemeToggleComponent,
-    MatIconModule,
-    MatSelectModule,
-    MatFormFieldModule
+    MatIconModule
   ],
   templateUrl: './header.html',
   styleUrl: './header.css'
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   isReadingsPage = false;
-  readingPreference: 'chan' | 'tibetan' | 'zen' | 'all' = 'all';
   private routerSubscription?: Subscription;
 
-  constructor(private router: Router, private settingsService: SettingsService) {}
+  constructor(private router: Router) {}
 
   ngOnInit() {
     this.routerSubscription = this.router.events.pipe(
@@ -44,20 +38,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     // Initialize state based on current URL immediately
     this.isReadingsPage = this.router.url.includes('/readings');
-
-    // Load initial preference
-    const settings = this.settingsService.loadSettings();
-    if (settings?.readingPreference) {
-      this.readingPreference = settings.readingPreference;
-    }
   }
 
   ngOnDestroy() {
     this.routerSubscription?.unsubscribe();
-  }
-
-  onPreferenceChange(value: 'chan' | 'tibetan' | 'zen' | 'all') {
-    this.readingPreference = value;
-    this.settingsService.saveSettings({ readingPreference: value });
   }
 }

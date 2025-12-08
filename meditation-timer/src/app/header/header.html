@@ -14,18 +14,9 @@
   <nav>
     <ng-container *ngIf="!isReadingsPage; else readingsNav">
       <button mat-button routerLink="/readings" matTooltip="Readings (r)">Readings</button>
-      <button mat-button routerLink="/settings" matTooltip="Settings (s)">Settings</button>
     </ng-container>
 
     <ng-template #readingsNav>
-      <mat-form-field appearance="outline" class="preference-select">
-        <mat-select [value]="readingPreference" (selectionChange)="onPreferenceChange($event.value)">
-          <mat-option value="all">All</mat-option>
-          <mat-option value="chan">Chan</mat-option>
-          <mat-option value="tibetan">Tibetan</mat-option>
-          <mat-option value="zen">Zen</mat-option>
-        </mat-select>
-      </mat-form-field>
       <button mat-button routerLink="/" matTooltip="Timer (t)">Timer</button>
     </ng-template>
   </nav>
