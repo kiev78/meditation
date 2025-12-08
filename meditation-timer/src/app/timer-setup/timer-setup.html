@@ -1,5 +1,9 @@
-<div class="setup-container">
-  <h3 matTooltip="Settings (s)">Timer Setup</h3>
+<mat-expansion-panel [expanded]="isExpanded" (expandedChange)="togglePanel($event)" class="setup-container">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Meditation Options
+    </mat-panel-title>
+  </mat-expansion-panel-header>
 
   <div class="controls-wrapper">
     <!-- Duration Slider -->
@@ -30,5 +34,19 @@
       </div>
     </div>
 
+    <!-- Guided Meditation Toggle -->
+    <div class="control-row guided-row">
+      <mat-slide-toggle
+        [checked]="timerService.stateSubjectValue.isGuided"
+        (change)="toggleGuided($event.checked)"
+        color="primary">
+        Guided Meditation
+      </mat-slide-toggle>
+
+      <button mat-icon-button routerLink="/settings" matTooltip="Settings (s)">
+        <mat-icon>settings</mat-icon>
+      </button>
+    </div>
+
   </div>
-</div>
+</mat-expansion-panel>

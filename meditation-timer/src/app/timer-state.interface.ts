@@ -12,4 +12,5 @@ export interface TimerState {
   isWakeLockActive: boolean;
   backgroundImage?: string;
   readingPreferences?: string[];
+  isGuided: boolean;
 }

@@ -1,0 +1,41 @@
+.guided-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.timeline-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 800px; /* Matched to settings panel width */
+  margin-bottom: 2rem;
+}
+
+.timeline-slider {
+  flex-grow: 1;
+}
+
+.time-text {
+  font-family: monospace;
+  font-size: 1rem;
+  color: var(--mat-sys-on-surface);
+  min-width: 48px;
+}
+
+.button-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+button[mat-fab] {
+  transform: scale(1.2);
+}
