@@ -179,7 +179,7 @@ export class TimerService {
 
   private checkInterval(remainingTime: number) {
     const state = this.stateSubject.value;
-    if (state.intervals <= 0) return;
+    if (state.intervals <= 0 || state.isGuided) return;
 
     const passedTime = state.duration - remainingTime;
     const intervalSeconds = state.intervals * 60;

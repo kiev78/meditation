@@ -57,7 +57,12 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   }
 
   get currentTime(): number {
-    return this.duration - this.timerService.stateSubjectValue.remainingTime;
+    const rem = this.timerService.stateSubjectValue.remainingTime;
+    // During start delay (negative remainingTime) or invalid state, return 0.
+    if (rem < 0 || rem > this.duration) {
+      return 0;
+    }
+    return this.duration - rem;
   }
 
   ngOnInit() {
@@ -99,11 +104,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     if (this.isPlaying) {
       this.timerService.pause();
     } else {
-      this.bellService.playBell();
-      //wait 10 seconds before starting timer to allow bell to play
-      setTimeout(() => {
       this.timerService.start();
-      }, 10000);  
     }
   }
 
@@ -185,11 +186,41 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     }
   }
 
+  private get bellSequenceDuration(): number {
+    const state = this.timerService.stateSubjectValue;
+    if (state.startBells <= 0) return 0;
+
+    let duration = 0;
+    const count = state.startBells;
+    const intervals = state.startBellIntervals || [5]; // default 5s
+
+    // Sum intervals between bells
+    for (let i = 0; i < count - 1; i++) {
+       const interval = intervals[i] !== undefined ? intervals[i] : 5;
+       duration += interval;
+    }
+
+    // Add length of last bell (approximated as 10s)
+    duration += 10;
+
+    return duration;
+  }
+
   private checkSchedule(elapsed: number) {
+    // Offset the elapsed time by the bell sequence duration.
+    // The meditation audio should not start until the start bells have finished.
+    const effectiveElapsed = elapsed - this.bellSequenceDuration;
+
+    if (effectiveElapsed < 0) {
+      // Still in bell phase, do not speak yet.
+      return;
+    }
+
     const nextIndex = this.lastSpokenIndex + 1;
     if (nextIndex < this.schedule.length) {
       const event = this.schedule[nextIndex];
-      if (elapsed >= event.time) {
+      // Check against effective elapsed time
+      if (effectiveElapsed >= event.time) {
         this.speakMessage(event.content);
         this.lastSpokenIndex = nextIndex;
       }
