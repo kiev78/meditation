@@ -4,6 +4,9 @@
     <a href="https://buddhistsangha.com/" class="footer-link">Buddhist Sangha of Bucks County</a> 2025
   </div>
   <div class="footer-actions">
+    <button mat-fab class="install-button" (click)="openInstallDialog()" aria-label="Install App" matTooltip="Install App">
+      <mat-icon>get_app</mat-icon>
+    </button>
     <app-help-button></app-help-button>
     <button mat-fab class="donate-button"
      (click)="toggleDonateDialog()" aria-label="Donate" matTooltip="Donate (d)">
