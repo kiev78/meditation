@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -53,10 +53,12 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
   skipBack() {
     this.audio.currentTime = Math.max(0, this.audio.currentTime - 10);
+    this.currentTime = this.audio.currentTime;
   }
 
   skipForward() {
     this.audio.currentTime = Math.min(this.duration, this.audio.currentTime + 10);
+    this.currentTime = this.audio.currentTime;
   }
 
   seek(event: Event) {
@@ -75,5 +77,17 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
   formatLabel = (value: number): string => {
     return this.formatTime(value);
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.key === ' ') {
+      event.preventDefault(); // Prevent scrolling
+      this.togglePlay();
+    } else if (event.key === 'ArrowLeft') {
+      this.skipBack();
+    } else if (event.key === 'ArrowRight') {
+      this.skipForward();
+    }
   }
 }
