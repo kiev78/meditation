@@ -115,7 +115,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     // If we are in delay phase (<0), skipping back doesn't make sense or should extend delay?
     // Let's assume we just clamp to duration.
     const newRem = Math.min(this.duration, currentRem + 10);
-    this.timerService.updateState({ remainingTime: newRem });
+    this.timerService.seek(newRem);
     this.stopSpeaking();
 
     // We need to calculate the new elapsed time to reset speech index correctly.
@@ -127,7 +127,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   skipForward() {
     const currentRem = this.timerService.stateSubjectValue.remainingTime;
     const newRem = Math.max(0, currentRem - 10);
-    this.timerService.updateState({ remainingTime: newRem });
+    this.timerService.seek(newRem);
     this.stopSpeaking();
 
     const elapsed = (newRem < 0) ? 0 : (this.duration - newRem);
@@ -138,7 +138,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLInputElement;
     const elapsed = Number(target.value);
     const newRem = this.duration - elapsed;
-    this.timerService.updateState({ remainingTime: newRem });
+    this.timerService.seek(newRem);
     this.stopSpeaking();
     this.resetSpeechIndex(elapsed);
   }
@@ -195,7 +195,8 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     if (effectiveElapsed < 0) return;
 
     for (let i = 0; i < this.schedule.length; i++) {
-      if (this.schedule[i].time <= effectiveElapsed) {
+      // Use strict inequality to allow replaying an event if we seek exactly to its start time.
+      if (this.schedule[i].time < effectiveElapsed) {
         this.lastSpokenIndex = i;
       }
     }
