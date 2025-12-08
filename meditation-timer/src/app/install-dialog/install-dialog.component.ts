@@ -45,12 +45,14 @@ import { InstallService } from '../install.service';
 
           <div *ngSwitchCase="'edge'" class="edge-instructions">
             <p *ngIf="canPrompt()">Click the button below to install.</p>
-            <p *ngIf="!canPrompt()">Click the menu icon (…), go to <strong>Apps</strong>, and select <strong>Install Meditation Timer</strong>.</p>
+            <p *ngIf="!canPrompt()">Click the menu icon (…), go to more tools, select <strong>Apps</strong>, and select <strong>Install Meditation Timer</strong>.</p>
+            <p *ngIf="!canPrompt()">You can then choose to pin it to your start menu and/or taskbar and run it just like any other app.</p>
           </div>
 
           <div *ngSwitchDefault class="desktop-instructions">
             <p *ngIf="canPrompt()">Click the button below to install.</p>
             <p *ngIf="!canPrompt()">Look for the install icon <mat-icon inline>install_desktop</mat-icon> in your address bar, or check the browser menu (⋮) under <strong>Apps</strong>.</p>
+            <p *ngIf="!canPrompt()">You can then choose to pin it to your start menu and/or taskbar and run it just like any other app.</p>
           </div>
         </div>
       </div>
