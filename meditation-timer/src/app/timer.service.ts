@@ -24,6 +24,7 @@ export class TimerService {
     theme: 'dark',
     isRunning: false,
     isWakeLockActive: false,
+    isGuided: false,
   };
 
   private stateSubject = new BehaviorSubject<TimerState>(this.initialState);
