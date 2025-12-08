@@ -151,3 +151,18 @@ img{float: right;}
 :host-context(body.dark-theme) .toc-nav::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.4);
 }
+
+/* Floating Action Buttons */
+.settings-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.up-fab {
+  position: fixed;
+  bottom: 90px; /* 20px + 56px (fab height) + 14px gap */
+  right: 20px;
+  z-index: 1000;
+}

@@ -105,7 +105,7 @@
     <div class="form-group">
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Select Reading Type</mat-label>
-        <mat-select [(ngModel)]="readingPreferences" (selectionChange)="onReadingPreferencesChange($event.value)">
+        <mat-select [(ngModel)]="readingPreference" (selectionChange)="onReadingPreferenceChange($event.value)">
           <mat-option value="all">All</mat-option>
           <mat-option value="chan">Chan</mat-option>
           <mat-option value="tibetan">Tibetan</mat-option>

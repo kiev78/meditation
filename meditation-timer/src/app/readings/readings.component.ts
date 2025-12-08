@@ -93,12 +93,23 @@ export class ReadingsComponent implements AfterViewInit, OnDestroy {
       // Wait, the data-tag is ON the <h2>.
       // I need to hide the <h2> AND the following siblings until the next header.
 
-      if (hasMatch) {
-        htmlEl.style.display = ''; // Reset
-        this.toggleSection(htmlEl, true);
+      // Robust Handling: Check if the element is wrapped in a container div
+      // If the parent is not 'readings-container' (main), it is likely a wrapper div.
+      // In that case, we toggle the wrapper instead of the h2 + siblings.
+      const parent = htmlEl.parentElement;
+      const isWrapped = parent && !parent.classList.contains('readings-container') && parent.tagName === 'DIV';
+
+      if (isWrapped && parent) {
+        parent.style.display = hasMatch ? '' : 'none';
       } else {
-        htmlEl.style.display = 'none';
-        this.toggleSection(htmlEl, false);
+        // Direct child of main container
+        if (hasMatch) {
+          htmlEl.style.display = ''; // Reset
+          this.toggleSection(htmlEl, true);
+        } else {
+          htmlEl.style.display = 'none';
+          this.toggleSection(htmlEl, false);
+        }
       }
     });
   }
