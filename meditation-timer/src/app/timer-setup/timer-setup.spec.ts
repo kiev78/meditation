@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TimerSetupComponent } from './timer-setup.component';
 import { TimerService } from '../timer.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ActivatedRoute } from '@angular/router';
 
 describe('TimerSetup', () => {
   let component: TimerSetupComponent;
@@ -26,7 +27,8 @@ describe('TimerSetup', () => {
     await TestBed.configureTestingModule({
       imports: [TimerSetupComponent, BrowserAnimationsModule],
       providers: [
-        { provide: TimerService, useValue: timerServiceMock }
+        { provide: TimerService, useValue: timerServiceMock },
+        { provide: ActivatedRoute, useValue: {} }
       ]
     })
     .compileComponents();
