@@ -10,6 +10,7 @@ export interface TimerState {
   theme: 'light' | 'dark';
   isRunning: boolean;
   isWakeLockActive: boolean;
-  backgroundImage?: string;
+  backgroundImage?: string; 
   isGuided: boolean;
+  readingPreferences?: string[];
 }
