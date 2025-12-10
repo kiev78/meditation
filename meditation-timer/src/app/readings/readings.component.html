@@ -1,18 +1,5 @@
 <div class="page-container" id="toc">
   <nav class="toc-nav">
-    <button mat-icon-button [matMenuTriggerFor]="filterMenu" aria-label="Filter Readings">
-      <mat-icon>settings</mat-icon>
-    </button>
-    <mat-menu #filterMenu="matMenu">
-      <div mat-menu-item *ngFor="let type of availableTypes" (click)="$event.stopPropagation()">
-        <mat-checkbox
-          [checked]="currentPreferences.includes(type)"
-          (change)="togglePreference(type, $event)">
-          {{ type }}
-        </mat-checkbox>
-      </div>
-    </mat-menu>
-
     <ul class="toc-list">
       <li *ngFor="let item of tocItems">
         <a
@@ -31,6 +18,21 @@
   </nav>
 
   <main class="readings-container" #content>
+    <div class="settings-container">
+      <label>Filter Readings by tradition </label>  
+      <button mat-icon-button [matMenuTriggerFor]="filterMenu" aria-label="Filter Readings by tradition" matTooltip="Filter Readings by tradition">
+          <mat-icon>settings</mat-icon>
+        </button>
+      <mat-menu #filterMenu="matMenu">
+        <div mat-menu-item *ngFor="let type of availableTypes" (click)="$event.stopPropagation()">
+          <mat-checkbox
+            [checked]="currentPreferences.includes(type)"
+            (change)="togglePreference(type, $event)">
+            {{ type }}
+          </mat-checkbox>
+        </div>
+      </mat-menu>
+    </div>
     <h1 id="opening-dedication"><strong>Opening &amp; Dedication</strong></h1>
     <img src="img/buddha.jpg" alt="Buddha Image" class="buddha-image" />
     <p>

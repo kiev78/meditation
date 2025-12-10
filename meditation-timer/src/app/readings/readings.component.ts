@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { SettingsService } from '../settings.service';
 import { Subscription } from 'rxjs';
+import { MatTooltip } from "@angular/material/tooltip";
 
 interface TocItem {
   id: string;
@@ -23,8 +24,9 @@ interface TocItem {
     MatMenuModule,
     MatCheckboxModule,
     MatButtonModule,
-    MatIconModule
-  ],
+    MatIconModule,
+    MatTooltip
+],
   templateUrl: './readings.component.html',
   styleUrl: './readings.component.css'
 })
