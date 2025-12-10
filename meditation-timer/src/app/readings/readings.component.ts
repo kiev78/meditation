@@ -142,9 +142,13 @@ export class ReadingsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private setupObserver(): void {
     const options = {
-      rootMargin: '0px 0px -80% 0px', // Trigger when heading is in the top 20% of the viewport
+      rootMargin: '0px 0px -80% 0px',
       threshold: 1.0
     };
+
+    if (this.observer) {
+        this.observer.disconnect();
+    }
 
     this.observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {

@@ -2,6 +2,13 @@
   display: block;
 }
 
+:host-context(body.dark-theme) p {
+  color: var(--mat-primary-500, #dcdcdf);
+}
+
+:host-context(body.dark-theme) a {
+  color: var(--mat-primary-A100, #e8ebfc9d);
+}
 .page-container {
   display: grid;
   grid-template-columns: 250px 1fr;
@@ -84,9 +91,6 @@ li {
   line-height: 1.6;
   font-size: 1.1rem;
 }
-:host-context(body.dark-theme) p {
-  color: var(--mat-primary-500, #dcdcdf);
-}
 ol,
 ul {
   padding-left: 2rem;
@@ -104,25 +108,24 @@ a:hover {
   filter: brightness(1.2);
 }
 
-:host-context(body.dark-theme) a {
-  color: var(--mat-primary-A100, #e8ebfc9d);
-}
 
 .settings-container {
-  position: fixed;
-  bottom: 1rem;
-  right: 2rem;
-  z-index: 10;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: .9rem;
+  color:var(--mat-primary-500);
+  display: flex;
+  align-items: center;
+}
+
+:host-context(body.dark-theme) .settings-container {
+  border-top-color: rgba(255, 255, 255, 0.233);
 }
 
 .settings-container button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.settings-container label {
-  display: none;
-}
+  transform: scale(0.8);
+} 
 
 @media (max-width: 600px) {
   .page-container {
@@ -177,4 +180,26 @@ a:hover {
 
 :host-context(body.dark-theme) .toc-nav::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Floating Action Buttons */
+.settings-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.up-fab {
+  position: fixed;
+  bottom: 15px; /* 20px + 56px (fab height) + 14px gap */
+  right: 15px;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: all 0.2s ease-in-out;
+}
+
+.up-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
 }

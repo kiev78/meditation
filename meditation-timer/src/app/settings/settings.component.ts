@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, AfterViewInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,6 +12,8 @@ import { ImageStorageService } from '../image-storage.service';
 import { TimerState } from '../timer-state.interface';
 import { TimerService } from '../timer.service';
 import { Subscription } from 'rxjs';
+import { MatSelectModule } from '@angular/material/select';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-settings',
@@ -26,12 +28,14 @@ import { Subscription } from 'rxjs';
     MatButtonModule,
     MatRadioModule,
     MatSliderModule,
-    MatIconModule
+    MatIconModule,
+    MatSelectModule
   ],
 })
-export class SettingsComponent implements OnInit {
+export class SettingsComponent implements OnInit, AfterViewInit {
   private settingsService = inject(SettingsService);
   private imageStorageService = inject(ImageStorageService);
+  private route = inject(ActivatedRoute);
   timerService = inject(TimerService);
 
   backgroundImageUrl: string | undefined;
@@ -45,6 +49,9 @@ export class SettingsComponent implements OnInit {
   endBells: number = 1;
   endBellIntervals: number[] = [5];
   intervalMinutes: number = 0;
+
+  // Reading Preference
+  readingPreferences: string[] = ['chan', 'tibetan', 'zen', 'triratna'];
 
   ngOnInit() {
     const settings = this.settingsService.loadSettings();
@@ -67,6 +74,17 @@ export class SettingsComponent implements OnInit {
     }
   }
 
+  ngAfterViewInit() {
+    this.route.fragment.subscribe(fragment => {
+      if (fragment) {
+        const element = document.getElementById(fragment);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    });
+  }
+
   ngOnDestroy() {
     if (this.timerStateSubscription) {
       this.timerStateSubscription.unsubscribe();
@@ -80,6 +98,19 @@ export class SettingsComponent implements OnInit {
     this.endBells = settings.endBells ?? 1;
     this.endBellIntervals = settings.endBellIntervals || [5];
     this.intervalMinutes = settings.intervals ?? 0;
+
+    // Reading Preference
+    // Migration: If readingPreference (singular) exists, convert to array
+    if ((settings as any).readingPreference) {
+       const oldPref = (settings as any).readingPreference;
+       if (oldPref === 'all') {
+         this.readingPreferences = ['chan', 'tibetan', 'zen', 'triratna'];
+       } else {
+         this.readingPreferences = [oldPref];
+       }
+    } else if (settings.readingPreferences) {
+      this.readingPreferences = settings.readingPreferences;
+    }
 
     // Resize arrays to match bell count immediately (just in case of mismatch)
     this.adjustIntervals(this.startBells, this.startBellIntervals);
@@ -106,6 +137,25 @@ export class SettingsComponent implements OnInit {
     this.endBells = newValue; // Ensure local model is updated
     this.adjustIntervals(newValue, this.endBellIntervals);
     this.updateBellSettings();
+  }
+
+  onReadingPreferencesChange(newValue: string[]) {
+    // Enforce at least 1 selection
+    if (newValue.length === 0) {
+      // If user tries to deselect all, revert to previous state or default
+      // A simple way is to just add 'zen' or the first available option,
+      // but it's better to not update if empty.
+      // However, mat-select has already updated the model 'newValue'.
+      // We force it back to default or keep the last one.
+      // Since we don't have easy access to "previous" value here without tracking it,
+      // let's just reset to all defaults if they clear it.
+      this.readingPreferences = ['chan', 'tibetan', 'zen', 'triratna'];
+      this.settingsService.saveSettings({ readingPreferences: this.readingPreferences });
+      return;
+    }
+
+    this.readingPreferences = newValue;
+    this.settingsService.saveSettings({ readingPreferences: newValue });
   }
 
   // Method to adjust the intervals array based on bell count

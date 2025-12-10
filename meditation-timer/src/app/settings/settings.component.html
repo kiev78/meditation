@@ -99,6 +99,22 @@
     </div>
   </section>
 
+  <!-- Reading Preferences Section -->
+  <section class="settings-section" id="reading-preference">
+    <h3>Reading Preference</h3>
+    <div class="form-group">
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Select Reading Type</mat-label>
+        <mat-select [(ngModel)]="readingPreferences" (selectionChange)="onReadingPreferencesChange($event.value)">
+          <mat-option value="all">All</mat-option>
+          <mat-option value="chan">Chan</mat-option>
+          <mat-option value="tibetan">Tibetan</mat-option>
+          <mat-option value="zen">Zen</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </section>
+
   <!-- Background Image Section -->
   <section class="settings-section">
     <h3>Background Image</h3>
