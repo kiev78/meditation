@@ -67,8 +67,6 @@
     justify-content: center;
   }
   .donate-button, .install-button {
-    width: 40px !important;
-    height: 40px !important;
   }
  
 }
