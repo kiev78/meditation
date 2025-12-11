@@ -9,7 +9,7 @@
         [displayWith]="formatLabel"
         class="timeline-slider"
       >
-        <input matSliderThumb [value]="currentTime" (input)="seek($event)" />
+        <input matSliderThumb [value]="currentTime" (change)="seek($event)" />
       </mat-slider>
       <span class="time-text">{{ formatTime(duration) }}</span>
     </div>

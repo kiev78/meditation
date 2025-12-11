@@ -13,4 +13,5 @@ export interface TimerState {
   backgroundImage?: string; 
   isGuided: boolean;
   readingPreferences?: string[];
+  readingFilterMode?: 'AND' | 'OR';
 }

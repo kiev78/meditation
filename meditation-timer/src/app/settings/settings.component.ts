@@ -50,8 +50,6 @@ export class SettingsComponent implements OnInit, AfterViewInit {
   endBellIntervals: number[] = [5];
   intervalMinutes: number = 0;
 
-  // Reading Preference
-  readingPreferences: string[] = ['chan', 'tibetan', 'zen', 'triratna'];
 
   ngOnInit() {
     const settings = this.settingsService.loadSettings();
@@ -99,19 +97,6 @@ export class SettingsComponent implements OnInit, AfterViewInit {
     this.endBellIntervals = settings.endBellIntervals || [5];
     this.intervalMinutes = settings.intervals ?? 0;
 
-    // Reading Preference
-    // Migration: If readingPreference (singular) exists, convert to array
-    if ((settings as any).readingPreference) {
-       const oldPref = (settings as any).readingPreference;
-       if (oldPref === 'all') {
-         this.readingPreferences = ['chan', 'tibetan', 'zen', 'triratna'];
-       } else {
-         this.readingPreferences = [oldPref];
-       }
-    } else if (settings.readingPreferences) {
-      this.readingPreferences = settings.readingPreferences;
-    }
-
     // Resize arrays to match bell count immediately (just in case of mismatch)
     this.adjustIntervals(this.startBells, this.startBellIntervals);
     this.adjustIntervals(this.endBells, this.endBellIntervals);
@@ -139,24 +124,6 @@ export class SettingsComponent implements OnInit, AfterViewInit {
     this.updateBellSettings();
   }
 
-  onReadingPreferencesChange(newValue: string[]) {
-    // Enforce at least 1 selection
-    if (newValue.length === 0) {
-      // If user tries to deselect all, revert to previous state or default
-      // A simple way is to just add 'zen' or the first available option,
-      // but it's better to not update if empty.
-      // However, mat-select has already updated the model 'newValue'.
-      // We force it back to default or keep the last one.
-      // Since we don't have easy access to "previous" value here without tracking it,
-      // let's just reset to all defaults if they clear it.
-      this.readingPreferences = ['chan', 'tibetan', 'zen', 'triratna'];
-      this.settingsService.saveSettings({ readingPreferences: this.readingPreferences });
-      return;
-    }
-
-    this.readingPreferences = newValue;
-    this.settingsService.saveSettings({ readingPreferences: newValue });
-  }
 
   // Method to adjust the intervals array based on bell count
   private adjustIntervals(count: number, intervals: number[]) {

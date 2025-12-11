@@ -5,6 +5,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider';
 import { SettingsService } from '../settings.service';
 import { Subscription } from 'rxjs';
 import { MatTooltip } from "@angular/material/tooltip";
@@ -25,7 +26,8 @@ interface TocItem {
     MatCheckboxModule,
     MatButtonModule,
     MatIconModule,
-    MatTooltip
+    MatTooltip,
+    MatDividerModule
 ],
   templateUrl: './readings.component.html',
   styleUrl: './readings.component.css'
@@ -38,8 +40,10 @@ export class ReadingsComponent implements OnInit, AfterViewInit, OnDestroy {
   private observer: IntersectionObserver | null = null;
   private settingsSub: Subscription | null = null;
 
-  availableTypes = ['Chan', 'Zen', 'Tibetan', 'Triratna', 'Other'];
+  availableTypes = ['BSBC','Chan', 'Zen', 'Tibetan', 'Theravada', 'Mahayana', 'Triratna', 'Chants', 'Music', 'Other'];
   currentPreferences: string[] = [];
+  // Filter mode: default to AND per user request. Persisted to settings as `readingFilterMode`.
+  filterMode: 'AND' | 'OR' = 'AND';
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -54,10 +58,12 @@ export class ReadingsComponent implements OnInit, AfterViewInit, OnDestroy {
         // Default to all selected if not set
         this.currentPreferences = [...this.availableTypes];
       }
+      // Only update filterMode if the emitted settings explicitly include it.
+      // This prevents overwriting the user's current selection when other settings change.
+      if (typeof settings.readingFilterMode !== 'undefined') {
+        this.filterMode = settings.readingFilterMode as 'AND' | 'OR';
+      }
       // Apply filter whenever settings change (or init)
-      // We need to wait for view to be ready if called during init, but filterReadings checks nativeElement
-      // ngAfterViewInit will also call createToc, so we can defer or just call it.
-      // Since ngOnInit runs before ViewInit, the element might be there but let's be safe.
       if (this.contentEl) {
         this.filterReadings();
       }
@@ -67,6 +73,9 @@ export class ReadingsComponent implements OnInit, AfterViewInit, OnDestroy {
     const current = this.settingsService.loadSettings();
     if (current && current.readingPreferences) {
       this.currentPreferences = current.readingPreferences;
+      if (current.readingFilterMode) {
+        this.filterMode = current.readingFilterMode as 'AND' | 'OR';
+      }
     } else {
       this.currentPreferences = [...this.availableTypes];
     }
@@ -95,6 +104,29 @@ export class ReadingsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.currentPreferences = this.currentPreferences.filter(t => t !== type);
     }
     this.settingsService.saveSettings({ readingPreferences: this.currentPreferences });
+    // Re-apply filter after preference change
+    this.filterReadings();
+  }
+
+  toggleSelectAll(event: any): void {
+    const checked = event.checked;
+    if (checked) {
+      this.currentPreferences = [...this.availableTypes];
+    } else {
+      this.currentPreferences = [];
+    }
+    this.settingsService.saveSettings({ readingPreferences: this.currentPreferences });
+    this.filterReadings();
+  }
+
+  toggleFilterMode(event: any): void {
+    const checked = event.checked;
+    // When checked -> AND, unchecked -> OR
+    this.filterMode = checked ? 'AND' : 'OR';
+    // Persist the change
+    this.settingsService.saveSettings({ readingFilterMode: this.filterMode });
+    // Re-apply filter with the new mode
+    this.filterReadings();
   }
 
   private filterReadings(): void {
@@ -103,18 +135,24 @@ export class ReadingsComponent implements OnInit, AfterViewInit, OnDestroy {
     const sections = this.contentEl.nativeElement.querySelectorAll('section[data-tag]');
     sections.forEach((section: any) => {
       const tags = section.getAttribute('data-tag').toLowerCase().split(' ');
-      // Check if any of the tags match current preferences
-      // Note: tags in HTML are lowercase (e.g. 'zen'), preferences are Title Case (e.g. 'Zen')
-      // Need to normalize.
-      const hasMatch = tags.some((tag: string) =>
-        this.currentPreferences.some(pref => pref.toLowerCase() === tag)
-      );
+      // Normalize preferences & tags
+      const prefs = this.currentPreferences.map(p => p.toLowerCase());
 
-      if (hasMatch) {
-        section.style.display = 'block';
-      } else {
-        section.style.display = 'none';
+      // If no explicit filtering (all selected or none selected), show everything
+      const allSelected = prefs.length === 0 || prefs.length === this.availableTypes.length;
+
+      let shouldShow = true;
+      if (!allSelected) {
+        if (this.filterMode === 'AND') {
+          // Show section only if it contains ALL selected prefs
+          shouldShow = prefs.every(pref => tags.includes(pref));
+        } else {
+          // OR: show if any selected pref matches
+          shouldShow = prefs.some(pref => tags.includes(pref));
+        }
       }
+
+      section.style.display = shouldShow ? 'block' : 'none';
     });
 
     // Re-create TOC to reflect visibility
@@ -165,7 +203,6 @@ export class ReadingsComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
-
   scrollTo(fragment: string): void {
     this.contentEl.nativeElement.querySelector('#' + fragment)?.scrollIntoView({ behavior: 'auto' });
   }

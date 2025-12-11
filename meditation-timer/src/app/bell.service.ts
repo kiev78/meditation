@@ -18,9 +18,14 @@ export class BellService {
   private isMutedSubject = new BehaviorSubject<boolean>(false);
   isMuted$ = this.isMutedSubject.asObservable();
 
+  public bellDuration = 10; // Default to 10s, updated on metadata load
+
   constructor() {
-    // Preload one instance to ensure browser caches it
+    // Preload one instance to get duration and ensure browser caches it
     const preload = new Audio(this.BELL_PATH);
+    preload.onloadedmetadata = () => {
+      this.bellDuration = preload.duration;
+    };
     preload.load();
     this.loadSettings();
   }
