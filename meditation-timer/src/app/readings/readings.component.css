@@ -319,39 +319,39 @@ a:hover {
 }
 
 /* Collapsible details for long resource sections */
-details.reading-details {
+details {
   margin-top: 0.5rem;
   cursor: pointer;
 }
 
-summary.reading-summary {
+
+details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+details div{
+  margin-top: 0.5rem;
+  margin-left: 1.5rem;
+}
+ 
+
+summary {
   list-style: none;
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   gap: 0.5rem;
   font-weight: 500;
-  color: var(--mat-primary-500, #3f51b5);
   cursor: pointer;
   user-select: none;
 }
 
-summary.reading-summary::-webkit-details-marker {
+summary::-webkit-details-marker {
   display: none;
 }
 
-summary.reading-summary::before {
+summary::before {
   content: '\25BA'; /* small right-pointing arrow */
   display: inline-block;
   transform: rotate(0deg);
   transition: transform 0.18s ease-in-out;
 }
-
-details[open] > summary.reading-summary::before {
-  transform: rotate(90deg);
-}
-
-.reading-details-content {
-  margin-top: 0.5rem;
-  margin-left: 1.5rem;
-}
- 

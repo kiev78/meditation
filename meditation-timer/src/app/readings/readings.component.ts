@@ -86,7 +86,6 @@ export class ReadingsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.filterReadings();
     this.createToc();
     this.setupObserver();
-    this.setupCollapsibles();
   }
 
   ngOnDestroy(): void {
@@ -204,41 +203,6 @@ export class ReadingsComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
-
-  /**
-   * Convert elements with class 'reading-details' into native <details><summary> structure.
-   * Only processes elements that are marked with the reading-details class.
-   */
-  private setupCollapsibles(): void {
-    if (!this.contentEl) return;
-
-    const elems: NodeListOf<HTMLElement> = this.contentEl.nativeElement.querySelectorAll('.reading-details');
-    elems.forEach(elem => {
-      if (elem.getAttribute('data-collapsible-processed')) return;
-
-      const details = document.createElement('details');
-      details.className = 'reading-details';
-
-      const summary = document.createElement('summary');
-      summary.className = 'reading-summary';
-      summary.textContent = 'About this resource';
-
-      const container = document.createElement('div');
-      container.className = 'reading-details-content';
-
-      while (elem.firstChild) {
-        container.appendChild(elem.firstChild);
-      }
-
-      details.appendChild(summary);
-      details.appendChild(container);
-
-      elem.parentNode?.replaceChild(details, elem);
-
-      details.setAttribute('data-collapsible-processed', '1');
-    });
-  }
-
   scrollTo(fragment: string): void {
     this.contentEl.nativeElement.querySelector('#' + fragment)?.scrollIntoView({ behavior: 'auto' });
   }
