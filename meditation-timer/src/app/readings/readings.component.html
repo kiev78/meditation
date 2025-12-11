@@ -19,22 +19,42 @@
       <label>Filter Readings by tradition </label>
       <button
         mat-icon-button
-      
         [matMenuTriggerFor]="filterMenu"
         aria-label="Filter Readings by tradition"
         matTooltip="Filter Readings by tradition"
-        
       >
         <mat-icon>settings</mat-icon>
       </button>
- 
+
       <mat-menu #filterMenu="matMenu">
-        <div mat-menu-item *ngFor="let type of availableTypes" (click)="$event.stopPropagation()">
+        <div mat-menu-item>
           <mat-checkbox
+            (click)="$event.stopPropagation()"
+            [checked]="currentPreferences.length === availableTypes.length"
+            (change)="toggleSelectAll($event)"
+            matTooltip="Toggle all reading types on or off"
+          >
+            Select All
+          </mat-checkbox>
+        </div>
+        <div mat-menu-item *ngFor="let type of availableTypes">
+          <mat-checkbox
+            (click)="$event.stopPropagation()"
             [checked]="currentPreferences.includes(type)"
             (change)="togglePreference(type, $event)"
           >
             {{ type }}
+          </mat-checkbox>
+        </div>
+        <mat-divider></mat-divider>
+        <div mat-menu-item>
+          <mat-checkbox
+            (click)="$event.stopPropagation()"
+            [checked]="filterMode === 'AND'"
+            (change)="toggleFilterMode($event)"
+            matTooltip="When checked, only show readings that match ALL selected tags (AND). When unchecked, show readings that match ANY selected tag (OR)."
+          >
+            Match AND
           </mat-checkbox>
         </div>
       </mat-menu>
@@ -44,17 +64,39 @@
   <main class="readings-container" #content>
     <h1 id="opening-dedication"><strong>Opening &amp; Dedication</strong></h1>
     <img src="img/buddha.jpg" alt="Buddha Image" class="buddha-image" />
-    <p>
-      Namo tassa, bhagavato, arahato, samma sambuddhasa<br />Namo tassa, bhagavato, arahato, samma
-      sambuddhasa<br />Namo tassa, bhagavato, arahato, samma sambuddhasa
-    </p>
-
-    <section data-tag="zen chan tibetan triratna">
-      <h2 id="the-three-refugees-recite-three-times">
-        <strong>The Three Refugees: recite three times</strong>
-      </h2>
-
+    <section data-tag="theravada triratna bsbc">
+      <h2 id="homage-to-the-buddha"><strong>Homage to the Buddha</strong></h2>
       <p>
+        Namo tassa, bhagavato, arahato, samma sambuddhasa<br />
+        Namo tassa, bhagavato, arahato, samma sambuddhasa<br />
+        Namo tassa, bhagavato, arahato, samma sambuddhasa
+      </p>
+      <p>
+        Homage to Him, the Exalted One, the Worthy One, <br />
+        <em>The supremely Enlightened One</em><br />
+        Homage to Him, the Exalted One, the Worthy One, <br />
+        <em>The supremely Enlightened One</em><br />
+        Homage to Him, the Exalted One, the Worthy One, <br />
+        <em>The supremely Enlightened One</em>
+      </p>
+    </section>
+
+    <section data-tag="tibetan bsbc">
+      <h2 id="four-dharmas-of-gampopa"><strong>The Four Dharmas of Gampopa</strong></h2>
+      <p>
+        Grant your blessings so that my mind may be one with the dharma.<br />
+        Grant your blessings so that dharma may progress along the path.<br />
+        Grant your blessings so that the path may clarify confusion.<br />
+        Grant your blessings so that confusion may dawn as wisdom.
+      </p>
+    </section>
+
+    <section data-tag="mahayana zen chan tibetan triratna bsbc">
+      <h2 id="the-three-refugees-recite-three-times">
+        <strong>The Three Refuges</strong>
+      </h2>
+      <p>
+        (Recite three times)<br />
         I take refuge in the Buddha, and I wish all sentient beings, <br />
         will awaken to the great Path, and make the supreme resolution.<br />I take refuge in the
         Dharma, and I wish all sentient beings, <br />
@@ -62,28 +104,30 @@
         Sangha, and I wish all sentient beings, <br />
         will be brought together in harmony, without any obstructions at all.&nbsp;
       </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          The refuges in Buddhism, both on the internal and on the external levels, are the Buddha, Dharma, and Sangha, also known as the Triple Gem. To take refuge in the Buddha means, not taking refuge in him as a person, but taking refuge in the fact of his Awakening: placing trust in the belief that he did awaken to the truth, that he did so by developing qualities that we too can develop, and that the truths to which he awoke provide the best perspective for the conduct of our life. The Dharma, on the external level, refers to the path of practice the Buddha taught to his followers: The words of his teachings, the act of putting those teachings into practice, and the attainment of Awakening as the result of that practice. The Sangha consists of all people, lay or ordained, who have practiced the Dharma to the point of gaining at least a glimpse of the Deathless. – From Commentary by Thanissaro Bhikkhu
+        </div>
+      </details>
+
     </section>
 
-    <section data-tag="zen chan tibetan triratna">
+    <section data-tag="theravada triratna bsbc">
       <h2 id="three-refuges-chant-in-pali"><strong>Three Refuges Chant, in Pali</strong></h2>
-
       <p>buddhaṁ saraṇaṁ gacchāmi<br />dhammaṁ saraṇaṁ gacchāmi<br />saṅghaṁ saraṇaṁ gacchāmi</p>
-
       <p>dutiyampi buddhaṁ…<br />…dhammaṁ…<br />…saṅghaṁ…</p>
-
       <p>tatiyampi buddhaṁ…<br />…dhammaṁ…<br />…saṅghaṁ…<br /><br />ti saraṅa-gamanaṃ niṭṭhitaṃ</p>
-
       <p>
         I go for refuge to the Buddha, Dhamma, &amp; Sangha.<br />A second time…<br />A third
         time…<br />I have gone for refuge to the Triple Gem.
       </p>
     </section>
 
-    <section data-tag="zen chan tibetan triratna">
+    <section data-tag="zen triratna bsbc">
       <h2 id="the-three-refuges-english-prose-form">
-        <strong>The Three Refuges (English Prose form)</strong>
+        <strong>The Three Refuges (English Prose)</strong>
       </h2>
-
       <p>
         I take refuge in the Buddha, the one who shows me the way in this life .<br />I take refuge
         in the Dharma, the way of understanding and of love .<br />I take refuge in the Sangha, the
@@ -101,21 +145,82 @@
       </p>
     </section>
 
-    <section data-tag="zen chan tibetan triratna">
-      <h2 id="short-refuge-prayer-repeat-3-times">
-        <strong>Short Refuge Prayer </strong>(Repeat 3 times)
+    <section data-tag="tibetan bsbc">
+      <h2 id="short-refuge-prayer-repeat-3-times-1">
+        <strong>Short Refuge Prayer 1</strong>
       </h2>
-
       <p>
+        (Repeat 3 times)<br />
         Taking refuge in the Buddha, I learn to transform anger into compassion.<br />Taking refuge
         in the Dharma, I learn to transform delusion into wisdom.<br />Taking refuge in the Sangha,
         I learn to transform desire into generosity.
       </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          From the Bodhicitta Foundation Prayer Book 6
+        </div>
+      </details>
+      <h2 id="short-refuge-prayer-repeat-3-times-2">
+        <strong>Short Refuge Prayer 2</strong>
+      </h2>
+      <p>
+        (Repeat 3 times)<br />
+        In the Buddha, the Dharma, and the Sangha most excellent,<br />I take refuge until
+        enlightenment is reached.<br />
+        By the merit of generosity and other good deeds, may I attain Buddhahood for the sake of all
+        sentient beings.
+      </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          From the Bodhicitta Foundation Prayer Book 6
+        </div>
+      </details>
+    </section>
+    <section data-tag="tibetan bsbc">
+      <h2 id="long-refuge-prayer-1"><strong>Long Refuge Prayer 1</strong></h2>
+      <p>
+        We take refuge in the kind root and lineage lamas.<br />
+        We take refuge in the deities of the mandalas and the yidams. We take refuge in all the
+        exalted Buddhas<br />
+        We take refuge in the perfect Dharma.<br />
+        We take refuge in the excellent order of the Sangha.<br />
+        We take refuge in all the noble dakas, dakinis and dharma-guardians – possessors of the eye
+        of wisdom.
+      </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          From the Bodhicitta Foundation Prayer Book 6
+        </div>
+      </details>
+      <h2 id="long-refuge-prayer-2"><strong>Long Refuge Prayer 2</strong></h2>
+      <p>
+        (Repeat 3 times)<br />
+        They go to many a refuge,<br />
+        to mountains, forests, parks, trees, and shrines:<br />
+        people threatened with danger.
+      </p>
+      <p>
+        That’s not the secure refuge,<br />
+        that’s not the highest refuge,<br />
+        that’s not the refuge,<br />
+        having gone to which,<br />
+        you gain release from all suffering and stress.
+      </p>
+      <p>
+        But when, having gone for refuge to the Buddha, Dhamma, and Sangha,<br />
+        you see with right discernment the four Noble Truths — <br />
+        stress, the cause of stress, the transcending of stress, and the Noble Eightfold Path, the
+        way to the stilling of stress:<br />
+        That’s the secure refuge, that, the highest refuge, that is the refuge,<br />
+        having gone to which, you gain release from all suffering and stress.
+      </p>
     </section>
 
-    <section data-tag="zen chan tibetan">
+    <section data-tag="zen chan tibetan bsbc">
       <h2 id="incense-offering"><strong>Incense Offering</strong></h2>
-
       <p>
         In gratitude we offer this incense to all the Buddhas and Bodhisattvas throughout space and
         time.<br />May it be as fragrant as earth herself, reflecting our careful efforts,<br />Our
@@ -123,32 +228,82 @@
         beings be companions of Buddhas and Bodhisattvas.<br />May we awaken from forgetfulness and
         realize our true home.
       </p>
+    </section>
 
+    <section data-tag="zen chan tibetan bsbc">
+      <h2 id="incense-offering"><strong>Setting the Intention</strong></h2>
       <p>
-        <strong>Setting the Intention<br /></strong>Today from this instant on until the moment in
-        the evening when I fall asleep, I will exert myself to accomplish all the positive and
-        release all the negative. I will practice the Dharma to become able to help all beings be
-        free from suffering and progress toward liberation.<br />Today I will avoid causing harm
-        through my physical activity.<br />I will avoid causing harm through my speech.<br />I will
-        avoid causing harm through my thoughts.<br />Today I will do my best to engage in beneficial
-        physical activity.<br />I will do my best to speak useful and pleasant words.<br />I will do
-        my best to nourish well-wishing thoughts for all beings.
+        Today from this instant on until the moment in the evening when I fall asleep, I will exert
+        myself to accomplish all the positive and release all the negative. I will practice the
+        Dharma to become able to help all beings be free from suffering and progress toward
+        liberation.<br />Today I will avoid causing harm through my physical activity.<br />I will
+        avoid causing harm through my speech.<br />I will avoid causing harm through my thoughts.<br />Today
+        I will do my best to engage in beneficial physical activity.<br />I will do my best to speak
+        useful and pleasant words.<br />I will do my best to nourish well-wishing thoughts for all
+        beings.
       </p>
     </section>
 
-    <section data-tag="zen chan tibetan">
-      <h2 id="sharing-the-merit"><strong>Sharing the Merit</strong></h2>
+    <section data-tag="tibetan bsbc">
+      <h2 id="cultivating-the-mind-of-enlightenment">
+        <strong>Cultivating the Mind of Enlightenment</strong>
+      </h2>
+      <p><em>(Repeat 3 times)</em></p>
+      <p>
+        Until I attain the heart of enlightenment, I take refuge in all the Buddhas,<br />
+        I take refuge in the Dharma, and likewise, in the assembly of the Bodhisattvas.<br />
+        As the previous Buddhas embraced the enlightened mind and progressed on the Bodhisattva’s
+        path,<br />
+        I too, for the benefit of all sentient beings, give birth to Bodhicitta and apply myself to
+        accomplish the stages of the path.
+      </p>
+    </section>
 
+    <section data-tag="tibetan bsbc">
+      <h2 id="altruistic-motivation"><strong>Altruistic Motivation</strong></h2>
+      <p>
+        All mother sentient beings, especially those enemies who hate me,<br />
+        obstructers who harm me, and those who create obstacles on my<br />
+        path to liberation and omniscience.
+      </p>
+      <p>
+        May they experience happiness, be separated from suffering, and<br />
+        swiftly will I establish them in the state of unsurpassed, perfect,<br />
+        complete and precious Buddhahood.
+      </p>
+    </section>
+
+    <section data-tag="tibetan bsbc">
+      <h2 id="action-bodhicitta-prayer"><strong>Action Bodhicitta Prayer</strong></h2>
+      <p>
+        Thus, until I achieve enlightenment, I perform virtuous deeds with body, speech and mind.<br />
+        From now until this time tomorrow, I perform virtuous deeds with body, speech and mind.
+      </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          From the Bodhicitta Foundation Prayer Book 6
+        </div>
+      </details>
+    </section>
+
+    <section data-tag="zen chan tibetan bsbc">
+      <h2 id="sharing-the-merit"><strong>Sharing the Merit</strong></h2>
       <p>
         Beginning anew, practicing the way of awareness gives rise to benefits without limit. We vow
         to share the fruits with all beings. We vow to offer tribute to parents, teachers and
         friends, and numerous beings who give guidance and support along the path.
       </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          Whatever benefits we derive from study and practice should be shared so that all sentient beings attain Enlightenment. Just as a drop of water, if thrown in the ocean, will merge with the whole and not dry out unless the ocean does, so will our achievements, if dedicated to all beings, merge with all and not be lost until one attains Enlightenment. – Khenchen Konchog Gyaltsen Rinpoche. Adapted by Thich Nhat Hanh.
+        </div>
+      </details>
     </section>
 
-    <section data-tag="zen chan tibetan">
+    <section data-tag="zen chan tibetan bsbc">
       <h2 id="dedication-of-merit"><strong>Dedication of Merit</strong></h2>
-
       <p>
         May the merit of our practice awaken wisdom and compassion and benefit all sentient beings
         throughout space and time. May all beings be happy, may all beings be safe, may all beings
@@ -156,11 +311,78 @@
       </p>
     </section>
 
+    <section data-tag="tibetan bsbc">
+      <h2 id="shantidevas-dedication-prayer"><strong>Shantideva’s Dedication Prayer</strong></h2>
+      <p>
+        May all beings everywhere<br />
+        Plagued by sufferings of body and mind,<br />
+        Obtain an ocean of happiness and joy<br />
+        By virtue of my merits.
+      </p>
+      <p>
+        May no living creature suffer,<br />
+        Commit evil or ever fall ill.
+      </p>
+      <p>
+        May no one be afraid or belittled,<br />
+        With a mind weighed down by depression.
+      </p>
+      <p>
+        May the blind see forms<br />
+        And the deaf hear sounds.
+      </p>
+      <p>
+        May those whose bodies are worn with toil<br />
+        Be restored on finding repose.
+      </p>
+      <p>
+        May the naked find clothing<br />
+        The hungry find food
+      </p>
+      <p>
+        May the thirsty find water<br />
+        And delicious drinks.
+      </p>
+      <p>
+        May the poor find wealth,<br />
+        Those weak with sorrow find joy;
+      </p>
+      <p>
+        May the hopeless find hope,<br />
+        Constant happiness and prosperity.
+      </p>
+      <p>
+        May there be timely rains<br />
+        And bountiful harvests;
+      </p>
+      <p>
+        May all the medicines be effective<br />
+        And wholesome prayers bear fruit.
+      </p>
+      <p>
+        May all who are sick and ill<br />
+        Quickly be freed from their ailments.<br />
+        Whatever diseases there are in the world,<br />
+        May they never occur again.
+      </p>
+      <p>
+        May the frightened cease to be afraid<br />
+        And those bound be freed;<br />
+        May the powerless find power<br />
+        And the people think of benefiting each other.
+      </p>
+      <p>
+        For as long as space remains,<br />
+        For as long as sentient beings remain,<br />
+        Until then may I too remain<br />
+        To dispel the miseries of the world.
+      </p>
+    </section>
+
     <h1 id="closing-blessings-aspirations">Closing Blessings &amp; Aspirations</h1>
 
     <section data-tag="zen chan tibetan">
       <h2 id="transfer-of-merit"><strong>Transfer of merit</strong></h2>
-
       <p>
         We pray,<br />For the flourishing of Buddhadharma,<br />For peace in the world,<br />For the
         joy and contentment of all people,&nbsp;<br />For the freedom and ease of body and mind,<br />May
@@ -168,9 +390,8 @@
       </p>
     </section>
 
-    <section data-tag="tibetan">
+    <section data-tag="tibetan bsbc">
       <h2 id="dedication-prayer"><strong>Dedication Prayer</strong></h2>
-
       <p>
         (always dedicate the merit at the conclusion of any practice, however short)<br />By this
         merit, may all attain perfect awakening,<br />rising above all forces of negativity,<br />going
@@ -179,11 +400,22 @@
       </p>
     </section>
 
-    <section data-tag="zen chan">
+    <section data-tag="tibetan bsbc">
+      <h2 id="long-life-prayer-dalai-lama">
+        <strong>Long Life Prayer (His Holiness the 14th Dalai Lama)</strong>
+      </h2>
+      <p>
+        For this realm encircled by snow-covered mountains,<br />
+        You are the source of every benefit and bliss without exception.<br />
+        Tenzin Gyatso, you who are one with Avalokiteshvara, May you remain steadfast until
+        samsara’s end.<br />
+      </p>
+    </section>
+
+    <section data-tag="zen chan bsbc">
       <h2 id="four-bodhisattva-vows-chant-3-times">
         <strong>Four Bodhisattva Vows</strong> (chant 3 times)
       </h2>
-
       <p>
         All beings without number I vow to liberate. Endless blind passions I vow to uproot. Dharma
         gates beyond measure I vow to pass through. The great way of Buddha I vow to attain.
@@ -192,12 +424,10 @@
 
     <section data-tag="chan">
       <h2 id="four-great-vows-chan"><strong>Four Great Vows (Chan)</strong></h2>
-
       <p>
         I vow to deliver innumerable sentient beings. I vow to cut off endless vexations. I vow to
         master limitless approaches to Dharma. I vow to attain supreme Buddhahood.
       </p>
-
       <p>
         <em>Said in another way: </em><br /><em
           >I vow to learn and practice the path just as the awakened one has taught.</em
@@ -208,10 +438,29 @@
         >
       </p>
     </section>
+    <section data-tag="chan bsbc">
+      <h2 id="four-great-vows-chan"><strong> Gatha on Impermanence</strong></h2>
+      <p>
+        The day is now ended. Engaging in the practice. Our lives are shorter. Let us live deeply,
+        Let us look carefully. Free from our afflictions, What have we done? Aware of impermanence
+        So that life does not Noble Sangha, with all our heart, Drift away without meaning. Let us
+        be diligent, (bell, bell)
+      </p>
+    </section>
+    <section data-tag="zen bsbc">
+      <h2 id="four-great-vows-chan"><strong>Four Great Vows (Zen)</strong></h2>
+      <p>
+        (Read all three together once) Shi-gu Sei-gan Mom Shu-jou Mu-hen Sei-gan Do Bon-nou Mu-jin
+        Sei-gan Dan Hou-mon Mu-ryou Seigan Gaku` Butsu-dou Mu-jou Sei-gan Jou Beings are numberless,
+        I vow to save them all; Delusions are endless, I vow to extinguish them all; Dharma gates
+        are boundless, I vow to learn them all; The Buddha Way is supreme, I vow to attain it.
+        Numberless beings – set free; Endless delusion – let go; Countless Dharma – see through;
+        Peerless Way – manifest!
+      </p>
+    </section>
 
-    <section data-tag="zen">
+    <section data-tag="zen bsbc">
       <h2 id="evening-gatha"><strong>Evening Gatha</strong></h2>
-
       <p>
         Let me respectfully remind you, life and death are of supreme importance.<br />Time swiftly
         passes by, and opportunity is lost.<br />Each of us should strive to awaken: Awaken!<br />Take
@@ -219,9 +468,8 @@
       </p>
     </section>
 
-    <section data-tag="zen">
+    <section data-tag="zen bsbc">
       <h2 id="admonition-to-practice"><strong>Admonition to practice</strong></h2>
-
       <p>
         The day has passed. our lives, too, are closing. Like fish with little water; joy will not
         last. Let us work with pure effort. Work as we would were our heads aflame. Be mindful of
@@ -229,30 +477,33 @@
       </p>
     </section>
 
-    <section data-tag="zen">
+    <section data-tag="zen bsbc">
       <h2 id="admonition-to-practice-alternate-translation">
         <strong>Admonition to practice</strong> (alternate translation)
       </h2>
-
       <p>
         This day has now ended. Our life is short. I reflect on how I spent this day, as it may have
         been my last. I re-commit to keep the precepts and practice alive and well in me.
       </p>
     </section>
 
-    <section data-tag="tibetan triratna">
+    <section data-tag="tibetan triratna bsbc">
       <h2 id="the-four-immeasurables"><strong>The Four Immeasurables</strong></h2>
-
       <p>
         May all beings have happiness and the cause of happiness.<br />May all beings be free from
         suffering and the cause of suffering.<br />May all beings never part from happiness beyond
         suffering.<br />May all beings rest in equanimity, free from attachment and hatred.
       </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          From the Bodhicitta Foundation Prayer Book 6
+        </div>
+      </details>
     </section>
 
     <section data-tag="tibetan">
       <h2 id="the-morning-puja"><strong>The Morning Puja</strong></h2>
-
       <p>
         This human birth is precious, our opportunity to awaken.<br />The body is
         impermanent&nbsp;and time of death uncertain.<br />The cause and effect of karma&nbsp;shapes
@@ -263,11 +514,10 @@
       </p>
     </section>
 
-    <section data-tag="tibetan">
+    <section data-tag="tibetan bsbc">
       <h2 id="prayer-to-recognize-my-own-faults-and-keep-in-mind-the-objects-of-refuge">
         <strong>Prayer to Recognize My Own Faults and Keep in Mind the Objects of Refuge</strong>
       </h2>
-
       <p>
         Bless me to see my own faults.<br />Bess me to have no desire to examine the faults of
         others.&nbsp; <br />Bless me to pacify all turbulent, cruel, and disturbing thoughts.
@@ -288,9 +538,8 @@
 
     <h1 id="core-chants-sutra-readings">Core Chants / Sutra Readings</h1>
 
-    <section data-tag="triratna">
+    <section data-tag="triratna bsbc">
       <h2 id="choices"><strong>Choices</strong></h2>
-
       <p>
         We are what we think.<br />All that we are arises with our thoughts. With our thoughts we
         make the world.<br />Speak or act with an impure mind and trouble will follow you, As the
@@ -301,11 +550,18 @@
         unguarded. But once mastered, no one can help you as much,<br />Not even your family,
         teachers or friends.
       </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          Choices is from the Dhammapada, translated by Thomas Byrom and published in The Teachings of Buddha; edited by Jack Kornfield
+        </div>
+      </details>
     </section>
 
-    <section data-tag="tibetan">
-      <h2 id="the-heart-sutra-tibetan"><strong>The Heart Sutra – Tibetan</strong></h2>
-
+    <section data-tag="tibetan mahayana bsbc">
+      <h2 id="the-heart-sutra-tibetan">
+        <strong>The Heart Sutra – Tibetan Longer Version</strong>
+      </h2>
       <p>
         Thus have I heard: Once the Blessed One was dwelling in Rajagriha at Vulture Peak Mountain
         with a great gathering of monks, nuns and Bodhisattvas. At that time the Blessed One entered
@@ -347,28 +603,24 @@
       </p>
     </section>
 
-    <section data-tag="zen">
+    <section data-tag="zen mahayana bsbc">
       <h2 id="the-prajnaparamita-heart-sutra">The Prajnaparamita Heart Sutra:</h2>
-
       <p>
         When the Bodhisattva Avalokitesvara was coursing in the deep prajnaparamita, <br />he
         perceived that all five skandhas are empty, thereby transcending all sufferings.
       </p>
-
       <p>
         Sariputra, form is not other than emptiness and emptiness not other than form.<br />Form is
         precisely emptiness and emptiness precisely form.<br />So also are sensation, perception,
         volition, and consciousness.<br />Sariputra, this voidness of all dharmas is not born, not
         destroyed, <br />not impure, not pure, does not increase or decrease.
       </p>
-
       <p>
         In voidness there is no form, and no sensation, <br />perception, volition or
         consciousness;<br />no eye, ear, nose, tongue, body, mind;<br />no sight, sound, smell,
         taste, touch, thought;<br />there is no realm of the eye, all the way up to no realm of
         mental cognition.
       </p>
-
       <div>
         <p>
           There is no ignorance and there is no ending of ignorance,<br />through to no aging and
@@ -386,78 +638,100 @@
       </div>
     </section>
 
-    <section data-tag="zen">
-      <h2 id="the-heart-sutra-expanded"><strong>The Heart Sutra</strong> (expanded)</h2>
-
+    <section data-tag="zen mahayana bsbc">
+      <h2 id="the-heart-sutra-plum-village">
+        <strong>The Insight that Brings Us to the Other Shore</strong> by Thich Nhat Hanh
+      </h2>
       <p>
-        Thus, have I heard Avalokitesvara, the Bodhisattva Majasattva, while practicing the
-        prajna-paramita, clearly saw all phenomena to be empty of nature.
+        Avalokiteshvara, while practicing deeply with the Insight that Brings Us to the Other Shore,
+        suddenly discovered that all of the five Skandhas are equally empty, and with this
+        realization he overcame all Ill-being. “Listen Sariputra, this Body itself is Emptiness and
+        Emptiness itself is this Body. This Body is not other than Emptiness and Emptiness is not
+        other than this Body. The same is true of Feelings, Perceptions, Mental Formations, and
+        Consciousness. Listen Sariputra, all phenomena bear the mark of Emptiness; their true nature
+        is the nature of no Birth no Death, no Being no Non-being, no Defilement no Purity, no
+        Increasing no Decreasing. That is why in Emptiness, Body, Feelings, Perceptions, Mental
+        Formations and Consciousness are not separate self-entities. The Eighteen Realms of
+        Phenomena which are the six Sense Organs, the six Sense Objects, and the six Consciousnesses
+        are also not separate self-entities. The Twelve Links of Interdependent Arising and their
+        Extinction are also not separate self-entities. Ill-being, the Causes of Ill-being, the End
+        of Ill-being, the Path, insight and attainment, are also not separate self-entities. Whoever
+        can see this no longer needs anything to attain. Bodhisattvas who practice the Insight that
+        Brings Us to the Other Shore see no more obstacles in their mind, and because there are no
+        more obstacles in their mind, they can overcome all fear, destroy all wrong perceptions and
+        realize Perfect Nirvana. All Buddhas in the past, present and future by practicing the
+        Insight that Brings Us to the Other Shore are all capable of attaining Authentic and Perfect
+        Enlightenment. Therefore Sariputra, it should be known that the Insight that Brings Us to
+        the Other Shore is a Great Mantra, the most illuminating mantra, the highest mantra, a
+        mantra beyond compare, the True Wisdom that has the power to put an end to all kinds of
+        suffering. Therefore let us proclaim a mantra to praise the Insight that Brings Us to the
+        Other Shore. Gate, Gate, Paragate, Parasamgate, Bodhi Svaha! Gate, Gate, Paragate,
+        Parasamgate, Bodhi Svaha! Gate, Gate, Paragate, Parasamgate, Bodhi Svaha!
       </p>
-
-      <p>
-        Listen Sariputra! Form is emptiness and emptiness is form. Emptiness is no other than form
-        and form is no other than emptiness. All phenomena are empty of any characteristics, or
-        inherent or intrinsic qualities.
-      </p>
-
-      <p>
-        In emptiness there is no birth and no death, no impurity, no purity, no increase, no
-        decrease, no feeling, perception, formation, or consciousness.
-      </p>
-
-      <p>
-        No eye, ear, nose, tongue, body, mind, sight, sound, smell, taste, touch, no objects of
-        mind; no realms of the eye, ear, nose, tongue, body, and mind-consciousness.
-      </p>
-
-      <p>
-        Sariputra, there is no ignorance, and no ending of ignorance. There are no actions and no
-        non-actions. No actions like walking, chanting, thinking, feeling, or perceiving.
-      </p>
-
-      <p>
-        There is no intention, and no paying attention, no choosing and non-choosing. There is no
-        consciousness, no awareness of thoughts, emotions, sensations, and no cessation of
-        awareness, thoughts and emotions.
-      </p>
-
-      <p>
-        Sariputra, there are no forms and no names for these forms, no labels, no designations, no
-        characteristics or appearance of things and also no things.&nbsp;There are no six sense
-        organs, nor contact with the senses. Thus, no sensation, no desire, no grasping, no
-        existence, no birth, no aging, no old age and no death; also, no ending to birth, existence,
-        aging and death.
-      </p>
-
-      <p>
-        There is no suffering, no cause of suffering, no cessation of suffering and no path. There
-        is no wisdom and no attainment. Therefore, with nothing to attain, bodhisattvas realize the
-        ultimate nature of reality, transcening all words and concepts, all hindrences and
-        vexations, they abide in the perfection of wisdom, the prajna-paramita.
-      </p>
-
-      <p>
-        Having no more hindrances in their mind, they have no fear. They transcend all illusion and
-        delusion, and dwell in complete and ultimate nirvana. All buddhas of the past, present and
-        future rely on prajna-paramita to fully and completely awaken. Therefore, we honor the
-        prajna-paramita with a great transcendent mantra, the great mantra of insight, the supreme
-        mantra, the unequalled mantra, the mantra that can end all suffering and since there is no
-        deception it is known as truth. So let us recite the prajna-paramita mantra in this way:
-      </p>
-      _
-      <p>Om gate, gate, paragate, parasamgate, bodhi, svaha!&nbsp;</p>
     </section>
 
-    <section data-tag="zen chan tibetan triratna">
-      <h2 id="metta-sutta">Metta Sutta</h2>
+    <section data-tag="zen bsbc">
+      <h2 id="identity-of-relative-and-absolute">
+        <strong>The Identity of Relative and Absolute (Sandōkai)</strong>
+      </h2>
+      <p>
+        The mind of the Great Sage of India was intimately conveyed from west to east.<br />
+        Among human beings are wise ones and fools, But in the Way there is no northern or southern
+        Patriarch.
+      </p>
+      <p>
+        The subtle source is clear and bright; the tributary streams flow through the darkness. To
+        be attached to things is illusion; to encounter the absolute is not yet enlightenment.
+      </p>
+      <p>
+        Each and all, the subjective and objective spheres are related and at the same time,
+        independent. Related, yet working differently, though each keeps its own place.
+      </p>
+      <p>
+        Form makes the character and appearance different; Sounds distinguish comfort and
+        discomfort. The dark makes all words one; the brightness distinguishes good and bad phrases.
+      </p>
+      <p>
+        The four elements return to their nature as a child to its mother. Fire is hot, wind moves,
+        water is wet, earth hard.
+      </p>
+      <p>Eyes see, ears hear, nose smells, tongue tastes the salt and sour.</p>
+      <p>
+        Each is independent of the other; cause and effect must return to the great reality. Like
+        leaves that come from the same root.
+      </p>
+      <p>The words high and low are used relatively.</p>
+      <p>
+        Within light there is darkness, but do not try to understand that darkness; within darkness
+        there is light, but do not look for that light.
+      </p>
+      <p>
+        Light and darkness are a pair, like the foot before and the foot behind, in walking. Each
+        thing has its own intrinsic value and is related to everything else in function and
+        position.
+      </p>
+      <p>Ordinary life fits the absolute as a box and its lid.</p>
+      <p>
+        The absolute works together with the relative, like two arrows meeting in mid-air. Reading
+        words you should grasp the great reality. Do not judge by any standards. If you do not see
+        the Way, you do not see it even as you walk on it.
+      </p>
+      <p>When you walk the Way, it is not near, it is not far.</p>
+      <p>If you are deluded, you are mountains and rivers away from it.</p>
+      <p>
+        I respectfully say to those who wish to be enlightened: Do not waste your time by night or
+        day.
+      </p>
+    </section>
 
+    <section data-tag="theravada bsbc">
+      <h2 id="metta-sutta">Metta Sutta</h2>
       <p>
         He or she who wants to attain peace should practice being upright, humble, and capable of
         using loving speech. He or she will know how to live simply and happily, with senses calmed,
         without being covetous and carried away by the emotions of the majority. Let him or her not
         do anything that will be disapproved of by the wise ones.
       </p>
-
       <p>
         <strong>And this is what he or she contemplates:</strong><br />May everyone be happy and
         safe, and may their hearts be filled with joy.<br />May all living beings live in security
@@ -474,19 +748,138 @@
         beauty and realizing perfect understanding, those who practice boundless love will certainly
         transcend birth and death.
       </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          Adapted from a Theravadan Buddhist text and published in "A Joyful Path" by Thich Nhat Hanh.
+        </div>
+      </details>
     </section>
 
     <h1 id="meditation-contemplation-passages">Meditation &amp; Contemplation Passages</h1>
 
+    <section data-tag="tibetan bsbc">
+      <h2 id="tonglen-short-prayer"><strong>Tonglen (Short Prayer)</strong></h2>
+      <p>
+        Having recognized the futility of my selfishness and the great benefit of loving others, may
+        I bring all beings to joy. May I send all my virtues and happiness to others through the
+        strength of my practice, and may I receive the suffering, obstacles, and defilements of all
+        motherly beings in all realms.
+      </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          From the "Living and Dying Project"- to create a sense of spaciousness in which the giving and receiving can take place
+        </div>
+      </details>
+    </section>
+
+    <section data-tag="tibetan bsbc">
+      <h2 id="tonglen-guided"><strong>Tonglen (Guided Meditation)</strong></h2>
+      <p>
+        Please close your eyes. Allow yourself to be here in this very moment. Bring your attention
+        to your breath and let go of all your thoughts, don’t hold onto memories of the past nor
+        anticipate the future. Relax into this very moment without any effort, as if you’re floating
+        on water.
+      </p>
+      <p>
+        Now from this place of serenity, visualize all living beings from all realms of existence
+        filling the space in front of you. You might like to visualize specific persons, such as
+        your parents, relatives and friends or people who caused you harm. You might also like to
+        visualize people who are in great need, those who are sick and dying, or suffering from all
+        kinds of external and internal adversities.
+      </p>
+      <p>
+        Feel that your heart is opening to embrace all of their pain and sorrow as your own. Imagine
+        you are taking in their suffering in the form of a dark cloud, which enters through your
+        nostrils with your inhalation. Let your heart expand to the limits of the universe with
+        empathy for their suffering. Again and again, let your heart be filled with this cloud of
+        universal suffering with your incoming breath.
+      </p>
+      <p>
+        Now, when we exhale, imagine that you’re sending love, compassion and happiness in the form
+        of brilliant rays of golden light which extend to the furthest reaches of the universe and
+        enter the hearts and minds of all living being everywhere. Please keep sending this golden
+        light with each exhalation.
+      </p>
+      <p>
+        Imagine that everyone without exception is receiving your gift, which results in freeing all
+        beings from every form of suffering, and they begin to experience Bodhichitta – the heart of
+        boundless love and ecstatic insight.
+      </p>
+      <p>
+        Think that through this generosity, every living being now enjoys complete and perfect
+        liberation. May everyone in the world transcend erroneous views about the true nature of
+        reality, finding freedom and happiness within themselves. May there be peace throughout all
+        realms! May this universe be blessed by the power of love, compassion and wisdom!
+      </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          Princeton Buddhist Meditation Group, Princeton, NJ. This guided meditation practice cultivates compassion and generosity by breathing in the suffering of all beings and breathing out healing light.
+        </div>
+      </details>
+    </section>
+
+    <section data-tag="tibetan mahayana bsbc">
+      <h2 id="eight-verses-for-training-the-mind">
+        <strong>Eight Verses for Training the Mind</strong>
+      </h2>
+      <p>
+        With the heartfelt desire and determination to attain enlightenment for the welfare of all
+        living beings, who are more precious than a wish-fulfilling jewel for accomplishing the
+        supreme goal, may I always cherish them and hold them dear.
+      </p>
+      <p>
+        Whenever I am with others, may I think of myself as the lowest of all and from the very
+        depths of my heart may I respectfully hold others as supreme. There is no suffering, no
+        cause, no extinction, no path; there is no wisdom and no attainment. There is nothing to be
+        attained.
+      </p>
+      <p>
+        In all actions, may I closely examine my state of mind, and the moment a disturbing emotion
+        or negative attitude arises, since this may cause harm to myself and others, may I firmly
+        face and avert it.
+      </p>
+      <p>
+        Whenever I meet people of unpleasant character or those overwhelmed by negativity, pain or
+        suffering, may I cherish and care for them as if I had found a rare and precious treasure
+        difficult to find.
+      </p>
+      <p>
+        Whenever others, because of their jealousy, treat me badly with abuse, insult, slander, or
+        in other unjust ways, may I accept this defeat myself and offer the victory to others.
+      </p>
+      <p>
+        When someone whom I have benefited or in whom I have placed great trust and hope harms me or
+        treats me in hurtful ways without reason, may I see that person as my precious teacher.
+      </p>
+      <p>
+        In brief, may I offer both directly and indirectly all help, happiness and benefit to all
+        beings, my mothers, and may I secretly take upon myself all of their harmful actions, pain
+        and suffering.
+      </p>
+      <p>
+        May I keep all of these practices undefiled by stains of the eight worldly concerns
+        (gain/loss, pleasure/pain, praise/blame, fame/dishonor), and by recognizing the emptiness
+        and illusory nature of all existing things, may I be liberated from the bondage of
+        attachment and mistaken views of reality.
+      </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          Composed by the Buddhist Master Langri Tangpa (1054-1123), Eight Verses for Training the Mind is a highly-revered text from the Mahayana Lojong tradition. It is a profound teaching on transforming one's mind through compassion and wisdom.
+        </div>
+      </details>
+    </section>
+
     <section data-tag="triratna">
       <h2 id="verses-of-the-elder-nuns">Verses of the Elder Nuns</h2>
-
       <p>
         Engage with the Buddha’s teaching!<br />One who does so has no regrets.<br />Quickly wipe
         the dust from your feet,<br />And sit yourself down to one side.<br />Practicing mental
         tranquility,<br />Engage with the Buddha’s teaching.
       </p>
-
       <ul>
         <li>
           Preparing to practice and setting the intention
@@ -552,9 +945,8 @@
       </ul>
     </section>
 
-    <section data-tag="zen triratna">
+    <section data-tag="zen triratna theravada">
       <h2 id="breathing-in-and-out"><strong>Breathing in and out</strong></h2>
-
       <p>
         Mindful, one breaths in; mindful, one breathes out.<br />Breathing in long, one is aware: ‘I
         breathe in long’, or,<br />breathing out long, one is aware: ‘I breathe out long’, or,<br />breathing
@@ -568,9 +960,8 @@
       </p>
     </section>
 
-    <section data-tag="triratna">
+    <section data-tag="theravada triratna">
       <h2 id="body-awareness"><strong>Body awareness</strong></h2>
-
       <p>
         Furthermore, a person:<br />When walking, is aware: ‘I am walking’.<br />When standing, is
         aware: ‘I am standing’.<br />When sitting, is aware: ‘I am sitting’.<br />When lying down,
@@ -583,9 +974,8 @@
       </p>
     </section>
 
-    <section data-tag="triratna">
+    <section data-tag="theravada triratna">
       <h2 id="feelings"><strong>Feelings</strong></h2>
-
       <p>
         Furthermore here a person:<br />When feeling a pleasant feeling, is aware: ‘I feel a
         pleasant feeling’.<br />When feeling a painful feeling, is aware: ‘I feel a painful
@@ -594,9 +984,8 @@
       </p>
     </section>
 
-    <section data-tag="triratna">
+    <section data-tag="theravada triratna">
       <h2 id="wordly-and-unwordly-feelings"><strong>Wordly and unwordly Feelings</strong></h2>
-
       <p>
         There are these five cords of sensual pleasure:<br />forms cognizable by the eye…<br />sounds
         cognizable by the ear…<br />odors cognizable by the nose…<br />flavors cognizable by the
@@ -614,14 +1003,12 @@
       </p>
     </section>
 
-    <section data-tag="zen chan tibetan triratna">
+    <section data-tag="theravada zen chan tibetan triratna">
       <h2 id="the-five-precepts"><strong>The Five Precepts</strong></h2>
-
       <p>
         pāṇātipātā veramaṇī sikkhāpadaṃ samādiyāmi<br />adinnādānā…<br />kāmesu micchācārā…<br />musāvādā…<br />surāmeraya
         majja-pamādaṭṭhānā…<br />idam me silaṃ magga phala ñānassa paccayo hotu
       </p>
-
       <p>
         Knowing how deeply our lives intertwine, I undertake the training to protect life.<br />…to
         take only that which is offered to me.<br />…to express my sexual energy wisely.<br />…to
@@ -630,9 +1017,47 @@
       </p>
     </section>
 
-    <section data-tag="zen chan tibetan triratna">
-      <h2 id="the-five-recollections"><strong>The Five Recollections</strong></h2>
+    <section data-tag="theravada zen chan tibetan triratna bsbc">
+      <h2 id="the-five-precepts-1"><strong>The Five Precepts 1</strong></h2>
+      <p>
+        1. Panatipata veramani sikkhapadam samadiyami 
+        I undertake the precept to refrain from
+        destroying living creatures.
+        2. Adinnadana veramani sikkhapadam samadiyami I undertake the
+        precept to refrain from taking that which is not given. 
+        3. Kamesu micchacara veramani
+        sikkhapadam samadiyami I undertake the precept to refrain from sexual misconduct. 
+        4.
+        Musavada veramani sikkhapadam samadiyami I undertake the precept to refrain from unskillful
+        speech. 
+        5. Sura-meraya-majja pama-datthana veramani sikkhapadam samadiyami I undertake the
+        precept to refrain from intoxicating drinks and drugs which lead to carelessness. Some
+        people find that they are more comfortable stating the precepts positively because they find
+        it more inspiring. Likewise, some people have crafted their own expanded or elaborated
+        positive version because it adds momentum to their mindfulness in daily life. The following
+        is a sample of a positively stated and elaborated version of the Precepts. Feel free to use
+        these or make your own.
+      </p>
+    </section>
 
+    <section data-tag="theravada zen chan tibetan triratna bsbc">
+      <h2 id="the-five-precepts-positive"><strong>The Five Precepts Stated Positively</strong></h2>
+      <p>
+        1. To the best of my ability, I will protect and support life and encourage the fulfillment
+        of potential for love and understanding in others. 2. To the best of my ability, I will take
+        only what is freely given and vow to practice gratitude and generosity. 3. To the best of my
+        ability, I will respect and support on-going relationships, honor my commitments, and
+        practice discernment between the beauty of Eros as a feeling, and the compulsiveness to act
+        it out. 4. To the best of my ability, I will say what is true, useful, and timely, and
+        practice deep listening such that both my speaking and listening reflects loving-kindness
+        and compassion. 5. To the best of my ability, I will maintain a clear and alert mind that is
+        aware of its motivations, moment to moment, such that it can discern between what is the
+        cause of suffering and what is not the cause of suffering.
+      </p>
+    </section>
+
+    <section data-tag="theravada zen chan tibetan triratna">
+      <h2 id="the-five-recollections"><strong>The Five Recollections</strong></h2>
       <p>
         I am of the nature to age; I have not gone beyond aging.<br />I am of the nature to sicken;
         I have not gone beyond sickness.<br />I am of the nature to die; I have not gone beyond
@@ -645,7 +1070,6 @@
 
     <section data-tag="triratna">
       <h2 id="positive-precepts"><strong>Positive Precepts</strong></h2>
-
       <p>
         With deeds of loving kindness, I purify my body<br />With open handed generosity I purify my
         body<br />With stillness simplicity and contentment, I purify my body<br />With truthful
@@ -659,7 +1083,6 @@
 
     <section data-tag="zen">
       <h2 id="gatha-on-aversion"><strong>Gatha on Aversion</strong></h2>
-
       <p>
         Aversion arises by resisting what is already here and now.<br />Unsupervised aversion
         creates vexations and leads to suffering.<br />Beginning with right intention, I renounce
@@ -671,7 +1094,6 @@
 
     <section data-tag="zen">
       <h2 id="gatha-on-craving">Gatha on Craving</h2>
-
       <p>
         Craving arises by wanting something different than what is here now.<br />Craving leads to
         suffering. Unsupervised craving creates vexations.<br />Beginning with right intention, I
@@ -681,13 +1103,11 @@
       </p>
     </section>
 
-    <section data-tag="zen chan tibetan triratna">
+    <section data-tag="theravada zen chan tibetan triratna bsbc">
       <h2 id="these-are-the-five-remembrances">
         <strong>These are the Five Remembrances. </strong>
       </h2>
-
       <p>These are the truths that we should reflect on and accept. They are the essential:</p>
-
       <p>
         This body is not mine. It is subject to aging, illness, injury, and death. <br />There is no
         way to prevent, avoid, or evade these.<br />All that is dear to me is subject to change,
@@ -697,9 +1117,8 @@
       </p>
     </section>
 
-    <section data-tag="zen chan tibetan triratna">
+    <section data-tag="theravada zen chan tibetan triratna">
       <h2 id="the-four-noble-truths"><strong>The Four Noble Truths</strong></h2>
-
       <p>
         Now this, bhikkhus, is the noble truth of suffering: birth, aging, death, sorrow,
         lamentation, pain, grief, &amp; despair are suffering; association with the unbeloved is
@@ -721,16 +1140,15 @@
         concentration.
       </p>
     </section>
-
-    <section data-tag="zen chan tibetan triratna">
-      <h2 id="the-noble-eightfold-path"><strong>The Noble Eightfold Path </strong></h2>
-
+    <section data-tag="theravada zen chan tibetan triratna">
+      <h2 id="the-noble-eightfold-path">
+        <strong>The Noble Eightfold Path </strong>
+      </h2>
       <p>
         is the fourth noble truth, the way to enlightenment. The Buddha taught that we must follow
         this path to overcome ignorance, attachment, and aversion, the root causes of suffering. The
         path consists of eight practices that we should cultivate in our everyday lives. They are:
       </p>
-
       <p>
         <strong>Right View</strong>: To see clearly the true nature of reality, the four noble
         truths, the law of karma, and the three marks of existence (impermanence, suffering, and
@@ -756,13 +1174,233 @@
         stability, clarity, and calmness, and to experience the various stages of absorption and
         insight.
       </p>
-
       <p>
         This is the Noble Eightfold Path of Buddhism. It is the middle way between the extremes of
         indulgence and asceticism. It is the path of wisdom, ethics, and mental discipline. It is
         the path that leads to the cessation of suffering and the realization of nirvana.
       </p>
     </section>
+    <section data-tag="theravada zen chan tibetan triratna bsbc">
+      <h2 id="the-noble-eightfold-path-1">
+        <strong>The Noble Eightfold Path 1 </strong>
+      </h2>
+      <p>
+        This is the middle path which the Perfect One discovered and expounded, which gives rise to
+        vision and knowledge, which leads to peace, wisdom, enlightenment, and nibbana–the noble
+        eightfold path: Right Understanding of suffering of its origin of its cessation of the way
+        leading to the cessation of suffering Right Intentions of renunciation, free from craving of
+        good will, free from aversion of compassion, free from cruelty Right Speech abstaining from
+        false speech abstaining from malicious speech abstaining from harsh speech abstaining from
+        useless speech Right Action abstaining from taking life abstaining from stealing abstaining
+        from sexual misconduct Right Livelihood giving up wrong livelihood, one earns ones living by
+        a right form of livelihood Right Effort to prevent unarisen unwholesome mental states from
+        arising to abandon unwholesome mental states that have already arisen to develop wholesome
+        mental states that have not yet arisen to maintain and perfect wholesome mental states
+        already arisen Right Mindfulness mindful contemplation of the body mindful contemplation of
+        feelings mindful contemplation of the mind mindful contemplation of mental objects Right
+        Concentration wholesome one-pointedness of mind
+      </p>
+    </section>
+    <section data-tag="theravada zen chan tibetan triratna bsbc">
+      <h2 id="sharing-loving-kindness">
+        <strong>Sharing Loving Kindness</strong>
+      </h2>
+      <p>
+        1. May I be well, happy and peaceful May no harm come to me. May no difficulties come to me.
+        May no problems come to me. May I always meet with success. May I also have patience,
+        courage, understanding and determination to meet and overcome inevitable difficulties,
+        problems and failures in life. 2. May my parents be well, happy and peaceful May no harm
+        come to them. May no difficulties come to them, May no problems come to them, May they
+        always meet with success. May they also have patience, courage, understanding and
+        determination to meet and overcome inevitable difficulties, problems and failures in life.
+        3. May my teachers be well, happy and peaceful May no harm come to them. May no difficulties
+        come to them, May no problems come to them. May they always meet with success. May they also
+        have patience, courage. understanding and determination to meet and overcome inevitable
+        difficulties, problems and failures in life. 4. May my relatives be well, happy and peaceful
+        May no harm come to them. May no difficulties come to them, May no problems come to them.
+        May they always meet with success. May they also have patience, courage, understanding and
+        determination to meet and overcome inevitable difficulties, problems and failures in life.
+        5. May my friends be well, happy and peaceful May no harm come to them. May no difficulties
+        come to them, May no problems come to them. May they always meet with success. May they also
+        have patience, courage understanding and determination to meet and overcome inevitable
+        difficulties, problems and failures in life. 6. May all indifferent persons be well happy
+        and peaceful May no harm come to them, May no difficulties come to them, May no problems
+        come to them, May they always meet with success. May they also have patience, courage,
+        understanding and determination to meet and overcome inevitable difficulties, problems and
+        failures in life. 7. May my enemies be well, happy and peaceful May no harm come to them.
+        May no difficulties come to them, May no problems come to them. May they always meet with
+        success. May they also have patience, courage understanding and determination to meet and
+        overcome inevitable difficulties, problems and failures in life. 8. May all living beings be
+        well, happy and peaceful. May no harm come to them, May no difficulties come to them, May no
+        problems come to them, May they always meet with success. May they also have patience,
+        courage, understanding and determination to meet and overcome inevitable difficulties,
+        problems and failures in life.
+      </p>
+    </section>
+    <h1 id="chants-music">Chants & Music</h1>
+    <section data-tag="tibetan bsbc chants music">
+      <p>
+        Om Ah Hum (Hung) This is a mantra from the Tibetan tradition, to help us clarify, or purify,
+        our Body, Speech, and Mind. Mantras are sounds and phrases that can help us concentrate our
+        minds. We can use mantras as a way to concentrate on a given intention. This mantra can be
+        seen as a means of helping us focus our intentions to clarify, or purify, our body, speech,
+        and mind. We can regard ourselves while we chant as asking our own being, the parts of us
+        that put up blocks and barricades to real contentment, to let our better parts, our pure,
+        good intentions, get stronger, shine through, and help us let go. OM stands for the body, AH
+        for the speech, and HUM (or HUNG) for the mind. They represent the possibility of
+        transformative blessings of the body, speech, and mind from all the Buddhas— past, present,
+        and future. In chanting OM we are asking ourselves to purify, to release all guilt and
+        shame, of all the negative actions committed through our body, and we commit to an intention
+        to do better in the future. In chanting AH we are asking ourselves to purify, to release all
+        guilt and shame, of all the negative actions committed through our speech, and we commit to
+        an intention to do better in the future. In chanting HUM we are asking ourselves to purify,
+        to release all guilt and shame of all the negative actions committed through our mind, and
+        we commit to an intention to do better in the future. OM is also said to be the essence of
+        form, AH the essence of sound, and HUM the essence of mind. So by reciting this mantra, you
+        are also purifying the environment, as well as yourself and all other beings within it. OM
+        purifies all perceptions, AH all sounds, and HUM the mind, its thoughts and its emotions.
+      </p>
+    </section>
+    <section data-tag="bsbc chants music">
+      <h2 id="om-mani-padme-hum"><strong>Om Mani Padme Hum</strong></h2>
+      <p>
+        (Repeated as many times as you want) Om Mani Padme Hum Om Mani Padme Hum is the most widely
+        used of all Buddhist mantras. It is known as the mantra of Chenrezig. It is said that the
+        entire Dharma, the entire truth about the nature of suffering and the many ways of removing
+        its causes, is contained in these six syllables. The mantra in Tibetan: Reading from left to
+        right the syllables are: Om Ma Ni Pad Me Hum (ohm) (mah) (nee) (pahd) (may) (hum)
+      </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          Om Mani Padme Hum is the most widely known Buddhist mantra, associated with Chenrezig, the bodhisattva of compassion. The entire Dharma, the entire truth about the nature of suffering and the many ways of removing its causes, is contained in these six syllables.
+        </div>
+      </details>
+    </section>
+    <section data-tag="bsbc chants music">
+      <h2 id="pali-evening-chanting"><strong>Pali Evening Chanting</strong></h2>
+      <p>
+        ▲ ▲ ANICCA WATA SANKHARA ▲ ▲ ▲ UPPADA WAYA DHAMMINO ▼ ▲ ▲ UPPAJJITUWA NIRRUJHANTI ▲ ▲ ▲
+        DESAM VUPASAMO SUKHO ▼ ▼ All conditioned things are impermanent Their nature is to arise and
+        pass away. To be in harmony with this truth Brings true happiness.
+      </p>
+      <p>
+        ____________________________________________________________ ▲ ▲ NHATTHI MAY SARANAM ANYAM ▲
+        BUDDHO (DHAMMO, SANGHO) ▲ ▲ MAY SARANAM VARAM ▼ ▼ ▲ ▲ ▲ EY-TEYNA SAACHA WAHJEYNA ▼ ▲ SO-TI
+        MAY HOTU SABBADA ▼ The Buddha is my refuge. The Dharma is my refuge. The Sangha is my
+        refuge. Nothing else is my lasting refuge. By the power of this truth, May I, at all times,
+        be blessed.
+      </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          Traditional Pali evening chanting from Theravada Buddhism. The first verse is a reflection on impermanence (anicca), a fundamental Buddhist teaching. The second verse is a reaffirmation of refuge in the Triple Gem.
+        </div>
+      </details>
+    </section>
+
+    <section data-tag="bsbc chants music">
+      <h2 id="breathing-song"><strong>Breathing Song</strong></h2>
+      <p>
+        1. Breathing in, breathing out, 3. Breathing in, breathing out, Breathing in, breathing out,
+        Breathing in, breathing out, I am blooming as a flower, I am water, reflecting, I am fresh
+        as the dew. What is real, what is true. 2. I am solid as a mountain, 4. And I feel there is
+        space I am firm as the earth, Deep inside of me, I am free. I am free, I am free, I am free.
+      </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          By Thich Nhat Hanh, Plum Village. Music and lyrics by Plum Village – A Buddhist Hymn sung at an English Dharma Study Group Camp.
+        </div>
+      </details>
+    </section>
+
+    <section data-tag="bsbc chants music">
+      <h2 id="and-when-i-rise"><strong>And When I Rise</strong></h2>
+      <p>
+        When I rise, let me rise like a bird, joyfully And when I fall, let me fall like a leaf,
+        gracefully, without regrets And when I stand, let me stand like a tree, strong and tall And
+        when I lie, let me lie like a lake, peacefully, calm and still And when I work, let me work
+        like a bee, wholeheartedly And when I play, let me play like a breeze, refreshingly, light
+        and clear, like a breeze, refreshingly, light and clear…
+      </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          Contemporary Buddhist gatha for daily practice reflecting the interconnection of all activities with the spiritual path.
+        </div>
+      </details>
+    </section>
+    <h1 id="meditation-contemplation-passages">Ceremonies</h1>
+
+    <section data-tag="tibetan bsbc">
+      <h2 id="deceased-loved"><strong>Ceremony for Our Deceased Loved Ones</strong></h2>
+      <p>
+        (Three bells) Read by all: The Dharma is deep and lovely. We now have a chance to see it,
+        study it, and practice it. We vow to realize its true meaning. (Bell) Said by the leader of
+        the ceremony: Today the community has gathered to recite and practice the sutras, invoking
+        the Buddhas’ and bodhisattvas’ names, to make offerings, and to transfer the merits to
+        [Name(s) of deceased]. We ask the community to listen with a quiet mind . Parents and
+        grandparents, whether they have left this life or not, are present in their children and
+        grandchildren . The life of the ancestors carries on in the lives of children and
+        grandchildren . According to the Buddha, the peace and joy of the children and grandchildren
+        are the peace and joy of the parents, grandparents and all ancestors . With a feeling of
+        calm, clarity and peace, we will make possible the calm, clarity and peace of those who have
+        left this life . Let us all recite the Contemplation on No-Coming and No-Going. Recited by
+        all present: This body is not me. I am not limited by this body. I am life without
+        boundaries. I have never been born, and I have never died. . We meet today. We will meet
+        again tomorrow. We will meet at the source of every moment. We will meet each other in all
+        forms of life. (Bell) Incense perfumes the atmosphere . A lotus blooms, and the Buddha
+        appears . The world of suffering and discrimination is filled with the light of the Rising
+        Sun . As the dust of fear and anxiety settles, with an open heart and one-pointed mind I
+        turn to the three jewels . (Bell) (continued next page) (Ceremonies for Our Deceased Loved
+        Ones continued) The Fully Enlightened One, beautifully seated, peaceful and smiling, a
+        loving source of understanding and compassion: To the Buddha I go for refuge . (Bell) The
+        path of mindful living, leading to healing, joy and enlightenment, the way of peace: To the
+        Dharma I go for refuge . (Bell) The loving and supportive community of practice, realizing
+        harmony, awareness, and liberation: To the Sangha I go for refuge . (Bell) I am aware that
+        the three Gems are within my heart; I vow to realize them, practicing mindful breathing,
+        smiling, and looking deeply into things. I vow to understand living beings and their
+        suffering. I vow to cultivate loving kindness and compassion and to practice joy and
+        equanimity. (Bell) I vow to offer joy to one person in the morning, and to help relieve the
+        grief of one person in the afternoon. I vow to live simply and sanely with few possessions,
+        and to keep my body healthy. I vow to let go of all worries and anxiety in order to be light
+        and free. (Bell) I am aware that I owe much to my parents, teachers, friends, spouse and all
+        beings. I vow to practice wholeheartedly so that understanding and compassion will flower,
+        empowering living beings to be free from suffering. May the Buddha, the Dharma, and the
+        Sangha support my efforts.
+      </p>
+      <details class="reading-details">
+        <summary class="reading-summary">Reading Details</summary>
+        <div class="reading-details-content">
+          Adapted from the Ceremony for the Deceased composed by Thich Nhat Hanh and found in the Plum Village Chanting and Recitation Book.
+        </div>
+      </details>
+    </section>
+    <section data-tag="tibetan bsbc">
+      <h2 id="green-tara"><strong>Green Tara Visualization and Mantra Recitation</strong></h2>
+      <p>
+        In the space before you, on a lotus and moon disc appears green Tara. Her body is made of
+        green light, transparent like a rainbow. Her left leg is drawn up in lotus posture to
+        symbolize control over desire. Her right leg is extended, symbolizing that she is ready to
+        rise to the aid of all beings. Her left hand is at her heart in the gesture of giving
+        refuge: the palm facing outward, thumb & ring finger touching, the other fingers raised. Her
+        right hand is on her right knee, in the gesture of giving high realizations: the palm faces
+        outwards, thumb & index finger touching, the other fingers pointing down. Both hands hold a
+        blue lotus flower . She is very beautiful, dressed in celestial silks, and smiles at you .
+        Think of your problems, needs and aims and request Tara’s help from your heart. Then she
+        shines white light from her forehead into your forehead, eliminating problems and
+        negativities of your body. OM TARE TUTTARE TURE SOHA Next she shines red light from her
+        throat into your throat, eliminating obstacles and negativities of your speech. OM TARE
+        TUTTARE TURE SOHA Next she shines blue light from her heart into your heart, eliminating all
+        obstacles and negativities of your mind. OM TARE TUTTARE TURE SOHA Try to feel you are now
+        free from all hindrances and problems, and that you have received the inspiration and energy
+        to accomplish your aims. Then Tara comes to the crown of your head, facing the same way as
+        you. She dissolves into green light, which descends into your heart center. Your mind merges
+        with Tara’s mind. Keep this feeling as long as possible.
+      </p>
+    </section>
+ 
   </main>
   <button
     mat-fab
@@ -775,5 +1413,4 @@
   >
     <mat-icon>keyboard_arrow_up</mat-icon>
   </button>
-
 </div>
