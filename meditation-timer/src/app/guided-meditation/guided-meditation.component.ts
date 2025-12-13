@@ -73,7 +73,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.http.get<MeditationSection[]>('meditation/meditation-text.json')
+    this.http.get<MeditationSection[]>('meditation/meditation-guided.json')
       .pipe(take(1))
       .subscribe(data => {
         this.meditationScript = data;
