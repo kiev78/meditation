@@ -65,7 +65,7 @@ import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.co
   ],
 })
 export class TimerContainerComponent implements OnInit {
-  timerService = inject(TimerService);
+  public timerService = inject(TimerService);
   private http = inject(HttpClient);
 
   private meditationList$ = this.http.get<any[]>('meditation/meditation-guided-files.json').pipe(shareReplay(1));
@@ -99,11 +99,11 @@ export class TimerContainerComponent implements OnInit {
         return;
       }
 
-      const bellSeq = computeBellSequenceDuration(state.startBells, state.startBellIntervals || [5]);
       const target = state.duration;
 
       // Filter based on new criteria:
-      // BellSequence + StartAudio + 300s (Silence) + EndAudio <= TimerDuration
+      // StartAudio + 300s (Silence) + EndAudio <= TimerDuration
+      // Note: Bells are now excluded from the calculation as they run *before* the countdown
       this.candidates = list.filter(m => {
         const startDur = parseDurationToSeconds(m['start-url-duration'] || m['start_url_duration'] || m.duration || m['duration']);
         const endDur = parseDurationToSeconds(m['end-url-duration'] || m['end_url_duration'] || null) || 0;
@@ -111,7 +111,7 @@ export class TimerContainerComponent implements OnInit {
         if (startDur === null) return false;
 
         const silence = 300; // 5 minutes fixed
-        const totalNeeded = bellSeq + startDur + silence + endDur;
+        const totalNeeded = startDur + silence + endDur;
 
         // Check if it fits
         return totalNeeded <= target + 1; // 1s tolerance
@@ -201,6 +201,7 @@ export function parseDurationToSeconds(d: string | null | undefined): number | n
   return null;
 }
 
+// Deprecated in selection logic but kept for backward compat if needed elsewhere
 export function computeBellSequenceDuration(count: number, intervals: number[]): number {
   if (!count || count <= 0) return 0;
   if (count === 1) return 0; // first bell immediate, no waiting

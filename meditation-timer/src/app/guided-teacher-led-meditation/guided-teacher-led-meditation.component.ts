@@ -23,7 +23,7 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
   @Output() next = new EventEmitter<void>();
 
   private http = inject(HttpClient);
-  private timerService = inject(TimerService);
+  public timerService = inject(TimerService);
   private bellService = inject(BellService);
   private ngZone = inject(NgZone);
   private cdr = inject(ChangeDetectorRef);
@@ -56,7 +56,7 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
         this.currentTime = elapsed;
 
         // Schedule playback based on current elapsed time and running state
-        this.checkSchedule(elapsed, state.duration, state.startBells, state.startBellIntervals, state.endBells, state.endBellIntervals, state.isRunning);
+        this.checkSchedule(elapsed, state.duration, state.isRunning, state.isBellSequenceRunning);
 
         this.clearTimeUpdate();
       } else {
@@ -79,7 +79,7 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
       const state = this.timerService.stateSubjectValue;
       if (state.isGuided) {
          const elapsed = state.duration - state.remainingTime;
-         this.checkSchedule(elapsed, state.duration, state.startBells, state.startBellIntervals, state.endBells, state.endBellIntervals, state.isRunning);
+         this.checkSchedule(elapsed, state.duration, state.isRunning, state.isBellSequenceRunning);
       }
     }
   }
@@ -145,21 +145,20 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
     }
   }
 
-  private checkSchedule(elapsed: number, duration: number, startBells: number, startIntervals: number[]|undefined, endBells: number, endIntervals: number[]|undefined, isRunning: boolean) {
+  private checkSchedule(elapsed: number, duration: number, isRunning: boolean, isBellSequenceRunning: boolean) {
     this.clearScheduled();
     if (!this.selected) return;
     if (!isRunning) return; // Don't schedule if paused
+    if (isBellSequenceRunning) return; // Wait for bells to finish
 
     const startDur = parseDurationToSeconds(this.selected['start-url-duration'] || this.selected['start_url_duration'] || this.selected.duration || this.selected['duration']);
     const endDur = parseDurationToSeconds(this.selected['end-url-duration'] || this.selected['end_url_duration'] || null) || 0;
 
-    const bellSeq = computeBellSequenceDuration(startBells, startIntervals || [5]);
-
     // Start Audio Logic
-    // Should start at T = bellSeq
-    // Ends at T = bellSeq + startDur
-    const startAudioStartTime = bellSeq;
-    const startAudioEndTime = bellSeq + (startDur || 0);
+    // Starts at T=0 (relative to countdown start)
+    // Ends at T=startDur
+    const startAudioStartTime = 0;
+    const startAudioEndTime = startDur || 0;
 
     if (elapsed < startAudioEndTime && this.selected['start-url']) {
         // Needs to play start audio
@@ -168,7 +167,7 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
             const seekPos = elapsed - startAudioStartTime;
             this.playStartUrl(seekPos);
         } else {
-            // Schedule it
+            // Should not happen if start time is 0 and elapsed >= 0, but good for safety if we add offset back
             const delay = (startAudioStartTime - elapsed) * 1000;
             this.scheduledStartTimeout = setTimeout(() => {
                 this.playStartUrl(0);
@@ -351,6 +350,7 @@ export function parseDurationToSeconds(d: string | null | undefined): number | n
   return null;
 }
 
+// Kept for compatibility if needed, but no longer used in this component's logic
 export function computeBellSequenceDuration(count: number, intervals: number[]): number {
   if (!count || count <= 0) return 0;
   if (count === 1) return 0; // first bell immediate, no waiting

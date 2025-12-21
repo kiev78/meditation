@@ -40,7 +40,7 @@ export interface ScheduledEvent {
   styleUrls: ['./guided-meditation.css']
 })
 export class GuidedMeditationComponent implements OnInit, OnDestroy {
-  timerService = inject(TimerService);
+  public timerService = inject(TimerService);
   private http = inject(HttpClient);
   bellService = inject(BellService);
   private cacheService = inject(MeditationCacheService);
@@ -114,6 +114,13 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
         this.timerSub = this.timerService.state$.subscribe(state => {
           if (state.isRunning) {
+            // Check for bell sequence
+            if (state.isBellSequenceRunning) {
+               // Ensure we are not speaking while bells ring
+               this.stopSpeaking();
+               return;
+            }
+
             // Using this.currentTime ensures we handle start delays (negative remainingTime) correctly.
             // If remainingTime < 0, currentTime returns 0.
             const elapsed = this.currentTime;
@@ -267,7 +274,8 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
   private resumeFromTime(elapsed: number) {
     this.stopSpeaking();
-    const effectiveElapsed = elapsed - this.bellSequenceDuration;
+    // With bell sequence separated in timer, elapsed is 0-based from start of countdown
+    const effectiveElapsed = elapsed;
 
     if (effectiveElapsed < 0) {
       this.lastSpokenIndex = -1;
@@ -308,33 +316,12 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     }
   }
 
-  private get bellSequenceDuration(): number {
-    const state = this.timerService.stateSubjectValue;
-    if (state.startBells <= 0) return 0;
-
-    let duration = 0;
-    const count = state.startBells;
-    const intervals = state.startBellIntervals || [5]; // default 5s
-
-    // Sum intervals between bells
-    for (let i = 0; i < count - 1; i++) {
-       const interval = intervals[i] !== undefined ? intervals[i] : 5;
-       duration += interval;
-    }
-
-    // Add length of the bell sound itself.
-    if (count > 0) {
-      duration += this.bellService.bellDuration;
-    }
-
-    return duration;
-  }
-
   private checkSchedule(elapsed: number) {
     if (this.activeScheduleIndex !== null) {
       return; // Already speaking
     }
-    const effectiveElapsed = elapsed - this.bellSequenceDuration;
+    // With bell sequence separated in timer, elapsed is 0-based from start of countdown
+    const effectiveElapsed = elapsed;
 
     if (effectiveElapsed < 0) {
       return;

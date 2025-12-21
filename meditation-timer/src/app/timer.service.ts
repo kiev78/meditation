@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Subscription, interval, timer, of, concat } from 'rxjs';
-import { switchMap, takeWhile, tap, map, take } from 'rxjs/operators';
+import { BehaviorSubject, Subscription, interval, timer, of, concat, Observable } from 'rxjs';
+import { switchMap, takeWhile, tap, map, take, delay } from 'rxjs/operators';
 import { TimerState } from './timer-state.interface';
 import { BellService } from './bell.service';
 import { SettingsService } from './settings.service';
@@ -25,6 +25,7 @@ export class TimerService {
     isRunning: false,
     isWakeLockActive: false,
     isGuided: false,
+    isBellSequenceRunning: false,
   };
 
   private stateSubject = new BehaviorSubject<TimerState>(this.initialState);
@@ -61,6 +62,7 @@ export class TimerService {
 
       mergedState.remainingTime = mergedState.duration; // Reset to full duration
       mergedState.isRunning = false;
+      mergedState.isBellSequenceRunning = false;
       this.stateSubject.next(mergedState);
     }
   }
@@ -74,19 +76,19 @@ export class TimerService {
     const currentState = this.stateSubject.value;
     const duration = currentState.duration;
     const remaining = currentState.remainingTime;
-    const delay = currentState.delay;
+    const initialStartDelay = currentState.delay;
 
     const isFreshStart = (remaining === duration);
     const isPausedInDelay = (remaining < 0);
 
-    let delayStream = null;
+    let delayStream: Observable<any> | null = null;
 
-    if (delay > 0) {
+    if (initialStartDelay > 0) {
       if (isFreshStart) {
         // Fresh start: Count from -delay to -1
         delayStream = timer(0, 1000).pipe(
-          map(i => -delay + i),
-          take(delay)
+          map(i => -initialStartDelay + i),
+          take(initialStartDelay)
         );
       } else if (isPausedInDelay) {
         // Resume delay: Count from current remaining (negative) to -1
@@ -102,19 +104,38 @@ export class TimerService {
     const durationToUse = (delayStream || isFreshStart) ? duration : remaining;
 
     const durationStream = of(0).pipe(
-      tap(() => {
+      switchMap(() => {
         // Only play the start bell if we are starting a fresh session or transitioning from delay
         const shouldPlayBell = (delayStream !== null) || isFreshStart;
+
+        let bellDelayMs = 0;
         if (shouldPlayBell) {
-          const state = this.stateSubject.value;
-          this.playBellSequence(state.startBells, state.startBellIntervals);
-          this.updateState({ remainingTime: duration });
+           const state = this.stateSubject.value;
+           this.updateState({ isBellSequenceRunning: true });
+
+           // Calculate duration of bell sequence to delay the timer
+           bellDelayMs = this.calculateBellSequenceDurationMs(state.startBells, state.startBellIntervals);
+
+           this.playBellSequence(state.startBells, state.startBellIntervals);
+           this.updateState({ remainingTime: duration });
+        } else {
+           // Resuming from pause (not fresh start)
+           bellDelayMs = 0;
         }
-      }),
-      switchMap(() => interval(1000).pipe(
-        map(tick => durationToUse - (tick + 1)),
-        takeWhile(val => val >= 0)
-      ))
+
+        // Wait for bells to finish, then start counting
+        return timer(bellDelayMs).pipe(
+          tap(() => {
+             if (shouldPlayBell) {
+               this.updateState({ isBellSequenceRunning: false });
+             }
+          }),
+          switchMap(() => interval(1000).pipe(
+            map(tick => durationToUse - (tick + 1)),
+            takeWhile(val => val >= 0)
+          ))
+        );
+      })
     );
 
     let stream;
@@ -182,7 +203,7 @@ export class TimerService {
   }
 
   private _stopTimer() {
-    this.updateState({ isRunning: false });
+    this.updateState({ isRunning: false, isBellSequenceRunning: false });
     this.releaseWakeLock();
     if (this.timerSubscription) {
       this.timerSubscription.unsubscribe();
@@ -200,6 +221,31 @@ export class TimerService {
     if (passedTime > 0 && remainingTime > 0 && passedTime % intervalSeconds === 0) {
       this.bellService.playBell();
     }
+  }
+
+  private calculateBellSequenceDurationMs(count: number, intervals: number[]): number {
+    if (count <= 0) return 0;
+
+    let totalSec = 0;
+    // Sum intervals between bells
+    for (let i = 0; i < count - 1; i++) {
+        totalSec += intervals[i] !== undefined ? intervals[i] : 5;
+    }
+
+    // Add the duration of the bells themselves.
+    // Bell rings at T=0 (length bellDuration).
+    // Next bell at T=Interval (length bellDuration).
+    // Total sequence time until silence = (Sum of Intervals) + Last Bell Duration.
+    // However, technically if intervals are long enough, bells don't overlap.
+    // But we just want the "busy time".
+    // If intervals are short, bells overlap.
+    // The sequence "ends" when the last bell finishes ringing.
+    // Last bell starts at T = Sum(intervals).
+    // It ends at T = Sum(intervals) + bellDuration.
+
+    totalSec += this.bellService.bellDuration;
+
+    return totalSec * 1000;
   }
 
   private playBellSequence(count: number, intervals: number[]) {

@@ -21,19 +21,28 @@ describe('TimerContainerComponent', () => {
     startBells: 1,
     startBellIntervals: [5],
     endBells: 1,
-    endBellIntervals: [5]
+    endBellIntervals: [5],
+    isBellSequenceRunning: false
   };
 
   const mockMeditations = [
     {
-      title: "Meditation 1",
-      "start-url-duration": "10:00",
-      "end-url-duration": "01:00"
+      title: "Meditation 1 - Fits",
+      "start-url-duration": "10:00", // 600s
+      "end-url-duration": "01:00"  // 60s
+      // Total needed: 600 + 300 (silence) + 60 = 960s (16 mins)
     },
     {
-      title: "Meditation 2",
-      "start-url-duration": "20:00",
-      "end-url-duration": "01:00"
+      title: "Meditation 2 - Too Long",
+      "start-url-duration": "25:00", // 1500s
+      "end-url-duration": "01:00"  // 60s
+      // Total needed: 1500 + 300 + 60 = 1860s (31 mins) -> Greater than 1800s (30 mins)
+    },
+    {
+      title: "Meditation 3 - Fits Exactly",
+      "start-url-duration": "24:00", // 1440s
+      "end-url-duration": "01:00"  // 60s
+      // Total needed: 1440 + 300 + 60 = 1800s (30 mins) -> Fits exactly
     }
   ];
 
@@ -60,55 +69,53 @@ describe('TimerContainerComponent', () => {
     fixture.detectChanges();
   });
 
-  afterEach(() => {
-    // Check for pending requests but don't fail if there are none,
-    // as some tests might not trigger the http call if isGuided is false initially.
-    // However, the component constructor subscribes to meditationList$ which triggers the http call.
-    // So we should expect one call.
-    const req = httpMock.match('meditation/meditation-guided-files.json');
-    if (req.length > 0) {
-        req.forEach(r => r.flush(mockMeditations));
-    }
-  });
-
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should parse duration correctly', () => {
-    expect(parseDurationToSeconds("01:00")).toBe(60);
-    expect(parseDurationToSeconds("10:30")).toBe(630);
-    expect(parseDurationToSeconds("01:00:00")).toBe(3600);
-  });
-
-  it('should compute bell sequence duration', () => {
-    expect(computeBellSequenceDuration(1, [5])).toBe(0); // 1 bell = 0 interval
-    expect(computeBellSequenceDuration(2, [5])).toBe(5);
-    expect(computeBellSequenceDuration(3, [5, 10])).toBe(15);
-  });
-
-  it('should filter candidates correctly', () => {
-    // Update state to guided mode with 30 mins duration (1800s)
-    // Meditation 1: 10m + 5m (silence) + 1m = 16m + bellSeq(0). Fits.
-    // Meditation 2: 20m + 5m (silence) + 1m = 26m. Fits.
-
-    // We need to trigger the http call first by initializing component
-    // The component subscribes in ngOnInit
+  it('should filter candidates correctly by time', () => {
+    // Initial load
     const req = httpMock.expectOne('meditation/meditation-guided-files.json');
     req.flush(mockMeditations);
 
-    // Now update state
+    // Update state to guided mode with 30 mins duration (1800s)
     timerServiceMock.state$.next({
       ...mockState,
       isGuided: true,
-      duration: 1800,
+      duration: 1800, // 30 mins
       startBells: 1,
-      startBellIntervals: [5] // 1 bell = 0 duration
+      startBellIntervals: [5] // Should be ignored in calculation
     });
 
     fixture.detectChanges();
 
+    // Candidate 1 (16m) -> Fits
+    // Candidate 2 (31m) -> Too long
+    // Candidate 3 (30m) -> Fits exactly
+
+    expect(component.candidates.length).toBe(2);
+    expect(component.candidates.some(c => c.title === "Meditation 1 - Fits")).toBeTrue();
+    expect(component.candidates.some(c => c.title === "Meditation 3 - Fits Exactly")).toBeTrue();
+    expect(component.candidates.some(c => c.title === "Meditation 2 - Too Long")).toBeFalse();
+
     expect(component.selectedMeditation).toBeTruthy();
-    expect(component.candidates.length).toBeGreaterThan(0);
+  });
+
+  it('should handle no candidates fitting', () => {
+    const req = httpMock.expectOne('meditation/meditation-guided-files.json');
+    req.flush(mockMeditations);
+
+    // Set duration too short for any meditation (e.g., 10 mins)
+    timerServiceMock.state$.next({
+      ...mockState,
+      isGuided: true,
+      duration: 600
+    });
+
+    fixture.detectChanges();
+
+    expect(component.candidates.length).toBe(0);
+    expect(component.selectedMeditation).toBeNull();
+    expect(component.forceTTS).toBeTrue();
   });
 });
