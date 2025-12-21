@@ -5,7 +5,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSliderModule } from '@angular/material/slider';
 import { HttpClient } from '@angular/common/http';
 import { TimerService } from '../timer.service';
-import { Subscription } from 'rxjs';
+import { Subscription, of, timer, concat } from 'rxjs';
+import { BellService } from '../bell.service';
 
 @Component({
   selector: 'app-guided-teacher-led-meditation',
@@ -22,12 +23,16 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
 
   private http = inject(HttpClient);
   private timerService = inject(TimerService);
+  private bellService = inject(BellService);
   private ngZone = inject(NgZone);
   private cdr = inject(ChangeDetectorRef);
   private timerSub: Subscription | null = null;
   private isGuidedMode = false;
+  private bellSequenceSubscription: Subscription | null = null;
 
   meditations: any[] = [];
+  filteredMeditations: any[] = [];
+  currentIndex = 0;
   selected: any | null = null;
   audio: HTMLAudioElement | null = null;
   isPlaying = false;
@@ -89,6 +94,10 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
       this.selected = newMeditation;
       this.prepareAudio();
     }
+
+    if ((changes['time'] || changes['teacher'] || changes['type']) && this.meditations.length > 0) {
+      this.selectMeditation();
+    }
   }
 
   ngOnDestroy(): void {
@@ -105,6 +114,9 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
       this.timerSub.unsubscribe();
       this.timerSub = null;
     }
+    if (this.bellSequenceSubscription) {
+      this.bellSequenceSubscription.unsubscribe();
+    }
     this.clearScheduled();
     this.clearTimeUpdate();
   }
@@ -112,49 +124,74 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
   selectMeditation(): void {
     if (!this.meditations || this.meditations.length === 0) return;
 
-    let pool = this.meditations.slice();
+    let filtered = this.meditations;
 
     if (this.teacher) {
-      const byTeacher = pool.filter(m => m.teacher && m.teacher.toLowerCase() === this.teacher!.toLowerCase());
-      if (byTeacher.length) pool = byTeacher;
+      filtered = filtered.filter(m => m.teacher && m.teacher.toLowerCase() === this.teacher!.toLowerCase());
     }
 
     if (this.type) {
-      const byType = pool.filter(m => m.type && m.type.toLowerCase() === this.type!.toLowerCase());
-      if (byType.length) pool = byType;
+      filtered = filtered.filter(m => m.type && m.type.toLowerCase() === this.type!.toLowerCase());
     }
 
     if (this.time !== null && this.time !== undefined) {
       const targetSec = Math.round(Number(this.time) * 60);
-      const byTime = pool.filter(m => {
+      filtered = filtered.filter(m => {
         const startDur = parseDurationToSeconds(m['start-url-duration'] || m['start_url_duration'] || m.duration || m['duration']);
-        const endDur = parseDurationToSeconds(m['end-url-duration'] || m['end_url_duration'] || null) || 0;
         if (startDur === null) return false;
-        const totalNeeded = 3 + startDur + endDur;
-        return totalNeeded <= targetSec + 1;
+        return startDur <= targetSec;
       });
-
-      if (byTime.length > 0) {
-        pool = byTime;
-      }
     }
 
-    if (pool.length === 0) {
-      pool = this.meditations.slice();
-    }
-
-    this.selected = pool[Math.floor(Math.random() * pool.length)];
+    this.filteredMeditations = filtered;
+    this.currentIndex = 0;
+    this.selected = this.filteredMeditations.length > 0 ? this.filteredMeditations[this.currentIndex] : null;
 
     if (!this.selected) {
       this.audioReady = false;
-      this.loadError = true;
+      this.loadError = false;
       if (this.audio) this.audio.pause();
+      this.totalDuration = 0;
+      this.currentTime = 0;
       this.cdr.detectChanges();
       return;
     }
 
     this.prepareAudio();
-    // persist last played list (append)
+    this.persistLastPlayed();
+  }
+
+  playNext(): void {
+    if (this.filteredMeditations.length <= 1) return;
+  
+    this.currentIndex = (this.currentIndex + 1) % this.filteredMeditations.length;
+    this.selected = this.filteredMeditations[this.currentIndex];
+    this.handleMeditationChange();
+  }
+  
+  playPrevious(): void {
+    if (this.filteredMeditations.length <= 1) return;
+  
+    this.currentIndex = (this.currentIndex - 1 + this.filteredMeditations.length) % this.filteredMeditations.length;
+    this.selected = this.filteredMeditations[this.currentIndex];
+    this.handleMeditationChange();
+  }
+  
+  private handleMeditationChange(): void {
+    this.currentTime = 0;
+    this.totalDuration = 0;
+    this.persistLastPlayed();
+  
+    if (this.timerService.stateSubjectValue.isGuided) {
+      const s = this.timerService.stateSubjectValue;
+      this.scheduleForRun(s.duration, s.startBells, s.startBellIntervals, s.endBells, s.endBellIntervals);
+    } else {
+      this.prepareAudio();
+    }
+  }
+  
+  private persistLastPlayed(): void {
+    if (!this.selected) return;
     try {
       const key = 'lastGuidedMeditations';
       const raw = localStorage.getItem(key);
@@ -226,17 +263,61 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
 
   togglePlay(): void {
     if (!this.selected || !this.audioReady) return;
+
+    if (this.isGuidedMode) {
+      if (this.timerService.stateSubjectValue.isRunning) {
+        this.timerService.pause();
+      } else {
+        this.timerService.start();
+      }
+      return;
+    }
     
     if (this.isPlaying) {
       this.audio!.pause();
       this.isPlaying = false;
       this.clearTimeUpdate();
+      if (this.bellSequenceSubscription) {
+        this.bellSequenceSubscription.unsubscribe();
+        this.bellSequenceSubscription = null;
+      }
+      this.bellService.stopBell();
     } else {
-      this.audio!.play().catch(() => {
-        this.isPlaying = false;
-      });
-      this.isPlaying = true;
-      this.startTimeUpdate();
+      const state = this.timerService.stateSubjectValue;
+      const count = state.startBells;
+      const intervals = state.startBellIntervals || [5];
+      
+      if (count > 0) {
+        const bellSeqDuration = computeBellSequenceDuration(count, intervals);
+
+        // Play bell sequence
+        const observables = [];
+        observables.push(of(null)); // First bell
+        for (let i = 0; i < count - 1; i++) {
+            const intervalSec = intervals[i] !== undefined ? intervals[i] : 5;
+            observables.push(timer(intervalSec * 1000));
+        }
+
+        this.bellSequenceSubscription = concat(...observables).subscribe(() => {
+            this.bellService.playBell();
+        });
+
+        // Wait for sequence to end before starting audio
+        const totalWait = (bellSeqDuration + this.bellService.bellDuration) * 1000;
+        
+        setTimeout(() => {
+          if (this.bellSequenceSubscription) { // check if it wasn't cancelled
+            this.audio!.play().catch(() => { this.isPlaying = false; });
+            this.isPlaying = true;
+            this.startTimeUpdate();
+          }
+        }, totalWait);
+      } else {
+        // No bells, just play audio
+        this.audio!.play().catch(() => { this.isPlaying = false; });
+        this.isPlaying = true;
+        this.startTimeUpdate();
+      }
     }
   }
 
@@ -373,34 +454,6 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
         if (!this.isGuidedMode && this.audio) this.currentTime = this.audio.currentTime;
       });
     };
-  }
-
-  playNextRandom(): void {
-    if (!this.meditations || this.meditations.length === 0) return;
-    const pool = this.meditations.slice();
-    this.selected = pool[Math.floor(Math.random() * pool.length)];
-    this.currentTime = 0;
-    this.totalDuration = 0;
-    // persist last played
-    try {
-      const key = 'lastGuidedMeditations';
-      const raw = localStorage.getItem(key);
-      const arr = raw ? JSON.parse(raw) as any[] : [];
-      arr.push({ title: this.selected.title, teacher: this.selected.teacher, when: new Date().toISOString() });
-      while (arr.length > 20) arr.shift();
-      localStorage.setItem(key, JSON.stringify(arr));
-    } catch (e) {
-      // ignore storage errors
-    }
-
-    // If we're in guided timer mode, schedule the start/end relative to the timer.
-    if (this.timerService.stateSubjectValue.isGuided) {
-      const s = this.timerService.stateSubjectValue;
-      this.scheduleForRun(s.duration, s.startBells, s.startBellIntervals, s.endBells, s.endBellIntervals);
-    } else {
-      // prepare and auto-play when ready (show loading spinner on FAB)
-      this.prepareAudio();
-    }
   }
 }
 

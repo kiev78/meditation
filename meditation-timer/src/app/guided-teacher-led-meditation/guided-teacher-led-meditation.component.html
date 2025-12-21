@@ -31,8 +31,11 @@
       <button mat-icon-button (click)="skipForward()">
         <mat-icon>forward_10</mat-icon>
       </button>
-      <button mat-icon-button (click)="playNextRandom()">
-        <mat-icon>shuffle</mat-icon>
+      <button mat-icon-button (click)="playPrevious()" [disabled]="filteredMeditations.length <= 1">
+        <mat-icon>skip_previous</mat-icon>
+      </button>
+      <button mat-icon-button (click)="playNext()" [disabled]="filteredMeditations.length <= 1">
+        <mat-icon>skip_next</mat-icon>
       </button>
     </div>
   </div>
