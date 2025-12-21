@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, HostListener, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, HostListener, inject, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -44,6 +44,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   bellService = inject(BellService);
   private cacheService = inject(MeditationCacheService);
+  @Output() next = new EventEmitter<void>();
 
   private timerSub: Subscription | null = null;
   private schedule: ScheduledEvent[] = [];
@@ -136,6 +137,10 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     if (this.timerSub) {
       this.timerSub.unsubscribe();
     }
+  }
+
+  onNext() {
+    this.next.emit();
   }
 
   togglePlay() {

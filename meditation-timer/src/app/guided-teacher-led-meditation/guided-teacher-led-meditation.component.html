@@ -26,15 +26,14 @@
         <mat-icon>replay_10</mat-icon>
       </button>
       <button mat-fab color="primary" (click)="togglePlay()" [disabled]="!audioReady || loadError">
-        <mat-icon>{{ isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
+        <mat-icon>{{ (timerService.state$ | async)?.isRunning ? 'pause' : 'play_arrow' }}</mat-icon>
       </button>
       <button mat-icon-button (click)="skipForward()">
         <mat-icon>forward_10</mat-icon>
       </button>
-      <button mat-icon-button (click)="playPrevious()" [disabled]="filteredMeditations.length <= 1">
-        <mat-icon>skip_previous</mat-icon>
-      </button>
-      <button mat-icon-button (click)="playNext()" [disabled]="filteredMeditations.length <= 1">
+
+      <!-- Next Button triggers parent cycle -->
+      <button mat-icon-button (click)="onNext()">
         <mat-icon>skip_next</mat-icon>
       </button>
     </div>
