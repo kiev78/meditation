@@ -6,6 +6,7 @@ import { SettingsComponent } from './settings/settings.component';
 export const routes: Routes = [
   { path: '', component: TimerContainerComponent },
   { path: 'timer', component: TimerContainerComponent },
+  { path: 'guided-teacher', loadComponent: () => import('./guided-teacher-led-meditation/guided-teacher-led-meditation.component').then(m => m.GuidedTeacherLedMeditationComponent) },
   { path: 'readings', component: ReadingsComponent },
   { path: 'settings', component: SettingsComponent }
 ];

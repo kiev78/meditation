@@ -13,8 +13,12 @@ import { MeditationCacheService, MeditationCache } from '../meditation-cache.ser
 
 // New Interfaces for the structured JSON
 interface MeditationPart {
-  say?: string;
+  // `say` can be a plain string or an array of word objects allowing per-word rate/pitch.
+  say?: string | Array<{ text: string; rate?: number; pitch?: number }>;
   pause?: number;
+  // Optional overrides that apply to the whole part when `say` is a string or when words don't specify overrides.
+  rate?: number;
+  pitch?: number;
 }
 
 interface MeditationSection {
@@ -50,8 +54,8 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
   // Speech settings
   voice: SpeechSynthesisVoice | null = null;
-  rate = 0.9;
-  pitch = 0.5;
+  rate = 0.8;
+  pitch = 0.4;
 
   constructor() {}
 
@@ -73,10 +77,33 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.http.get<MeditationSection[]>('meditation/meditation-guided.json')
+    // Accept either an array payload or an object payload that may include rate/pitch
+    this.http.get<any>('meditation/meditation-text.json')
       .pipe(take(1))
       .subscribe(data => {
-        this.meditationScript = data;
+        const payload = data as any;
+
+        // Allow the JSON to be either an array of sections or an object with a `sections`/`script` array.
+        if (Array.isArray(payload)) {
+          this.meditationScript = payload;
+        } else if (Array.isArray(payload.sections)) {
+          this.meditationScript = payload.sections;
+        } else if (Array.isArray(payload.script)) {
+          this.meditationScript = payload.script;
+        } else {
+          this.meditationScript = [];
+        }
+
+        // If JSON includes top-level rate/pitch settings, allow them to override defaults.
+        if (payload && payload.rate !== undefined) {
+          const r = Number(payload.rate);
+          if (!Number.isNaN(r)) this.rate = r;
+        }
+        if (payload && payload.pitch !== undefined) {
+          const p = Number(payload.pitch);
+          if (!Number.isNaN(p)) this.pitch = p;
+        }
+
         this.calculateSchedule();
         this.initVoiceAndLoadCache();
 
@@ -349,13 +376,89 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
           speakNext();
         }, ms);
       } else if (part.say) {
-        const textToSay = part.say.substring(charIndex);
-        charIndex = 0; // Reset for next part
+        // Two supported shapes for `say`:
+        // 1) string: a simple block of text (part-level `rate`/`pitch` may apply)
+        // 2) array of { text, rate?, pitch? } to allow per-word rate/pitch
+        if (typeof part.say === 'string') {
+          const fullText = part.say as string;
+          const textToSay = fullText.substring(charIndex);
+          const baseCharIndex = charIndex;
+          const rateOverride = part.rate;
+          const pitchOverride = part.pitch;
+          charIndex = 0; // Reset for next part
 
-        this.speakInternal(textToSay, scheduleIndex, part.say, () => {
+          this.speakInternal(textToSay, scheduleIndex, baseCharIndex, () => {
+            partIndex++;
+            speakNext();
+          }, rateOverride, pitchOverride);
+        } else if (Array.isArray(part.say)) {
+          const words = part.say as Array<{ text: string; rate?: number; pitch?: number }>;
+          const wordStarts: number[] = [];
+          let cursor = 0;
+          for (let i = 0; i < words.length; i++) {
+            wordStarts.push(cursor);
+            cursor += words[i].text.length + (i < words.length - 1 ? 1 : 0);
+          }
+
+          const fullText = words.map(w => w.text).join(' ');
+
+          // Find starting word index and offset within that word based on charIndex
+          let startWord = 0;
+          for (let i = 0; i < wordStarts.length; i++) {
+            const start = wordStarts[i];
+            const end = (i + 1 < wordStarts.length) ? wordStarts[i + 1] - 1 : fullText.length;
+            if (charIndex >= start && charIndex <= end) {
+              startWord = i;
+              break;
+            }
+            if (i === wordStarts.length - 1 && charIndex > end) startWord = i;
+          }
+
+          let speakWordIndex = startWord;
+          let innerOffset = Math.max(0, charIndex - wordStarts[speakWordIndex]);
+
+          const speakWordsGroup = () => {
+            if (speakWordIndex >= words.length) {
+              partIndex++;
+              speakNext();
+              return;
+            }
+
+            // Group consecutive words that share rate/pitch (falling back to part-level then defaults)
+            const groupRate = words[speakWordIndex].rate !== undefined ? words[speakWordIndex].rate : part.rate;
+            const groupPitch = words[speakWordIndex].pitch !== undefined ? words[speakWordIndex].pitch : part.pitch;
+
+            let j = speakWordIndex;
+            let groupText = words[j].text;
+            while (j + 1 < words.length) {
+              const nextRate = words[j + 1].rate !== undefined ? words[j + 1].rate : part.rate;
+              const nextPitch = words[j + 1].pitch !== undefined ? words[j + 1].pitch : part.pitch;
+              if (nextRate === groupRate && nextPitch === groupPitch) {
+                groupText += ' ' + words[j + 1].text;
+                j++;
+              } else {
+                break;
+              }
+            }
+
+            const groupBaseCharIndex = wordStarts[speakWordIndex];
+            const utterText = groupText.substring(innerOffset);
+
+            // After first utterance in a part, subsequent groups start at 0 offset
+            innerOffset = 0;
+
+            this.speakInternal(utterText, scheduleIndex, groupBaseCharIndex + (groupBaseCharIndex === undefined ? 0 : 0), () => {
+              speakWordIndex = j + 1;
+              speakWordsGroup();
+            }, groupRate, groupPitch);
+          };
+
+          speakWordsGroup();
+        } else {
+          // Unknown shape, skip
           partIndex++;
           speakNext();
-        });
+        }
       } else {
         // Should not happen, but good to handle
         partIndex++;
@@ -366,7 +469,14 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     speakNext();
   }
 
-  private speakInternal(text: string, scheduleIndex: number, originalText: string, onComplete: () => void) {
+  private speakInternal(
+    text: string,
+    scheduleIndex: number,
+    baseCharIndex: number,
+    onComplete: () => void,
+    rateOverride?: number,
+    pitchOverride?: number
+  ) {
     if (!text) {
       onComplete();
       return;
@@ -375,15 +485,15 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     const msg = new SpeechSynthesisUtterance(text);
     msg.voice = this.voice;
     msg.volume = 1;
-    msg.rate = this.rate;
-    msg.pitch = this.pitch;
+    msg.rate = (rateOverride !== undefined) ? rateOverride : this.rate;
+    msg.pitch = (pitchOverride !== undefined) ? pitchOverride : this.pitch;
     msg.lang = 'en-US';
 
     const localTimings: { charIndex: number, time: number }[] = [];
 
     msg.onboundary = (e) => {
       if (e.name === 'word') {
-        const originalCharIndex = originalText.length - e.utterance.text.length + e.charIndex;
+        const originalCharIndex = baseCharIndex + e.charIndex;
         localTimings.push({
           charIndex: originalCharIndex,
           time: this.currentTime,
