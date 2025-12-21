@@ -1,0 +1,46 @@
+<div class="guided-container">
+  <div *ngIf="selected; else loading" class="content">
+    <h3>{{ selected.title }}</h3>
+    <p *ngIf="selected.teacher"><strong>{{ selected.teacher }}</strong></p>
+
+    <div *ngIf="loadError" class="error-message">
+      <p>Failed to load audio file. The file may not exist or is unreachable.</p>
+    </div>
+
+    <div class="timeline-row">
+      <span class="time-text">{{ formatTime(currentTime) }}</span>
+      <mat-slider
+        [min]="0"
+        [max]="totalDuration"
+        step="1"
+        [displayWith]="formatLabel"
+        class="timeline-slider"
+      >
+        <input matSliderThumb [value]="currentTime" (change)="seek($event)" />
+      </mat-slider>
+      <span class="time-text">{{ formatTime(totalDuration) }}</span>
+    </div>
+
+    <div class="button-row">
+      <button mat-icon-button (click)="skipBack()">
+        <mat-icon>replay_10</mat-icon>
+      </button>
+      <button mat-fab color="primary" (click)="togglePlay()" [disabled]="!audioReady || loadError">
+        <mat-icon>{{ isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
+      </button>
+      <button mat-icon-button (click)="skipForward()">
+        <mat-icon>forward_10</mat-icon>
+      </button>
+      <button mat-icon-button (click)="playPrevious()" [disabled]="filteredMeditations.length <= 1">
+        <mat-icon>skip_previous</mat-icon>
+      </button>
+      <button mat-icon-button (click)="playNext()" [disabled]="filteredMeditations.length <= 1">
+        <mat-icon>skip_next</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <ng-template #loading>
+    <p>Loading meditations…</p>
+  </ng-template>
+</div>

@@ -168,6 +168,19 @@ export class TimerService {
     this.updateState({ remainingTime: currentState.duration });
   }
 
+  seek(newRemaining: number) {
+    const wasRunning = this.stateSubject.value.isRunning;
+    this.pause(); // Stops timer, bells, sequences. Sets isRunning=false.
+
+    // Ensure we don't go below the negative delay limit (if we want to be strict)
+    // or just trust the component. Let's trust for now but ensure we update correctly.
+    this.updateState({ remainingTime: newRemaining });
+
+    if (wasRunning) {
+      this.start(); // Restart the timer from the new timestamp
+    }
+  }
+
   private _stopTimer() {
     this.updateState({ isRunning: false });
     this.releaseWakeLock();
@@ -179,7 +192,7 @@ export class TimerService {
 
   private checkInterval(remainingTime: number) {
     const state = this.stateSubject.value;
-    if (state.intervals <= 0) return;
+    if (state.intervals <= 0 || state.isGuided) return;
 
     const passedTime = state.duration - remainingTime;
     const intervalSeconds = state.intervals * 60;

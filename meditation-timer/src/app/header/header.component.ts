@@ -7,6 +7,8 @@ import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { Subscription, filter } from 'rxjs';
+import { SettingsService } from '../settings.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-header',
@@ -21,13 +23,14 @@ import { Subscription, filter } from 'rxjs';
     MatIconModule
   ],
   templateUrl: './header.html',
-  styleUrl: './header.css'
+  styleUrl: './header.css' 
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   isReadingsPage = false;
+  readingPreference: string | null = null;
   private routerSubscription?: Subscription;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private settingsService: SettingsService, private route: ActivatedRoute) {}
 
   ngOnInit() {
     this.routerSubscription = this.router.events.pipe(
@@ -35,9 +38,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     ).subscribe((event: any) => {
       this.isReadingsPage = event.urlAfterRedirects.includes('/readings');
     });
-
-    // Initialize state based on current URL immediately
-    this.isReadingsPage = this.router.url.includes('/readings');
   }
 
   ngOnDestroy() {

@@ -9,11 +9,16 @@ import { BellService } from '../bell.service';
 import { Subscription } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { take } from 'rxjs/operators';
+import { MeditationCacheService, MeditationCache } from '../meditation-cache.service';
 
 // New Interfaces for the structured JSON
 interface MeditationPart {
-  say?: string;
+  // `say` can be a plain string or an array of word objects allowing per-word rate/pitch.
+  say?: string | Array<{ text: string; rate?: number; pitch?: number }>;
   pause?: number;
+  // Optional overrides that apply to the whole part when `say` is a string or when words don't specify overrides.
+  rate?: number;
+  pitch?: number;
 }
 
 interface MeditationSection {
@@ -21,7 +26,7 @@ interface MeditationSection {
   content: MeditationPart[];
 }
 
-interface ScheduledEvent {
+export interface ScheduledEvent {
   time: number; // Trigger time in seconds (elapsed)
   content: MeditationPart[]; // The content to be spoken
   type: 'intro' | 'poke';
@@ -38,6 +43,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   timerService = inject(TimerService);
   private http = inject(HttpClient);
   bellService = inject(BellService);
+  private cacheService = inject(MeditationCacheService);
 
   private timerSub: Subscription | null = null;
   private schedule: ScheduledEvent[] = [];
@@ -45,6 +51,11 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   private meditationScript: MeditationSection[] = [];
 
   private currentTimeout: any = null;
+
+  // Speech settings
+  voice: SpeechSynthesisVoice | null = null;
+  rate = 0.8;
+  pitch = 0.4;
 
   constructor() {}
 
@@ -57,15 +68,44 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   }
 
   get currentTime(): number {
-    return this.duration - this.timerService.stateSubjectValue.remainingTime;
+    const rem = this.timerService.stateSubjectValue.remainingTime;
+    // During start delay (negative remainingTime) or invalid state, return 0.
+    if (rem < 0 || rem > this.duration) {
+      return 0;
+    }
+    return this.duration - rem;
   }
 
   ngOnInit() {
-    this.http.get<MeditationSection[]>('meditation/meditation-text.json')
+    // Accept either an array payload or an object payload that may include rate/pitch
+    this.http.get<any>('meditation/meditation-text.json')
       .pipe(take(1))
       .subscribe(data => {
-        this.meditationScript = data;
+        const payload = data as any;
+
+        // Allow the JSON to be either an array of sections or an object with a `sections`/`script` array.
+        if (Array.isArray(payload)) {
+          this.meditationScript = payload;
+        } else if (Array.isArray(payload.sections)) {
+          this.meditationScript = payload.sections;
+        } else if (Array.isArray(payload.script)) {
+          this.meditationScript = payload.script;
+        } else {
+          this.meditationScript = [];
+        }
+
+        // If JSON includes top-level rate/pitch settings, allow them to override defaults.
+        if (payload && payload.rate !== undefined) {
+          const r = Number(payload.rate);
+          if (!Number.isNaN(r)) this.rate = r;
+        }
+        if (payload && payload.pitch !== undefined) {
+          const p = Number(payload.pitch);
+          if (!Number.isNaN(p)) this.pitch = p;
+        }
+
         this.calculateSchedule();
+        this.initVoiceAndLoadCache();
 
         if (this.timerSub) {
           this.timerSub.unsubscribe();
@@ -73,7 +113,9 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
         this.timerSub = this.timerService.state$.subscribe(state => {
           if (state.isRunning) {
-            const elapsed = state.duration - state.remainingTime;
+            // Using this.currentTime ensures we handle start delays (negative remainingTime) correctly.
+            // If remainingTime < 0, currentTime returns 0.
+            const elapsed = this.currentTime;
             this.checkSchedule(elapsed);
           } else {
             this.stopSpeaking();
@@ -81,6 +123,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
           if (state.duration !== this.scheduleDurationCache) {
             this.calculateSchedule();
+            this.initVoiceAndLoadCache(); // Reload cache if duration changes
           }
         });
       });
@@ -99,37 +142,38 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     if (this.isPlaying) {
       this.timerService.pause();
     } else {
-      this.bellService.playBell();
-      //wait 10 seconds before starting timer to allow bell to play
-      setTimeout(() => {
       this.timerService.start();
-      }, 10000);  
     }
   }
 
   skipBack() {
     const currentRem = this.timerService.stateSubjectValue.remainingTime;
+    // If we are in delay phase (<0), skipping back doesn't make sense or should extend delay?
+    // Let's assume we just clamp to duration.
     const newRem = Math.min(this.duration, currentRem + 10);
-    this.timerService.updateState({ remainingTime: newRem });
-    this.stopSpeaking();
-    this.resetSpeechIndex(this.duration - newRem);
+    this.timerService.seek(newRem);
+
+    // We need to calculate the new elapsed time to reset speech index correctly.
+    // If newRem is negative (still in delay), elapsed is 0.
+    const elapsed = (newRem < 0) ? 0 : (this.duration - newRem);
+    this.resumeFromTime(elapsed);
   }
 
   skipForward() {
     const currentRem = this.timerService.stateSubjectValue.remainingTime;
     const newRem = Math.max(0, currentRem - 10);
-    this.timerService.updateState({ remainingTime: newRem });
-    this.stopSpeaking();
-    this.resetSpeechIndex(this.duration - newRem);
+    this.timerService.seek(newRem);
+
+    const elapsed = (newRem < 0) ? 0 : (this.duration - newRem);
+    this.resumeFromTime(elapsed);
   }
 
   seek(event: Event) {
     const target = event.target as HTMLInputElement;
     const elapsed = Number(target.value);
     const newRem = this.duration - elapsed;
-    this.timerService.updateState({ remainingTime: newRem });
-    this.stopSpeaking();
-    this.resetSpeechIndex(elapsed);
+    this.timerService.seek(newRem);
+    this.resumeFromTime(elapsed);
   }
 
   private calculateSchedule() {
@@ -147,50 +191,155 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     }
 
     const pokes = this.meditationScript.filter(s => s.type === 'poke');
-    
-    let activeWindow = 0;
-    if (duration > 600) { // > 10 mins
-      activeWindow = duration - 300; // Last 5 mins silence
-    } else {
-      activeWindow = duration * 0.8; // Use 80% for shorter sessions
+    const count = pokes.length;
+
+    const POKE_1_TIME = 120; // 2 minutes
+    const POKE_2_TIME = 264; // 4.4 minutes
+
+    const activeWindowEnd = duration - 300; // 5 minutes of silence at the end
+
+    if (count > 0 && POKE_1_TIME < activeWindowEnd) {
+      this.schedule.push({ time: POKE_1_TIME, content: pokes[0].content, type: 'poke' });
+    }
+    if (count > 1 && POKE_2_TIME < activeWindowEnd) {
+      this.schedule.push({ time: POKE_2_TIME, content: pokes[1].content, type: 'poke' });
     }
 
-    if (pokes.length > 0) {
-       const count = pokes.length;
-       for (let i = 0; i < count; i++) {
-         let fraction = 0;
-         if (count === 1) fraction = 0.5;
-         else if (count === 2) fraction = i === 0 ? 0.3 : 0.7;
-         else if (count === 3) fraction = i === 0 ? 0.25 : (i === 1 ? 0.55 : 0.9);
-         else {
-           fraction = (i + 1) / (count + 1);
-         }
+    if (count > 2 && duration > 600) { // Only schedule more pokes if duration is > 10 mins
+      const remainingPokes = pokes.slice(2);
+      const remainingCount = remainingPokes.length;
 
-         const time = Math.floor(activeWindow * fraction);
-         const safeTime = Math.max(30, time);
+      const remainingWindowStart = POKE_2_TIME + 1;
+      const remainingWindowDuration = activeWindowEnd - remainingWindowStart;
 
-         this.schedule.push({ time: safeTime, content: pokes[i].content, type: 'poke' });
-       }
+      if (remainingWindowDuration > 0) {
+        for (let i = 0; i < remainingCount; i++) {
+          const fraction = (i + 1) / (remainingCount + 1);
+          const time = remainingWindowStart + Math.floor(remainingWindowDuration * fraction);
+          
+          if (time < activeWindowEnd) {
+            this.schedule.push({ time: time, content: remainingPokes[i].content, type: 'poke' });
+          }
+        }
+      }
     }
 
     this.schedule.sort((a, b) => a.time - b.time);
   }
 
-  private resetSpeechIndex(elapsed: number) {
-    this.lastSpokenIndex = -1;
-    for (let i = 0; i < this.schedule.length; i++) {
-      if (this.schedule[i].time <= elapsed) {
-        this.lastSpokenIndex = i;
-      }
+  private initVoiceAndLoadCache() {
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices.length) {
+      // Voices not loaded yet, try again.
+      setTimeout(() => this.initVoiceAndLoadCache(), 100);
+      return;
+    }
+    // Prefer "Microsoft Brian" as requested, with fallbacks.
+    this.voice = voices.find(v => v.name.includes('Brian')) ||
+                 voices.find(v => v.lang.startsWith('en-US')) ||
+                 voices[0];
+    
+    this.loadFromCache();
+  }
+
+  private loadFromCache() {
+    const cachedData = this.cacheService.load(
+      this.duration,
+      this.voice?.name || 'default',
+      this.rate,
+      this.pitch
+    );
+
+    if (cachedData && cachedData.wordTimings) {
+      this.wordTimings = new Map(cachedData.wordTimings);
+    } else {
+      this.wordTimings = new Map();
     }
   }
 
+  private activeScheduleIndex: number | null = null;
+  private wordTimings: Map<number, { charIndex: number, time: number }[]> = new Map();
+
+  private resumeFromTime(elapsed: number) {
+    this.stopSpeaking();
+    const effectiveElapsed = elapsed - this.bellSequenceDuration;
+
+    if (effectiveElapsed < 0) {
+      this.lastSpokenIndex = -1;
+      return;
+    }
+
+    let scheduleIndex = -1;
+    for (let i = 0; i < this.schedule.length; i++) {
+      if (this.schedule[i].time <= effectiveElapsed) {
+        scheduleIndex = i;
+      } else {
+        break;
+      }
+    }
+
+    if (scheduleIndex === -1) {
+      this.lastSpokenIndex = -1;
+      return;
+    }
+
+    const timings = this.wordTimings.get(scheduleIndex);
+    if (timings) {
+      // Precision seeking is possible
+      let charIndex = 0;
+      for (const timing of timings) {
+        if (timing.time <= effectiveElapsed) {
+          charIndex = timing.charIndex;
+        } else {
+          break;
+        }
+      }
+      this.lastSpokenIndex = scheduleIndex - 1;
+      this.speakMessage(this.schedule[scheduleIndex].content, scheduleIndex, charIndex);
+
+    } else {
+      // No timings yet, seek to silence before this segment
+      this.lastSpokenIndex = scheduleIndex;
+    }
+  }
+
+  private get bellSequenceDuration(): number {
+    const state = this.timerService.stateSubjectValue;
+    if (state.startBells <= 0) return 0;
+
+    let duration = 0;
+    const count = state.startBells;
+    const intervals = state.startBellIntervals || [5]; // default 5s
+
+    // Sum intervals between bells
+    for (let i = 0; i < count - 1; i++) {
+       const interval = intervals[i] !== undefined ? intervals[i] : 5;
+       duration += interval;
+    }
+
+    // Add length of the bell sound itself.
+    if (count > 0) {
+      duration += this.bellService.bellDuration;
+    }
+
+    return duration;
+  }
+
   private checkSchedule(elapsed: number) {
+    if (this.activeScheduleIndex !== null) {
+      return; // Already speaking
+    }
+    const effectiveElapsed = elapsed - this.bellSequenceDuration;
+
+    if (effectiveElapsed < 0) {
+      return;
+    }
+
     const nextIndex = this.lastSpokenIndex + 1;
     if (nextIndex < this.schedule.length) {
       const event = this.schedule[nextIndex];
-      if (elapsed >= event.time) {
-        this.speakMessage(event.content);
+      if (effectiveElapsed >= event.time) {
+        this.speakMessage(event.content, nextIndex);
         this.lastSpokenIndex = nextIndex;
       }
     }
@@ -201,32 +350,118 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
       clearTimeout(this.currentTimeout);
       this.currentTimeout = null;
     }
+    this.activeScheduleIndex = null;
     window.speechSynthesis.cancel();
   }
 
-  private speakMessage(parts: MeditationPart[]) {
+  private speakMessage(parts: MeditationPart[], scheduleIndex: number, startCharIndex = 0) {
     this.stopSpeaking();
+    this.activeScheduleIndex = scheduleIndex;
 
-    let currentIndex = 0;
+    let partIndex = 0;
+    let charIndex = startCharIndex;
 
     const speakNext = () => {
-      if (currentIndex >= parts.length) return;
+      if (partIndex >= parts.length) {
+        this.activeScheduleIndex = null;
+        return;
+      }
 
-      const part = parts[currentIndex];
+      const part = parts[partIndex];
 
       if (part.pause) {
         const ms = part.pause * 1000;
         this.currentTimeout = setTimeout(() => {
-          currentIndex++;
+          partIndex++;
           speakNext();
         }, ms);
       } else if (part.say) {
-        this.speakInternal(part.say, () => {
-          currentIndex++;
+        // Two supported shapes for `say`:
+        // 1) string: a simple block of text (part-level `rate`/`pitch` may apply)
+        // 2) array of { text, rate?, pitch? } to allow per-word rate/pitch
+        if (typeof part.say === 'string') {
+          const fullText = part.say as string;
+          const textToSay = fullText.substring(charIndex);
+          const baseCharIndex = charIndex;
+          const rateOverride = part.rate;
+          const pitchOverride = part.pitch;
+          charIndex = 0; // Reset for next part
+
+          this.speakInternal(textToSay, scheduleIndex, baseCharIndex, () => {
+            partIndex++;
+            speakNext();
+          }, rateOverride, pitchOverride);
+        } else if (Array.isArray(part.say)) {
+          const words = part.say as Array<{ text: string; rate?: number; pitch?: number }>;
+          const wordStarts: number[] = [];
+          let cursor = 0;
+          for (let i = 0; i < words.length; i++) {
+            wordStarts.push(cursor);
+            cursor += words[i].text.length + (i < words.length - 1 ? 1 : 0);
+          }
+
+          const fullText = words.map(w => w.text).join(' ');
+
+          // Find starting word index and offset within that word based on charIndex
+          let startWord = 0;
+          for (let i = 0; i < wordStarts.length; i++) {
+            const start = wordStarts[i];
+            const end = (i + 1 < wordStarts.length) ? wordStarts[i + 1] - 1 : fullText.length;
+            if (charIndex >= start && charIndex <= end) {
+              startWord = i;
+              break;
+            }
+            if (i === wordStarts.length - 1 && charIndex > end) startWord = i;
+          }
+
+          let speakWordIndex = startWord;
+          let innerOffset = Math.max(0, charIndex - wordStarts[speakWordIndex]);
+
+          const speakWordsGroup = () => {
+            if (speakWordIndex >= words.length) {
+              partIndex++;
+              speakNext();
+              return;
+            }
+
+            // Group consecutive words that share rate/pitch (falling back to part-level then defaults)
+            const groupRate = words[speakWordIndex].rate !== undefined ? words[speakWordIndex].rate : part.rate;
+            const groupPitch = words[speakWordIndex].pitch !== undefined ? words[speakWordIndex].pitch : part.pitch;
+
+            let j = speakWordIndex;
+            let groupText = words[j].text;
+            while (j + 1 < words.length) {
+              const nextRate = words[j + 1].rate !== undefined ? words[j + 1].rate : part.rate;
+              const nextPitch = words[j + 1].pitch !== undefined ? words[j + 1].pitch : part.pitch;
+              if (nextRate === groupRate && nextPitch === groupPitch) {
+                groupText += ' ' + words[j + 1].text;
+                j++;
+              } else {
+                break;
+              }
+            }
+
+            const groupBaseCharIndex = wordStarts[speakWordIndex];
+            const utterText = groupText.substring(innerOffset);
+
+            // After first utterance in a part, subsequent groups start at 0 offset
+            innerOffset = 0;
+
+            this.speakInternal(utterText, scheduleIndex, groupBaseCharIndex + (groupBaseCharIndex === undefined ? 0 : 0), () => {
+              speakWordIndex = j + 1;
+              speakWordsGroup();
+            }, groupRate, groupPitch);
+          };
+
+          speakWordsGroup();
+        } else {
+          // Unknown shape, skip
+          partIndex++;
           speakNext();
-        });
+        }
       } else {
-        currentIndex++;
+        // Should not happen, but good to handle
+        partIndex++;
         speakNext();
       }
     };
@@ -234,65 +469,72 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     speakNext();
   }
 
-  private speakInternal(text: string, onComplete: () => void) {
+  private speakInternal(
+    text: string,
+    scheduleIndex: number,
+    baseCharIndex: number,
+    onComplete: () => void,
+    rateOverride?: number,
+    pitchOverride?: number
+  ) {
     if (!text) {
       onComplete();
       return;
     }
 
-    const subParts = text.split(',');
-    let subIndex = 0;
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.voice = this.voice;
+    msg.volume = 1;
+    msg.rate = (rateOverride !== undefined) ? rateOverride : this.rate;
+    msg.pitch = (pitchOverride !== undefined) ? pitchOverride : this.pitch;
+    msg.lang = 'en-US';
 
-    const speakSub = () => {
-      if (subIndex >= subParts.length) {
-        onComplete();
-        return;
+    const localTimings: { charIndex: number, time: number }[] = [];
+
+    msg.onboundary = (e) => {
+      if (e.name === 'word') {
+        const originalCharIndex = baseCharIndex + e.charIndex;
+        localTimings.push({
+          charIndex: originalCharIndex,
+          time: this.currentTime,
+        });
       }
-
-      const subText = subParts[subIndex].trim();
-      if (!subText) {
-        subIndex++;
-        speakSub();
-        return;
-      }
-
-      const msg = new SpeechSynthesisUtterance();
-      msg.voice = this.setVoice();
-      msg.volume = 1;
-      msg.rate = 0.9;
-      msg.pitch = 0.5;
-      msg.text = subText;
-      msg.lang = 'en-US';
-
-      msg.onend = () => {
-        subIndex++;
-        if (subIndex < subParts.length) {
-           this.currentTimeout = setTimeout(() => {
-             speakSub();
-           }, 500);
-        } else {
-          onComplete();
-        }
-      };
-
-      msg.onerror = (e) => {
-          console.error('TTS Error', e);
-          onComplete();
-      };
-
-      window.speechSynthesis.speak(msg);
     };
 
-    speakSub();
-  }
+    msg.onend = () => {
+      // On seek, we might have partial timings. Merge them carefully.
+      const existingTimings = this.wordTimings.get(scheduleIndex) || [];
+      const mergedTimings = [...existingTimings];
+      
+      // Add only new timings
+      localTimings.forEach(lt => {
+        if (!mergedTimings.some(et => et.charIndex === lt.charIndex)) {
+          mergedTimings.push(lt);
+        }
+      });
 
-  private setVoice() {
-    const voices = window.speechSynthesis.getVoices();
-    // Prefer "Microsoft Brian" as requested, with fallbacks.
-    var voice = voices.find(v => v.name.includes('Brian')) ||
-                 voices.find(v => v.lang.startsWith('en-US')) ||
-                 voices[0];
-     return voice;
+      // Keep it sorted
+      mergedTimings.sort((a,b) => a.charIndex - b.charIndex);
+      this.wordTimings.set(scheduleIndex, mergedTimings);
+
+      // Save to cache
+      this.cacheService.save(
+        this.duration,
+        this.voice?.name || 'default',
+        this.rate,
+        this.pitch,
+        { wordTimings: Array.from(this.wordTimings.entries()) }
+      );
+
+      onComplete();
+    };
+
+    msg.onerror = (e) => {
+        console.error('TTS Error', e);
+        onComplete();
+    };
+
+    window.speechSynthesis.speak(msg);
   }
 
   formatTime(seconds: number): string {

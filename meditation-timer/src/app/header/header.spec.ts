@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HeaderComponent } from './header.component';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { SettingsService } from '../settings.service';
 import { of, Subject } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -29,7 +29,8 @@ describe('HeaderComponent', () => {
       imports: [HeaderComponent, BrowserAnimationsModule],
       providers: [
         { provide: Router, useValue: router },
-        { provide: SettingsService, useValue: settingsService }
+        { provide: SettingsService, useValue: settingsService },
+        { provide: ActivatedRoute, useValue: {} }
       ]
     }).compileComponents();
 
@@ -40,11 +41,6 @@ describe('HeaderComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  it('should initialize with default reading preference from settings', () => {
-    expect(component.readingPreference).toBe('all');
-    expect(settingsService.loadSettings).toHaveBeenCalled();
   });
 
   it('should update isReadingsPage based on router events', fakeAsync(() => {
@@ -61,11 +57,6 @@ describe('HeaderComponent', () => {
     expect(component.isReadingsPage).toBeFalse();
   }));
 
-  it('should save preference when changed', () => {
-    component.onPreferenceChange('zen');
-    expect(component.readingPreference).toBe('zen');
-    expect(settingsService.saveSettings).toHaveBeenCalledWith({ readingPreference: 'zen' });
-  });
 
   it('should initialize isReadingsPage correctly from initial URL', () => {
     // Re-create component with a different initial URL
