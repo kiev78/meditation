@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, HostListener, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, HostListener, inject, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -40,10 +40,12 @@ export interface ScheduledEvent {
   styleUrls: ['./guided-meditation.css']
 })
 export class GuidedMeditationComponent implements OnInit, OnDestroy {
-  timerService = inject(TimerService);
+  public timerService = inject(TimerService);
   private http = inject(HttpClient);
   bellService = inject(BellService);
   private cacheService = inject(MeditationCacheService);
+  private cdr = inject(ChangeDetectorRef);
+  @Output() next = new EventEmitter<void>();
 
   private timerSub: Subscription | null = null;
   private schedule: ScheduledEvent[] = [];
@@ -56,6 +58,9 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   voice: SpeechSynthesisVoice | null = null;
   rate = 0.8;
   pitch = 0.4;
+
+  public teacher: string = '';
+  public title: string = '';
 
   constructor() {}
 
@@ -104,6 +109,15 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
           if (!Number.isNaN(p)) this.pitch = p;
         }
 
+        if (payload && payload.teacher) {
+          this.teacher = payload.teacher;
+        }
+        if (payload && payload.title) {
+          this.title = payload.title;
+        }
+        
+        this.cdr.markForCheck();
+
         this.calculateSchedule();
         this.initVoiceAndLoadCache();
 
@@ -113,6 +127,13 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
         this.timerSub = this.timerService.state$.subscribe(state => {
           if (state.isRunning) {
+            // Check for bell sequence
+            if (state.isBellSequenceRunning) {
+               // Ensure we are not speaking while bells ring
+               this.stopSpeaking();
+               return;
+            }
+
             // Using this.currentTime ensures we handle start delays (negative remainingTime) correctly.
             // If remainingTime < 0, currentTime returns 0.
             const elapsed = this.currentTime;
@@ -136,6 +157,10 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     if (this.timerSub) {
       this.timerSub.unsubscribe();
     }
+  }
+
+  onNext() {
+    this.next.emit();
   }
 
   togglePlay() {
@@ -262,7 +287,8 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
   private resumeFromTime(elapsed: number) {
     this.stopSpeaking();
-    const effectiveElapsed = elapsed - this.bellSequenceDuration;
+    // With bell sequence separated in timer, elapsed is 0-based from start of countdown
+    const effectiveElapsed = elapsed;
 
     if (effectiveElapsed < 0) {
       this.lastSpokenIndex = -1;
@@ -303,33 +329,12 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     }
   }
 
-  private get bellSequenceDuration(): number {
-    const state = this.timerService.stateSubjectValue;
-    if (state.startBells <= 0) return 0;
-
-    let duration = 0;
-    const count = state.startBells;
-    const intervals = state.startBellIntervals || [5]; // default 5s
-
-    // Sum intervals between bells
-    for (let i = 0; i < count - 1; i++) {
-       const interval = intervals[i] !== undefined ? intervals[i] : 5;
-       duration += interval;
-    }
-
-    // Add length of the bell sound itself.
-    if (count > 0) {
-      duration += this.bellService.bellDuration;
-    }
-
-    return duration;
-  }
-
   private checkSchedule(elapsed: number) {
     if (this.activeScheduleIndex !== null) {
       return; // Already speaking
     }
-    const effectiveElapsed = elapsed - this.bellSequenceDuration;
+    // With bell sequence separated in timer, elapsed is 0-based from start of countdown
+    const effectiveElapsed = elapsed;
 
     if (effectiveElapsed < 0) {
       return;

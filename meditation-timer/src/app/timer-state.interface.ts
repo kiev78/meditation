@@ -14,4 +14,5 @@ export interface TimerState {
   isGuided: boolean;
   readingPreferences?: string[];
   readingFilterMode?: 'AND' | 'OR';
+  isBellSequenceRunning: boolean;
 }

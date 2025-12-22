@@ -22,6 +22,7 @@ class MockTimerService {
     theme: 'light',
     isWakeLockActive: false,
     isGuided: true,
+    isBellSequenceRunning: false,
   });
 
   get stateSubjectValue() {

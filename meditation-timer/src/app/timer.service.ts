@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Subscription, interval, timer, of, concat } from 'rxjs';
-import { switchMap, takeWhile, tap, map, take } from 'rxjs/operators';
+import { BehaviorSubject, Subscription, interval, timer, of, concat, Observable } from 'rxjs';
+import { switchMap, takeWhile, tap, map, take, last } from 'rxjs/operators';
 import { TimerState } from './timer-state.interface';
 import { BellService } from './bell.service';
 import { SettingsService } from './settings.service';
@@ -25,6 +25,7 @@ export class TimerService {
     isRunning: false,
     isWakeLockActive: false,
     isGuided: false,
+    isBellSequenceRunning: false,
   };
 
   private stateSubject = new BehaviorSubject<TimerState>(this.initialState);
@@ -61,6 +62,7 @@ export class TimerService {
 
       mergedState.remainingTime = mergedState.duration; // Reset to full duration
       mergedState.isRunning = false;
+      mergedState.isBellSequenceRunning = false;
       this.stateSubject.next(mergedState);
     }
   }
@@ -68,25 +70,49 @@ export class TimerService {
   start() {
     if (this.stateSubject.value.isRunning) return;
 
-    this.updateState({ isRunning: true });
     this.requestWakeLock();
 
     const currentState = this.stateSubject.value;
     const duration = currentState.duration;
     const remaining = currentState.remainingTime;
-    const delay = currentState.delay;
+    const initialStartDelay = currentState.delay;
 
     const isFreshStart = (remaining === duration);
     const isPausedInDelay = (remaining < 0);
 
-    let delayStream = null;
+    // Calculate if we need to run a bell sequence at the start
+    // Logic matches 'durationStream' calculation: delayStream != null OR isFreshStart
+    // But delayStream != null implies initialStartDelay > 0 AND (isFreshStart OR isPausedInDelay)
+    const willRunBellSequence = (initialStartDelay > 0 && (isFreshStart || isPausedInDelay)) || isFreshStart;
 
-    if (delay > 0) {
+    const update: Partial<TimerState> = { isRunning: true };
+
+    // If starting fresh with a delay, set state immediately to prevent glitches
+    if (initialStartDelay > 0 && isFreshStart) {
+        update.remainingTime = -initialStartDelay;
+    } else if (willRunBellSequence) {
+        // If bells run immediately (no start delay), update remainingTime to negative bell duration
+        const bellDelayMs = this.calculateBellSequenceDurationMs(currentState.startBells, currentState.startBellIntervals);
+        const bellSeconds = Math.ceil(bellDelayMs / 1000);
+        if (bellSeconds > 0) {
+            update.remainingTime = -bellSeconds;
+        }
+    }
+
+    if (willRunBellSequence) {
+        update.isBellSequenceRunning = true;
+    }
+
+    this.updateState(update);
+
+    let delayStream: Observable<any> | null = null;
+
+    if (initialStartDelay > 0) {
       if (isFreshStart) {
         // Fresh start: Count from -delay to -1
         delayStream = timer(0, 1000).pipe(
-          map(i => -delay + i),
-          take(delay)
+          map(i => -initialStartDelay + i),
+          take(initialStartDelay)
         );
       } else if (isPausedInDelay) {
         // Resume delay: Count from current remaining (negative) to -1
@@ -102,19 +128,66 @@ export class TimerService {
     const durationToUse = (delayStream || isFreshStart) ? duration : remaining;
 
     const durationStream = of(0).pipe(
-      tap(() => {
+      switchMap(() => {
         // Only play the start bell if we are starting a fresh session or transitioning from delay
         const shouldPlayBell = (delayStream !== null) || isFreshStart;
+
+        let bellDelayMs = 0;
+        let bellStream: Observable<any> = of(null); // Default empty stream
+
         if (shouldPlayBell) {
-          const state = this.stateSubject.value;
-          this.playBellSequence(state.startBells, state.startBellIntervals);
-          this.updateState({ remainingTime: duration });
+           const state = this.stateSubject.value;
+
+           // Calculate duration of bell sequence to delay the timer
+           bellDelayMs = this.calculateBellSequenceDurationMs(state.startBells, state.startBellIntervals);
+
+           this.playBellSequence(state.startBells, state.startBellIntervals);
+
+           // Create a stream that counts down the bell duration as negative numbers
+           // We round up to nearest second to avoid partial seconds in display logic
+           const bellSeconds = Math.ceil(bellDelayMs / 1000);
+
+           if (bellSeconds > 0) {
+             // Use timer(0, 1000) to emit immediately at 0s, 1s, ...
+             // We need to cover the duration of bellSeconds.
+             // take(bellSeconds) gives 0..N-1. Duration is N-1 seconds?
+             // If bellSeconds is 7. take(7) -> 0..6.
+             // 0s: -7. 1s: -6 ... 6s: -1.
+             // Total time 6s? We need 7s.
+             // But bellDelayMs determines the wait.
+             // The visual countdown is auxiliary.
+             // To ensure we don't finish too early, we can take(bellSeconds + 1)?
+             // 0..7. 7s: 0.
+             // At 7s, the main timer starts at 30:00 (duration).
+             // So transition -1 -> 0 -> 30:00. This is fine.
+             bellStream = timer(0, 1000).pipe(
+               take(bellSeconds + 1),
+               map(i => -bellSeconds + i), // e.g. -7, -6, ..., 0
+               tap(val => this.updateState({ remainingTime: val })),
+               last(), // Wait for completion
+               map(() => null) // Ensure we pass null to next
+             );
+           } else {
+             // If 0s bell (e.g. 1 bell instant), just immediate
+             bellStream = of(null);
+           }
         }
-      }),
-      switchMap(() => interval(1000).pipe(
-        map(tick => durationToUse - (tick + 1)),
-        takeWhile(val => val >= 0)
-      ))
+
+        // Run bell stream (which delays main timer AND updates countdown)
+        // If resuming (not fresh start), bellStream is empty (of(null))
+        return bellStream.pipe(
+          tap(() => {
+             // When bells finish (or skipped), update flag
+             if (shouldPlayBell) {
+               this.updateState({ isBellSequenceRunning: false });
+             }
+          }),
+          switchMap(() => interval(1000).pipe(
+            map(tick => durationToUse - (tick + 1)),
+            takeWhile(val => val >= 0)
+          ))
+        );
+      })
     );
 
     let stream;
@@ -182,7 +255,7 @@ export class TimerService {
   }
 
   private _stopTimer() {
-    this.updateState({ isRunning: false });
+    this.updateState({ isRunning: false, isBellSequenceRunning: false });
     this.releaseWakeLock();
     if (this.timerSubscription) {
       this.timerSubscription.unsubscribe();
@@ -200,6 +273,31 @@ export class TimerService {
     if (passedTime > 0 && remainingTime > 0 && passedTime % intervalSeconds === 0) {
       this.bellService.playBell();
     }
+  }
+
+  private calculateBellSequenceDurationMs(count: number, intervals: number[]): number {
+    if (count <= 0) return 0;
+
+    let totalSec = 0;
+    // Sum intervals between bells
+    for (let i = 0; i < count - 1; i++) {
+        totalSec += intervals[i] !== undefined ? intervals[i] : 5;
+    }
+
+    // Add the duration of the bells themselves.
+    // Bell rings at T=0 (length bellDuration).
+    // Next bell at T=Interval (length bellDuration).
+    // Total sequence time until silence = (Sum of Intervals) + Last Bell Duration.
+    // However, technically if intervals are long enough, bells don't overlap.
+    // But we just want the "busy time".
+    // If intervals are short, bells overlap.
+    // The sequence "ends" when the last bell finishes ringing.
+    // Last bell starts at T = Sum(intervals).
+    // It ends at T = Sum(intervals) + bellDuration.
+
+    totalSec += this.bellService.bellDuration;
+
+    return totalSec * 1000;
   }
 
   private playBellSequence(count: number, intervals: number[]) {

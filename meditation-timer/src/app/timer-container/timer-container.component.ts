@@ -1,4 +1,4 @@
-import { Component, inject, HostListener } from '@angular/core';
+import { Component, inject, HostListener, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TimerSetupComponent } from '../timer-setup/timer-setup.component';
 import { TimerDisplayComponent } from '../timer-display/timer-display.component';
@@ -6,10 +6,9 @@ import { ControlButtonsComponent } from '../control-buttons/control-buttons.comp
 import { GuidedMeditationComponent } from '../guided-meditation/guided-meditation.component';
 import { GuidedTeacherLedMeditationComponent } from '../guided-teacher-led-meditation/guided-teacher-led-meditation.component';
 import { HttpClient } from '@angular/common/http';
-import { combineLatest, Observable, of } from 'rxjs';
+import { combineLatest, Observable, timer } from 'rxjs';
 import { TimerService } from '../timer.service';
-import { map, shareReplay } from 'rxjs/operators'; // Keep map and shareReplay from here
-import { timer } from 'rxjs'; // Import timer separately
+import { map, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.component';
 
 @Component({
@@ -38,11 +37,21 @@ import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.co
       </ng-container>
 
       <ng-template #guidedMode>
-        <ng-container *ngIf="(selectedMeditation$ | async) as med; else fallbackMed">
-          <app-guided-teacher-led-meditation [meditation]="med"></app-guided-teacher-led-meditation>
+        <ng-container *ngIf="!loading; else loader">
+          <!-- If we have a selected meditation, show the teacher-led component -->
+          <ng-container *ngIf="selectedMeditation && !forceTTS; else fallbackMed">
+            <app-guided-teacher-led-meditation
+              [meditation]="selectedMeditation"
+              (next)="onNextMeditation()">
+            </app-guided-teacher-led-meditation>
+          </ng-container>
+          <!-- Otherwise show fallback TTS -->
+          <ng-template #fallbackMed>
+            <app-guided-meditation (next)="onNextMeditation()"></app-guided-meditation>
+          </ng-template>
         </ng-container>
-        <ng-template #fallbackMed>
-          <app-guided-meditation></app-guided-meditation>
+        <ng-template #loader>
+          <div class="loading-state">Loading meditation...</div>
         </ng-template>
       </ng-template>
 
@@ -57,36 +66,108 @@ import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.co
         color: var(--mat-sys-on-surface-variant);
         margin: 0 0 1rem 0;
       }
+      .loading-state {
+        text-align: center;
+        padding: 2rem;
+        color: var(--mat-sys-on-surface-variant);
+      }
     `,
   ],
 })
-export class TimerContainerComponent {
-  timerService = inject(TimerService);
+export class TimerContainerComponent implements OnInit {
+  public timerService = inject(TimerService);
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
 
   private meditationList$ = this.http.get<any[]>('meditation/meditation-guided-files.json').pipe(shareReplay(1));
 
-  selectedMeditation$: Observable<any | null> = combineLatest([this.meditationList$, this.timerService.state$]).pipe(
-    map(([list, state]) => {
-      if (!state.isGuided) return null;
-      if (!Array.isArray(list) || list.length === 0) return null;
+  // Current candidates list
+  candidates: any[] = [];
+  currentIndex = 0;
 
-      const bellSeq = computeBellSequenceDuration(state.startBells, state.startBellIntervals || [5]);
+  // State for template
+  selectedMeditation: any = null;
+  forceTTS = false;
+  loading = true; // Initialize as loading
+
+  ngOnInit() {
+    // Only extract relevant state properties that affect candidate selection
+    const relevantState$ = this.timerService.state$.pipe(
+      map(s => ({
+        duration: s.duration,
+        isGuided: s.isGuided,
+        startBells: s.startBells,
+        startBellIntervals: s.startBellIntervals
+      })),
+      // Deep compare check to avoid re-triggering when unrelated state changes (like remainingTime)
+      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
+    );
+
+    combineLatest([this.meditationList$, relevantState$]).subscribe(([list, state]) => {
+      this.loading = false; // Data arrived
+
+      if (!state.isGuided || !Array.isArray(list) || list.length === 0) {
+        this.candidates = [];
+        this.selectedMeditation = null;
+        this.forceTTS = false;
+        this.cdr.markForCheck(); // Ensure view updates
+        return;
+      }
+
       const target = state.duration;
 
-      const candidates = list.filter(m => {
+      // Filter based on new criteria:
+      // StartAudio + 300s (Silence) + EndAudio <= TimerDuration
+      // Note: Bells are now excluded from the calculation as they run *before* the countdown
+      this.candidates = list.filter(m => {
         const startDur = parseDurationToSeconds(m['start-url-duration'] || m['start_url_duration'] || m.duration || m['duration']);
         const endDur = parseDurationToSeconds(m['end-url-duration'] || m['end_url_duration'] || null) || 0;
+
         if (startDur === null) return false;
-        const totalNeeded = bellSeq + 3 + startDur + endDur; // 3s after bells before start
+
+        const silence = 300; // 5 minutes fixed
+        const totalNeeded = startDur + silence + endDur;
+
+        // Check if it fits
         return totalNeeded <= target + 1; // 1s tolerance
       });
 
-      if (!candidates || candidates.length === 0) return null;
-      // pick random candidate
-      return candidates[Math.floor(Math.random() * candidates.length)];
-    })
-  );
+      this.currentIndex = 0;
+      this.forceTTS = false;
+      this.updateSelection();
+      this.cdr.markForCheck(); // Ensure view updates
+    });
+  }
+
+  onNextMeditation() {
+    this.currentIndex++;
+    this.updateSelection();
+    this.cdr.markForCheck();
+  }
+
+  private updateSelection() {
+    if (this.candidates.length === 0) {
+      // No candidates fit -> Fallback to TTS
+      this.selectedMeditation = null;
+      this.forceTTS = true; // Though !selectedMeditation handles it, being explicit helps
+      return;
+    }
+
+    if (this.currentIndex < this.candidates.length) {
+      // Show next candidate
+      this.selectedMeditation = this.candidates[this.currentIndex];
+      this.forceTTS = false;
+    } else if (this.currentIndex === this.candidates.length) {
+      // End of list -> Show TTS
+      this.selectedMeditation = null;
+      this.forceTTS = true;
+    } else {
+      // After TTS -> Cycle back to first candidate
+      this.currentIndex = 0;
+      this.selectedMeditation = this.candidates[0];
+      this.forceTTS = false;
+    }
+  }
 
   currentTime$ = timer(0, 1000).pipe(map(() => new Date()));
 
@@ -111,12 +192,6 @@ export class TimerContainerComponent {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    // Only handle global shortcuts if NOT in guided mode, OR if guided mode doesn't consume them.
-    // The requirement didn't specify that Space/X should work for guided mode,
-    // but typically users expect Space to pause whatever is playing.
-    // However, GuidedMeditationComponent handles its own logic.
-    // For now, I will disable the global timer shortcuts when in guided mode to avoid confusion.
-
     if (this.timerService.stateSubjectValue.isGuided) return;
 
     if (event.key === ' ') {
@@ -134,7 +209,7 @@ export class TimerContainerComponent {
   }
 }
 
-function parseDurationToSeconds(d: string | null | undefined): number | null {
+export function parseDurationToSeconds(d: string | null | undefined): number | null {
   if (!d || typeof d !== 'string') return null;
   const parts = d.split(':').map(p => Number(p));
   if (parts.some(p => Number.isNaN(p))) return null;
@@ -143,7 +218,8 @@ function parseDurationToSeconds(d: string | null | undefined): number | null {
   return null;
 }
 
-function computeBellSequenceDuration(count: number, intervals: number[]): number {
+// Deprecated in selection logic but kept for backward compat if needed elsewhere
+export function computeBellSequenceDuration(count: number, intervals: number[]): number {
   if (!count || count <= 0) return 0;
   if (count === 1) return 0; // first bell immediate, no waiting
   let total = 0;

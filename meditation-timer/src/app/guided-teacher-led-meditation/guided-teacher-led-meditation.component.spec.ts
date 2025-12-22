@@ -1,150 +1,172 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { of } from 'rxjs';
 import { GuidedTeacherLedMeditationComponent } from './guided-teacher-led-meditation.component';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSliderModule } from '@angular/material/slider';
-import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { TimerService } from '../timer.service';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { SimpleChange } from '@angular/core';
+import { BellService } from '../bell.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { BehaviorSubject } from 'rxjs';
+import { MatSliderModule } from '@angular/material/slider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 
 describe('GuidedTeacherLedMeditationComponent', () => {
   let component: GuidedTeacherLedMeditationComponent;
   let fixture: ComponentFixture<GuidedTeacherLedMeditationComponent>;
-  let timerService: jasmine.SpyObj<TimerService>;
+  let timerServiceMock: any;
+  let bellServiceMock: any;
 
-  const mockMeditations = [
-    { title: 'Meditation 1', teacher: 'A', 'start-url': 'url1', 'start-url-duration': '05:00' },
-    { title: 'Meditation 2', teacher: 'A', 'start-url': 'url2', 'start-url-duration': '10:00' },
-    { title: 'Meditation 3', teacher: 'B', 'start-url': 'url3', 'start-url-duration': '10:00' },
-    { title: 'Meditation 4', teacher: 'B', 'start-url': 'url4', 'start-url-duration': '15:00' },
-  ];
+  const mockState = {
+    duration: 1800,
+    remainingTime: 1800,
+    isGuided: true,
+    isRunning: false,
+    startBells: 1,
+    startBellIntervals: [5],
+    endBells: 1,
+    endBellIntervals: [5],
+    isBellSequenceRunning: false
+  };
 
-  const mockHttp = {
-    get: (_: string) => of(mockMeditations)
+  const mockMeditation = {
+    title: "Test Meditation",
+    teacher: "Test Teacher",
+    "start-url": "start.mp3",
+    "start-url-duration": "10:00",
+    "end-url": "end.mp3",
+    "end-url-duration": "01:00"
   };
 
   beforeEach(async () => {
-    const timerServiceSpy = jasmine.createSpyObj('TimerService', ['seek', 'state$'], { stateSubjectValue: {}, state$: of({}) });
+    timerServiceMock = {
+      state$: new BehaviorSubject(mockState),
+      stateSubjectValue: mockState,
+      pause: jasmine.createSpy('pause'),
+      start: jasmine.createSpy('start'),
+      seek: jasmine.createSpy('seek')
+    };
+
+    bellServiceMock = {
+      playBell: jasmine.createSpy('playBell'),
+      stopBell: jasmine.createSpy('stopBell'),
+      bellDuration: 2
+    };
 
     await TestBed.configureTestingModule({
       imports: [
-        CommonModule,
-        MatButtonModule,
-        MatIconModule,
-        MatSliderModule,
         GuidedTeacherLedMeditationComponent,
-        NoopAnimationsModule
+        HttpClientTestingModule,
+        MatSliderModule,
+        MatIconModule,
+        MatButtonModule
       ],
       providers: [
-        { provide: HttpClient, useValue: mockHttp },
-        { provide: TimerService, useValue: timerServiceSpy }
+        { provide: TimerService, useValue: timerServiceMock },
+        { provide: BellService, useValue: bellServiceMock }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(GuidedTeacherLedMeditationComponent);
     component = fixture.componentInstance;
-    timerService = TestBed.inject(TimerService) as jasmine.SpyObj<TimerService>;
+    component.meditation = mockMeditation;
+    fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load meditations and select the first one on init', fakeAsync(() => {
-    fixture.detectChanges();
-    tick();
+  it('should initialize with provided meditation', () => {
+    expect(component.selected).toEqual(mockMeditation);
+  });
 
-    expect(component.meditations.length).toBe(4);
-    expect(component.filteredMeditations.length).toBe(4);
-    expect(component.selected).toEqual(mockMeditations[0]);
-    expect(component.currentIndex).toBe(0);
+  it('should calculate playback schedule correctly', fakeAsync(() => {
+    // startBells = 1 -> bellSeq = 0
+    // startAudio starts at 0, ends at 600 (10m)
+    // endAudio starts at 1800 - 60 = 1740
+
+    const checkScheduleSpy = spyOn<any>(component, 'checkSchedule').and.callThrough();
+    const playStartSpy = spyOn<any>(component, 'playStartUrl');
+    const playEndSpy = spyOn<any>(component, 'playEndUrl');
+
+    // Simulate timer running at T=0
+    timerServiceMock.state$.next({ ...mockState, isRunning: true, remainingTime: 1800 });
+    fixture.detectChanges();
+    tick(100);
+
+    expect(checkScheduleSpy).toHaveBeenCalled();
+    // Should play start audio immediately (since T=0)
+    expect(playStartSpy).toHaveBeenCalledWith(0);
+
+    // Simulate timer at T=1750 (inside end audio)
+    timerServiceMock.state$.next({ ...mockState, isRunning: true, remainingTime: 50 }); // 1800 - 50 = 1750 elapsed
+    fixture.detectChanges();
+    tick(100);
+
+    // Should play end audio seeked to 10s (1750 - 1740)
+    expect(playEndSpy).toHaveBeenCalledWith(10);
   }));
 
-  it('should filter meditations by time', fakeAsync(() => {
-    fixture.detectChanges();
-    tick();
+  it('should emit next event when onNext is called', () => {
+    spyOn(component.next, 'emit');
+    component.onNext();
+    expect(component.next.emit).toHaveBeenCalled();
+  });
 
-    component.time = 10;
-    component.ngOnChanges({
-        time: new SimpleChange(null, 10, true)
+  it('should not play audio while start delay is active', fakeAsync(() => {
+    const playStartSpy = spyOn<any>(component, 'playStartUrl');
+
+    // Simulate start delay (remainingTime < 0)
+    timerServiceMock.state$.next({
+        ...mockState,
+        isRunning: true,
+        remainingTime: -5,
+        isBellSequenceRunning: false
     });
     fixture.detectChanges();
+    tick(100);
 
-    expect(component.filteredMeditations.length).toBe(3);
-    expect(component.filteredMeditations[0].title).toBe('Meditation 1');
-    expect(component.filteredMeditations[1].title).toBe('Meditation 2');
-    expect(component.filteredMeditations[2].title).toBe('Meditation 3');
+    expect(playStartSpy).not.toHaveBeenCalled();
   }));
 
-  it('should play the next meditation when playNext() is called', fakeAsync(() => {
-    fixture.detectChanges();
-    tick();
-  
-    expect(component.currentIndex).toBe(0);
-    expect(component.selected).toEqual(mockMeditations[0]);
-  
-    component.playNext();
-  
-    expect(component.currentIndex).toBe(1);
-    expect(component.selected).toEqual(mockMeditations[1]);
-  }));
+  it('should not play audio while bell sequence is running', fakeAsync(() => {
+    const playStartSpy = spyOn<any>(component, 'playStartUrl');
 
-  it('should loop to the beginning when playNext() is called on the last meditation', fakeAsync(() => {
-    fixture.detectChanges();
-    tick();
-    
-    component.currentIndex = mockMeditations.length - 1;
-    component.selected = mockMeditations[mockMeditations.length - 1];
-  
-    component.playNext();
-  
-    expect(component.currentIndex).toBe(0);
-    expect(component.selected).toEqual(mockMeditations[0]);
-  }));
-
-  it('should play the previous meditation when playPrevious() is called', fakeAsync(() => {
-    fixture.detectChanges();
-    tick();
-
-    component.currentIndex = 1;
-    component.selected = mockMeditations[1];
-
-    component.playPrevious();
-
-    expect(component.currentIndex).toBe(0);
-    expect(component.selected).toEqual(mockMeditations[0]);
-  }));
-
-  it('should loop to the end when playPrevious() is called on the first meditation', fakeAsync(() => {
-    fixture.detectChanges();
-    tick();
-  
-    component.playPrevious();
-  
-    expect(component.currentIndex).toBe(mockMeditations.length - 1);
-    expect(component.selected).toEqual(mockMeditations[mockMeditations.length - 1]);
-  }));
-
-  it('should disable next/prev buttons when only one meditation is available', fakeAsync(() => {
-    fixture.detectChanges();
-    tick();
-
-    component.time = 5;
-    component.ngOnChanges({
-        time: new SimpleChange(null, 5, true)
+    // Simulate bell sequence (isBellSequenceRunning = true)
+    timerServiceMock.state$.next({
+        ...mockState,
+        isRunning: true,
+        remainingTime: 1800,
+        isBellSequenceRunning: true
     });
     fixture.detectChanges();
+    tick(100);
 
-    expect(component.filteredMeditations.length).toBe(1);
+    expect(playStartSpy).not.toHaveBeenCalled();
+  }));
 
-    const buttonRow = fixture.nativeElement.querySelector('.button-row');
-    const prevButton = buttonRow.children[3];
-    const nextButton = buttonRow.children[4];
+  it('should start audio only after bells finish', fakeAsync(() => {
+    const playStartSpy = spyOn<any>(component, 'playStartUrl');
 
-    expect(prevButton.disabled).toBeTrue();
-    expect(nextButton.disabled).toBeTrue();
+    // 1. Bell Sequence Active
+    timerServiceMock.state$.next({
+        ...mockState,
+        isRunning: true,
+        remainingTime: 1800,
+        isBellSequenceRunning: true
+    });
+    fixture.detectChanges();
+    tick(8000); // Wait 8s (mock bell duration)
+    expect(playStartSpy).not.toHaveBeenCalled();
+
+    // 2. Bell Sequence Finishes
+    timerServiceMock.state$.next({
+        ...mockState,
+        isRunning: true,
+        remainingTime: 1800,
+        isBellSequenceRunning: false
+    });
+    fixture.detectChanges();
+    tick(100);
+
+    expect(playStartSpy).toHaveBeenCalledWith(0);
   }));
 });

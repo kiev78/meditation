@@ -1,5 +1,6 @@
 {
-  "rate": 0.9,
+  "teacher": "Meditation Timer",
+  "title": "Mindfulness of Breathing",
   "pitch": 0.5,
   "sections": [
     {
@@ -8,7 +9,6 @@
         { "say": "Welcome to this guided meditation." },
         { "pause": 2 },
         { "say": "Please find a comfortable position, either sitting or lying down." },
-        { "pause": 3 },
         {
           "say": [
             { "text": "Close" },
@@ -17,7 +17,7 @@
             { "text": "and" },
             { "text": "take" },
             { "text": "a" },
-            { "text": "deep", "rate": 0.75, "pitch": 0.6 },
+            { "text": "deep", "pitch": 0.4 },
             { "text": "breath" },
             { "text": "in." }
           ]

@@ -1,7 +1,7 @@
 # Guided Teacher-Led Meditation Playback Specification
 
 ## Overview
-When a user enables **Guided Mode** in the main app and selects a meditation duration, the system automatically selects and plays a teacher-led guided meditation that fits within the selected time, accounting for bells and silence.
+When a user enables **Guided Mode** in the main app and selects a meditation duration, the system automatically selects and plays a teacher-led guided meditation that fits within the selected time.
 
 ---
 
@@ -9,28 +9,23 @@ When a user enables **Guided Mode** in the main app and selects a meditation dur
 
 ### Input Parameters
 - **Timer Duration**: Total time selected by user (in seconds)
-- **Start Bells**: Count of bells at meditation start (e.g., 3 bells)
-- **Start Bell Intervals**: Delay between each bell (e.g., [5, 5] = 5s between each)
-- **End Bells**: Count of bells at meditation end
-- **End Bell Intervals**: Delay between end bells
 
 ### Selection Criteria
 A meditation from `public/meditation/meditation-guided-files.json` is a **candidate** if:
 
 ```
-startBellDuration + 3 + startAudioDuration + endAudioDuration <= timerDuration
+startAudioDuration + 5 + endAudioDuration <=> timerDuration
 ```
 
 Where:
-- **startBellDuration** = sum of intervals between start bells (e.g., 2 bells with [5] interval = 5s total)
-- **3** = fixed 3-second offset after last bell before audio starts
+- **5** = fixed 5min of silenece between before ending
 - **startAudioDuration** = `start-url-duration` field (MM:SS format)
 - **endAudioDuration** = `end-url-duration` field (MM:SS format, defaults to 0)
 
 ### Selection Behavior
 1. Filter meditations by selection criteria
-2. If candidates exist: **pick one at random** and use it
-3. If no candidates: **fall back to TTS guided-meditation component** (existing text-to-speech)
+2. If candidates exist: **pick first** and use it
+3. If no candidates: **fall back to TTS guided-meditation component** (existing text-to-speech) and use it.
 
 ### JSON Fields Used
 ```json
@@ -49,18 +44,18 @@ Where:
 
 ## Playback Timeline
 
-### Timeline During a 35-minute Meditation with 3 Bells, 5s Intervals, "Mindfulness of thoughts" (30m start + 1m end)
+### Timeline During a 35-minute Meditation  (30m start + 1m end)
 
 ```
 Time (absolute) | Event                                    | Duration
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 0:00            | Bell 1 plays                             | 
-0:05            | Bell 2 plays                             | 
-0:10            | Bell 3 plays                             | 
-0:13            | START meditation audio begins           | 30:00
-30:13           | START audio ends, SILENCE begins        | 4:47
+0:00            | Bell 2 plays                             | 
+0:00            | Bell 3 plays                             | 
+0:00            | START meditation audio begins           | 30:00
+30:00           | START audio ends, SILENCE begins        | 5:00
 35:00           | END audio begins (1 minute before timer) | 1:00
-35:13           | Timer reaches 0, END bell plays         | 
+36:00           | Timer reaches 0, END bell plays         | 
 ```
 
 ### Playback Rules
@@ -69,16 +64,16 @@ Time (absolute) | Event                                    | Duration
    - Play `startBells` count at intervals specified in `startBellIntervals`
    - First bell is immediate; subsequent bells wait the specified interval
 
-2. **Start Audio** (offset = bellDuration + 3 seconds)
+2. **Start Audio** 
    - Play `start-url` audio file
    - Duration: `start-url-duration`
 
 3. **Silence** (if needed)
-   - If `timerDuration > bellDuration + 3 + startAudioDuration + endAudioDuration`:
-     - Silence fills the gap
-     - Length = `timerDuration - (bellDuration + 3 + startAudioDuration + endAudioDuration)`
+   - If `timerDuration > startAudioDuration + 5m + endAudioDuration`:
+     - Silence fills the gap so 
+     - gap Length = `timerDuration - (startAudioDuration + endAudioDuration)`
 
-4. **End Audio** (starts at: `timerDuration - endAudioDuration`)
+4. **End Audio** (starts at: `timerDuration - silence - endAudioDuration`)
    - Play `end-url` audio file (if present)
    - Duration: `end-url-duration`
    - Must finish exactly when timer hits 0
@@ -100,20 +95,21 @@ Time (absolute) | Event                                    | Duration
 ### Control Buttons
 1. **Rewind 10s** (replay_10)
    - In timer mode: seeks back 10s in total timeline
-   - Triggers `timerService.seek()`
 
 2. **Play/Pause** (play_arrow / pause)
    - Toggles timer and audio state
    - Pauses bell sequences, audio, and scheduled events
+   - disabled while no meditation loaded, enabled otherwise.
 
 3. **Forward 10s** (forward_10)
    - In timer mode: seeks forward 10s in total timeline
    - Triggers `timerService.seek()`
 
-4. **Random** (shuffle)
-   - Selects a new random meditation from candidates
+4. **Next** ()
+   - loads a next meditation from candidates matching time 
    - Resets slider to 0
-   - **Auto-plays** immediately
+   - if no more candidates, falls back to TTS guided meditation, and back to 1st candidate
+if next pressed in TTS guided meditation.
 
 ### Seeking Behavior
 When user drags slider or clicks seek:
@@ -178,8 +174,8 @@ On component destroy:
 This meditation:
 - 18:15 of main content
 - 1:18 of ending
-- **Total needed**: 3s + 18:15 + 1:18 = ~19:36 minimum (before bells)
-- Fits in any meditation duration ≥ ~25 minutes (accounting for typical bell sequences)
+- **Total needed**: 18:15 + 5 + 1:18 = 24:33 minimum
+- Fits in any meditation duration ≥ 25 minutes
 
 ---
 

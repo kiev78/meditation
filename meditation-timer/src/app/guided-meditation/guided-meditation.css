@@ -9,15 +9,27 @@
   box-sizing: border-box;
 }
 
+.content {
+  width: 100%;
+}
+
+.content h3 {
+  margin: 0 0 8px 0;
+}
+
+.content p {
+  margin: 4px 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
 .timeline-row {
   display: flex;
   align-items: center;
   gap: 1rem;
   width: 100%;
-  max-width: 800px; /* Matched to settings panel width */
-  margin-bottom: 2rem;
+  max-width: 800px;
+  margin: 2rem auto;
 }
-
 .timeline-slider {
   flex-grow: 1;
 }
@@ -33,6 +45,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  justify-content: center;
   margin-bottom: 1rem;
 }
 

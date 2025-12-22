@@ -8,6 +8,7 @@ import { of } from 'rxjs';
 class MockBellService {
   playBell = jasmine.createSpy('playBell');
   stopBell = jasmine.createSpy('stopBell');
+  bellDuration = 2; // Short duration for tests
 }
 
 class MockSettingsService {
@@ -66,6 +67,48 @@ describe('TimerService', () => {
       // Cleanup
       service.pause();
       tick();
+    }));
+
+    it('should update remainingTime with negative countdown during start bells', fakeAsync(() => {
+        // startBells: 2
+        // Interval: [5]
+        // Bell Duration: 2 (mock)
+        // Total Bell Seq Duration = 5 (interval) + 2 (bell) = 7 seconds
+        service.updateState({
+            startBells: 2,
+            startBellIntervals: [5],
+            delay: 0,
+            duration: 600,
+            remainingTime: 600
+        });
+
+        service.start();
+        tick(); // Kick off
+
+        // isBellSequenceRunning should be true
+        expect(service.stateSubjectValue.isBellSequenceRunning).toBeTrue();
+
+        // remainingTime should start counting down from -7
+        // Depending on timing (sync vs async), check value
+        const time = service.stateSubjectValue.remainingTime;
+        expect(time).toBeLessThan(0);
+        expect(time).toBeGreaterThanOrEqual(-7);
+
+        // Advance 1s
+        tick(1000);
+        // Should be -6
+        expect(service.stateSubjectValue.remainingTime).toBe(-6);
+
+        // Advance to end of bells (remaining 6s + 1s buffer logic for take?)
+        // Bell duration was 7s. -7..0 (8 ticks?)
+        // We ticked 1000ms. So we are at T=1000.
+        // We need to tick enough to complete the bell sequence.
+        // Total sequence duration ~7s.
+        tick(8000); // 1s + 8s > 7s duration
+
+        // Bells done, main timer starts
+        expect(service.stateSubjectValue.isBellSequenceRunning).toBeFalse();
+        expect(service.stateSubjectValue.remainingTime).toBeGreaterThanOrEqual(590); // Reset to full duration (or close enough after ticks)
     }));
   });
 
