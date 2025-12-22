@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Subscription, interval, timer, of, concat, Observable } from 'rxjs';
-import { switchMap, takeWhile, tap, map, take, delay } from 'rxjs/operators';
+import { switchMap, takeWhile, tap, map, take, last } from 'rxjs/operators';
 import { TimerState } from './timer-state.interface';
 import { BellService } from './bell.service';
 import { SettingsService } from './settings.service';
@@ -90,6 +90,13 @@ export class TimerService {
     // If starting fresh with a delay, set state immediately to prevent glitches
     if (initialStartDelay > 0 && isFreshStart) {
         update.remainingTime = -initialStartDelay;
+    } else if (willRunBellSequence) {
+        // If bells run immediately (no start delay), update remainingTime to negative bell duration
+        const bellDelayMs = this.calculateBellSequenceDurationMs(currentState.startBells, currentState.startBellIntervals);
+        const bellSeconds = Math.ceil(bellDelayMs / 1000);
+        if (bellSeconds > 0) {
+            update.remainingTime = -bellSeconds;
+        }
     }
 
     if (willRunBellSequence) {
@@ -126,23 +133,51 @@ export class TimerService {
         const shouldPlayBell = (delayStream !== null) || isFreshStart;
 
         let bellDelayMs = 0;
+        let bellStream: Observable<any> = of(null); // Default empty stream
+
         if (shouldPlayBell) {
            const state = this.stateSubject.value;
-           // isBellSequenceRunning is already set in start() initial update, but setting here is harmless safety
 
            // Calculate duration of bell sequence to delay the timer
            bellDelayMs = this.calculateBellSequenceDurationMs(state.startBells, state.startBellIntervals);
 
            this.playBellSequence(state.startBells, state.startBellIntervals);
-           this.updateState({ remainingTime: duration });
-        } else {
-           // Resuming from pause (not fresh start)
-           bellDelayMs = 0;
+
+           // Create a stream that counts down the bell duration as negative numbers
+           // We round up to nearest second to avoid partial seconds in display logic
+           const bellSeconds = Math.ceil(bellDelayMs / 1000);
+
+           if (bellSeconds > 0) {
+             // Use timer(0, 1000) to emit immediately at 0s, 1s, ...
+             // We need to cover the duration of bellSeconds.
+             // take(bellSeconds) gives 0..N-1. Duration is N-1 seconds?
+             // If bellSeconds is 7. take(7) -> 0..6.
+             // 0s: -7. 1s: -6 ... 6s: -1.
+             // Total time 6s? We need 7s.
+             // But bellDelayMs determines the wait.
+             // The visual countdown is auxiliary.
+             // To ensure we don't finish too early, we can take(bellSeconds + 1)?
+             // 0..7. 7s: 0.
+             // At 7s, the main timer starts at 30:00 (duration).
+             // So transition -1 -> 0 -> 30:00. This is fine.
+             bellStream = timer(0, 1000).pipe(
+               take(bellSeconds + 1),
+               map(i => -bellSeconds + i), // e.g. -7, -6, ..., 0
+               tap(val => this.updateState({ remainingTime: val })),
+               last(), // Wait for completion
+               map(() => null) // Ensure we pass null to next
+             );
+           } else {
+             // If 0s bell (e.g. 1 bell instant), just immediate
+             bellStream = of(null);
+           }
         }
 
-        // Wait for bells to finish, then start counting
-        return timer(bellDelayMs).pipe(
+        // Run bell stream (which delays main timer AND updates countdown)
+        // If resuming (not fresh start), bellStream is empty (of(null))
+        return bellStream.pipe(
           tap(() => {
+             // When bells finish (or skipped), update flag
              if (shouldPlayBell) {
                this.updateState({ isBellSequenceRunning: false });
              }
