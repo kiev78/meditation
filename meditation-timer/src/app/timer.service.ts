@@ -80,12 +80,23 @@ export class TimerService {
     const isFreshStart = (remaining === duration);
     const isPausedInDelay = (remaining < 0);
 
+    // Calculate if we need to run a bell sequence at the start
+    // Logic matches 'durationStream' calculation: delayStream != null OR isFreshStart
+    // But delayStream != null implies initialStartDelay > 0 AND (isFreshStart OR isPausedInDelay)
+    const willRunBellSequence = (initialStartDelay > 0 && (isFreshStart || isPausedInDelay)) || isFreshStart;
+
+    const update: Partial<TimerState> = { isRunning: true };
+
     // If starting fresh with a delay, set state immediately to prevent glitches
     if (initialStartDelay > 0 && isFreshStart) {
-        this.updateState({ isRunning: true, remainingTime: -initialStartDelay });
-    } else {
-        this.updateState({ isRunning: true });
+        update.remainingTime = -initialStartDelay;
     }
+
+    if (willRunBellSequence) {
+        update.isBellSequenceRunning = true;
+    }
+
+    this.updateState(update);
 
     let delayStream: Observable<any> | null = null;
 
@@ -117,7 +128,7 @@ export class TimerService {
         let bellDelayMs = 0;
         if (shouldPlayBell) {
            const state = this.stateSubject.value;
-           this.updateState({ isBellSequenceRunning: true });
+           // isBellSequenceRunning is already set in start() initial update, but setting here is harmless safety
 
            // Calculate duration of bell sequence to delay the timer
            bellDelayMs = this.calculateBellSequenceDurationMs(state.startBells, state.startBellIntervals);
