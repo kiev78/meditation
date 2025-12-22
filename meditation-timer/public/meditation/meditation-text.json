@@ -20,7 +20,7 @@
         { "say": "And let them out.", "rate": 0.85 },
         { "pause": 5 },
         { "say": "Allow your body to settle into this space." },
-        { "pause": 10 }
+        { "pause": 10 },
         { "say": "Feel your body move with the breath." },
         { "pause": 5 }
         
