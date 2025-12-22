@@ -11,22 +11,19 @@
         { "say": "Please find a comfortable position, either sitting or lying down." },
         {
           "say": [
-            { "text": "Close" },
-            { "text": "your" },
-            { "text": "eyes," },
-            { "text": "and" },
-            { "text": "take" },
-            { "text": "a" },
-            { "text": "deep", "pitch": 0.4 },
-            { "text": "breath" },
-            { "text": "in." }
+            { "text": "You can either close your eyes or keep them open." },
+            { "text": "Take a few deep breaths.", "rate": 0.8 }
+
           ]
         },
         { "pause": 5 },
-        { "say": "And let it out.", "rate": 0.85 },
+        { "say": "And let them out.", "rate": 0.85 },
         { "pause": 5 },
         { "say": "Allow your body to settle into this space." },
+        { "pause": 10 }
+        { "say": "Feel your body move with the breath." },
         { "pause": 5 }
+        
       ]
     },
     {
