@@ -1,4 +1,4 @@
-import { Component, inject, HostListener, OnInit } from '@angular/core';
+import { Component, inject, HostListener, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TimerSetupComponent } from '../timer-setup/timer-setup.component';
 import { TimerDisplayComponent } from '../timer-display/timer-display.component';
@@ -6,7 +6,7 @@ import { ControlButtonsComponent } from '../control-buttons/control-buttons.comp
 import { GuidedMeditationComponent } from '../guided-meditation/guided-meditation.component';
 import { GuidedTeacherLedMeditationComponent } from '../guided-teacher-led-meditation/guided-teacher-led-meditation.component';
 import { HttpClient } from '@angular/common/http';
-import { combineLatest, Observable, timer, BehaviorSubject } from 'rxjs';
+import { combineLatest, Observable, timer } from 'rxjs';
 import { TimerService } from '../timer.service';
 import { map, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.component';
@@ -37,16 +37,21 @@ import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.co
       </ng-container>
 
       <ng-template #guidedMode>
-        <!-- If we have a selected meditation, show the teacher-led component -->
-        <ng-container *ngIf="selectedMeditation && !forceTTS; else fallbackMed">
-          <app-guided-teacher-led-meditation
-            [meditation]="selectedMeditation"
-            (next)="onNextMeditation()">
-          </app-guided-teacher-led-meditation>
+        <ng-container *ngIf="!loading; else loader">
+          <!-- If we have a selected meditation, show the teacher-led component -->
+          <ng-container *ngIf="selectedMeditation && !forceTTS; else fallbackMed">
+            <app-guided-teacher-led-meditation
+              [meditation]="selectedMeditation"
+              (next)="onNextMeditation()">
+            </app-guided-teacher-led-meditation>
+          </ng-container>
+          <!-- Otherwise show fallback TTS -->
+          <ng-template #fallbackMed>
+            <app-guided-meditation (next)="onNextMeditation()"></app-guided-meditation>
+          </ng-template>
         </ng-container>
-        <!-- Otherwise show fallback TTS -->
-        <ng-template #fallbackMed>
-          <app-guided-meditation (next)="onNextMeditation()"></app-guided-meditation>
+        <ng-template #loader>
+          <div class="loading-state">Loading meditation...</div>
         </ng-template>
       </ng-template>
 
@@ -61,12 +66,18 @@ import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.co
         color: var(--mat-sys-on-surface-variant);
         margin: 0 0 1rem 0;
       }
+      .loading-state {
+        text-align: center;
+        padding: 2rem;
+        color: var(--mat-sys-on-surface-variant);
+      }
     `,
   ],
 })
 export class TimerContainerComponent implements OnInit {
   public timerService = inject(TimerService);
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
 
   private meditationList$ = this.http.get<any[]>('meditation/meditation-guided-files.json').pipe(shareReplay(1));
 
@@ -77,6 +88,7 @@ export class TimerContainerComponent implements OnInit {
   // State for template
   selectedMeditation: any = null;
   forceTTS = false;
+  loading = true; // Initialize as loading
 
   ngOnInit() {
     // Only extract relevant state properties that affect candidate selection
@@ -92,10 +104,13 @@ export class TimerContainerComponent implements OnInit {
     );
 
     combineLatest([this.meditationList$, relevantState$]).subscribe(([list, state]) => {
+      this.loading = false; // Data arrived
+
       if (!state.isGuided || !Array.isArray(list) || list.length === 0) {
         this.candidates = [];
         this.selectedMeditation = null;
         this.forceTTS = false;
+        this.cdr.markForCheck(); // Ensure view updates
         return;
       }
 
@@ -120,12 +135,14 @@ export class TimerContainerComponent implements OnInit {
       this.currentIndex = 0;
       this.forceTTS = false;
       this.updateSelection();
+      this.cdr.markForCheck(); // Ensure view updates
     });
   }
 
   onNextMeditation() {
     this.currentIndex++;
     this.updateSelection();
+    this.cdr.markForCheck();
   }
 
   private updateSelection() {
