@@ -122,6 +122,14 @@ export class TimerService {
           take(ticks)
         );
       }
+    } else if (remaining < 0) {
+       // We are resuming, but delay was 0, so we must be in the bell sequence.
+       // We need to count down from current negative remaining to 0.
+       const ticks = Math.abs(remaining);
+       delayStream = timer(0, 1000).pipe(
+         map(i => remaining + i),
+         take(ticks)
+       );
     }
 
     // Determine the starting duration for the main timer phase
@@ -129,8 +137,11 @@ export class TimerService {
 
     const durationStream = of(0).pipe(
       switchMap(() => {
-        // Only play the start bell if we are starting a fresh session or transitioning from delay
-        const shouldPlayBell = (delayStream !== null) || isFreshStart;
+        // Only play the start bell if we are starting a fresh session or transitioning from a REAL delay (not just a bell resume)
+        // If we resumed a bell sequence (delayStream exists but initialStartDelay=0), we don't want to trigger new bells (or maybe we do?
+        // For simplicity and to avoid overlapping bells on resume, we skip triggering NEW bells if we just resumed a bell sequence).
+        // However, if we resumed a Start Delay (initialStartDelay > 0), we DO want bells after it finishes.
+        const shouldPlayBell = (delayStream !== null && initialStartDelay > 0) || isFreshStart;
 
         let bellDelayMs = 0;
         let bellStream: Observable<any> = of(null); // Default empty stream
