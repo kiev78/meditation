@@ -218,7 +218,7 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
       this.gainNode.connect(this.audioCtx.destination);
     }
     
-    this.gainNode.gain.setValueAtTime(0.008, this.audioCtx.currentTime);
+    this.gainNode.gain.setValueAtTime(0.004, this.audioCtx.currentTime); // lower value for less noise
   }
 
   private stopNoise() {
