@@ -49,6 +49,11 @@
   margin-bottom: 1rem;
 }
 
+.fab-countdown {
+  font-size: 24px;
+  font-weight: bold;
+}
+
 button[mat-fab] {
   transform: scale(1.2);
 }

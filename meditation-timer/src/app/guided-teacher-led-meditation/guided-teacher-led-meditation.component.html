@@ -25,9 +25,23 @@
       <button mat-icon-button (click)="skipBack()">
         <mat-icon>replay_10</mat-icon>
       </button>
+
       <button mat-fab color="primary" (click)="togglePlay()" [disabled]="!audioReady || loadError">
-        <mat-icon>{{ (timerService.state$ | async)?.isRunning ? 'pause' : 'play_arrow' }}</mat-icon>
+        <ng-container *ngIf="timerService.state$ | async as state">
+          <ng-container *ngIf="state.isRunning; else showPlay">
+             <!-- If running and in negative phase (delay/bells), show countdown number -->
+             <span *ngIf="state.remainingTime < 0" class="fab-countdown">
+               {{ state.remainingTime * -1 }}
+             </span>
+             <!-- If running and positive time, show Pause icon -->
+             <mat-icon *ngIf="state.remainingTime >= 0">pause</mat-icon>
+          </ng-container>
+          <ng-template #showPlay>
+            <mat-icon>play_arrow</mat-icon>
+          </ng-template>
+        </ng-container>
       </button>
+
       <button mat-icon-button (click)="skipForward()">
         <mat-icon>forward_10</mat-icon>
       </button>
