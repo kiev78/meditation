@@ -56,7 +56,7 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
         this.currentTime = elapsed;
 
         // Schedule playback based on current elapsed time and running state
-        this.checkSchedule(elapsed, state.duration, state.isRunning, state.isBellSequenceRunning);
+        this.checkSchedule(elapsed, state.duration, state.isRunning, state.isBellSequenceRunning, state.remainingTime);
 
         this.clearTimeUpdate();
       } else {
@@ -79,7 +79,7 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
       const state = this.timerService.stateSubjectValue;
       if (state.isGuided) {
          const elapsed = state.duration - state.remainingTime;
-         this.checkSchedule(elapsed, state.duration, state.isRunning, state.isBellSequenceRunning);
+         this.checkSchedule(elapsed, state.duration, state.isRunning, state.isBellSequenceRunning, state.remainingTime);
       }
     }
   }
@@ -145,11 +145,12 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
     }
   }
 
-  private checkSchedule(elapsed: number, duration: number, isRunning: boolean, isBellSequenceRunning: boolean) {
+  private checkSchedule(elapsed: number, duration: number, isRunning: boolean, isBellSequenceRunning: boolean, remainingTime: number) {
     this.clearScheduled();
     if (!this.selected) return;
     if (!isRunning) return; // Don't schedule if paused
     if (isBellSequenceRunning) return; // Wait for bells to finish
+    if (remainingTime < 0) return; // Don't play during start delay
 
     const startDur = parseDurationToSeconds(this.selected['start-url-duration'] || this.selected['start_url_duration'] || this.selected.duration || this.selected['duration']);
     const endDur = parseDurationToSeconds(this.selected['end-url-duration'] || this.selected['end_url_duration'] || null) || 0;

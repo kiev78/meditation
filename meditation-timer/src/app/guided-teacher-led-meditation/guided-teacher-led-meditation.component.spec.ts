@@ -22,7 +22,8 @@ describe('GuidedTeacherLedMeditationComponent', () => {
     startBells: 1,
     startBellIntervals: [5],
     endBells: 1,
-    endBellIntervals: [5]
+    endBellIntervals: [5],
+    isBellSequenceRunning: false
   };
 
   const mockMeditation = {
@@ -109,4 +110,63 @@ describe('GuidedTeacherLedMeditationComponent', () => {
     component.onNext();
     expect(component.next.emit).toHaveBeenCalled();
   });
+
+  it('should not play audio while start delay is active', fakeAsync(() => {
+    const playStartSpy = spyOn<any>(component, 'playStartUrl');
+
+    // Simulate start delay (remainingTime < 0)
+    timerServiceMock.state$.next({
+        ...mockState,
+        isRunning: true,
+        remainingTime: -5,
+        isBellSequenceRunning: false
+    });
+    fixture.detectChanges();
+    tick(100);
+
+    expect(playStartSpy).not.toHaveBeenCalled();
+  }));
+
+  it('should not play audio while bell sequence is running', fakeAsync(() => {
+    const playStartSpy = spyOn<any>(component, 'playStartUrl');
+
+    // Simulate bell sequence (isBellSequenceRunning = true)
+    timerServiceMock.state$.next({
+        ...mockState,
+        isRunning: true,
+        remainingTime: 1800,
+        isBellSequenceRunning: true
+    });
+    fixture.detectChanges();
+    tick(100);
+
+    expect(playStartSpy).not.toHaveBeenCalled();
+  }));
+
+  it('should start audio only after bells finish', fakeAsync(() => {
+    const playStartSpy = spyOn<any>(component, 'playStartUrl');
+
+    // 1. Bell Sequence Active
+    timerServiceMock.state$.next({
+        ...mockState,
+        isRunning: true,
+        remainingTime: 1800,
+        isBellSequenceRunning: true
+    });
+    fixture.detectChanges();
+    tick(8000); // Wait 8s (mock bell duration)
+    expect(playStartSpy).not.toHaveBeenCalled();
+
+    // 2. Bell Sequence Finishes
+    timerServiceMock.state$.next({
+        ...mockState,
+        isRunning: true,
+        remainingTime: 1800,
+        isBellSequenceRunning: false
+    });
+    fixture.detectChanges();
+    tick(100);
+
+    expect(playStartSpy).toHaveBeenCalledWith(0);
+  }));
 });

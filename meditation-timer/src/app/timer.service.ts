@@ -70,7 +70,6 @@ export class TimerService {
   start() {
     if (this.stateSubject.value.isRunning) return;
 
-    this.updateState({ isRunning: true });
     this.requestWakeLock();
 
     const currentState = this.stateSubject.value;
@@ -80,6 +79,13 @@ export class TimerService {
 
     const isFreshStart = (remaining === duration);
     const isPausedInDelay = (remaining < 0);
+
+    // If starting fresh with a delay, set state immediately to prevent glitches
+    if (initialStartDelay > 0 && isFreshStart) {
+        this.updateState({ isRunning: true, remainingTime: -initialStartDelay });
+    } else {
+        this.updateState({ isRunning: true });
+    }
 
     let delayStream: Observable<any> | null = null;
 
