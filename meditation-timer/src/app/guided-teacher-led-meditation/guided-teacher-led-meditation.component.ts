@@ -40,6 +40,10 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
   private timeUpdateInterval: any = null;
   loadError = false;
 
+  private audioCtx: AudioContext | null = null;
+  private noiseProcessor: ScriptProcessorNode | null = null;
+  private gainNode: GainNode | null = null;
+
   ngOnInit(): void {
     if (this.meditation) {
       this.selected = this.meditation;
@@ -94,6 +98,11 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
       this.endAudio.pause();
       this.endAudio = null;
     }
+    this.stopNoise();
+    if (this.audioCtx) {
+      this.audioCtx.close();
+      this.audioCtx = null;
+    }
     if (this.timerSub) {
       this.timerSub.unsubscribe();
       this.timerSub = null;
@@ -143,55 +152,78 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
     if (this.endAudio) {
         this.endAudio.pause();
     }
+    this.stopNoise();
   }
 
   private checkSchedule(elapsed: number, duration: number, isRunning: boolean, isBellSequenceRunning: boolean, remainingTime: number) {
-    this.clearScheduled();
-    if (!this.selected) return;
-    if (!isRunning) return; // Don't schedule if paused
-    if (isBellSequenceRunning) return; // Wait for bells to finish
-    if (remainingTime < 0) return; // Don't play during start delay
-
+    if (!this.selected || !isRunning) {
+      this.clearScheduled();
+      return;
+    }
+    if (isBellSequenceRunning || remainingTime < 0) {
+      return;
+    }
+    
+    const overlap = 0.1; 
     const startDur = parseDurationToSeconds(this.selected['start-url-duration'] || this.selected['start_url_duration'] || this.selected.duration || this.selected['duration']);
     const endDur = parseDurationToSeconds(this.selected['end-url-duration'] || this.selected['end_url_duration'] || null) || 0;
 
-    // Start Audio Logic
-    // Starts at T=0 (relative to countdown start)
-    // Ends at T=startDur
-    const startAudioStartTime = 0;
     const startAudioEndTime = startDur || 0;
-
-    if (elapsed < startAudioEndTime && this.selected['start-url']) {
-        // Needs to play start audio
-        if (elapsed >= startAudioStartTime) {
-            // Should be playing right now
-            const seekPos = elapsed - startAudioStartTime;
-            this.playStartUrl(seekPos);
-        } else {
-            // Should not happen if start time is 0 and elapsed >= 0, but good for safety if we add offset back
-            const delay = (startAudioStartTime - elapsed) * 1000;
-            this.scheduledStartTimeout = setTimeout(() => {
-                this.playStartUrl(0);
-            }, delay);
-        }
-    }
-
-    // End Audio Logic
-    // Starts at T = duration - endDur
     const endAudioStartTime = duration - endDur;
 
-    if (endDur > 0 && this.selected['end-url']) {
-        if (elapsed >= endAudioStartTime && elapsed < duration) {
-             // Should be playing right now
-             const seekPos = elapsed - endAudioStartTime;
-             this.playEndUrl(seekPos);
-        } else if (elapsed < endAudioStartTime) {
-            // Schedule it
-            const delay = (endAudioStartTime - elapsed) * 1000;
-            this.scheduledEndTimeout = setTimeout(() => {
-                this.playEndUrl(0);
-            }, delay);
+    // Rule for Start Audio
+    if (elapsed < startAudioEndTime) {
+      this.playStartUrl(elapsed);
+    } else {
+      if (this.audio && !this.audio.paused) this.audio.pause();
+    }
+
+    // Rule for Noise
+    if (elapsed >= startAudioEndTime - overlap && elapsed < endAudioStartTime) {
+      this.startNoise();
+    } else {
+      this.stopNoise();
+    }
+
+    // Rule for End Audio
+    if (elapsed >= endAudioStartTime - overlap) {
+      if (endDur > 0 && this.selected['end-url']) {
+        const seekPos = elapsed - endAudioStartTime;
+        this.playEndUrl(Math.max(0, seekPos)); // Play from 0 during overlap
+      }
+    } else {
+      if (this.endAudio && !this.endAudio.paused) this.endAudio.pause();
+    }
+  }
+
+  private startNoise() {
+    if (!this.audioCtx) {
+      this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+
+    if (!this.noiseProcessor) {
+      const bufferSize = 4096;
+      this.noiseProcessor = this.audioCtx.createScriptProcessor(bufferSize, 1, 1);
+      this.noiseProcessor.onaudioprocess = (e) => {
+        const output = e.outputBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 2 - 1;
         }
+      };
+    }
+
+    if (!this.gainNode) {
+      this.gainNode = this.audioCtx.createGain();
+      this.noiseProcessor.connect(this.gainNode);
+      this.gainNode.connect(this.audioCtx.destination);
+    }
+    
+    this.gainNode.gain.setValueAtTime(0.008, this.audioCtx.currentTime);
+  }
+
+  private stopNoise() {
+    if (this.gainNode) {
+      this.gainNode.gain.setValueAtTime(0, this.audioCtx!.currentTime);
     }
   }
 
@@ -206,7 +238,9 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
         this.audio.currentTime = seekTime;
     }
 
-    this.audio.play().catch(() => {});
+    if (this.audio.paused) {
+      this.audio.play().catch(() => {});
+    }
     this.isPlaying = true;
   }
 
@@ -221,7 +255,9 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
         this.endAudio.currentTime = seekTime;
     }
 
-    this.endAudio.play().catch(() => {});
+    if (this.endAudio.paused) {
+      this.endAudio.play().catch(() => {});
+    }
   }
 
   togglePlay(): void {
