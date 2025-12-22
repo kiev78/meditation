@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, HostListener, inject, Output, EventEmitter } from '@angular/core';
+import { Component, OnDestroy, OnInit, HostListener, inject, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -44,6 +44,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   bellService = inject(BellService);
   private cacheService = inject(MeditationCacheService);
+  private cdr = inject(ChangeDetectorRef);
   @Output() next = new EventEmitter<void>();
 
   private timerSub: Subscription | null = null;
@@ -57,6 +58,9 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   voice: SpeechSynthesisVoice | null = null;
   rate = 0.8;
   pitch = 0.4;
+
+  public teacher: string = '';
+  public title: string = '';
 
   constructor() {}
 
@@ -104,6 +108,15 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
           const p = Number(payload.pitch);
           if (!Number.isNaN(p)) this.pitch = p;
         }
+
+        if (payload && payload.teacher) {
+          this.teacher = payload.teacher;
+        }
+        if (payload && payload.title) {
+          this.title = payload.title;
+        }
+        
+        this.cdr.markForCheck();
 
         this.calculateSchedule();
         this.initVoiceAndLoadCache();

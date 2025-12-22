@@ -1,32 +1,39 @@
 <div class="guided-container">
-  <div class="audio-controls">
-    <div class="timeline-row">
-      <span class="time-text">{{ formatTime(currentTime) }}</span>
-      <mat-slider
-        [min]="0"
-        [max]="duration"
-        step="1"
-        [displayWith]="formatLabel"
-        class="timeline-slider"
-      >
-        <input matSliderThumb [value]="currentTime" (change)="seek($event)" />
-      </mat-slider>
-      <span class="time-text">{{ formatTime(duration) }}</span>
-    </div>
-    <div class="button-row">
-      <button mat-icon-button (click)="skipBack()">
-        <mat-icon>replay_10</mat-icon>
-      </button>
-      <button mat-fab color="primary" (click)="togglePlay()">
-        <mat-icon>{{ isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
-      </button>
-      <button mat-icon-button (click)="skipForward()">
-        <mat-icon>forward_10</mat-icon>
-      </button>
-      <!-- Next Button triggers parent cycle -->
-      <button mat-icon-button (click)="onNext()">
-        <mat-icon>skip_next</mat-icon>
-      </button>
+  <div class="content">
+    <h3>{{ title }}</h3>
+    <p>
+      <strong>{{ teacher }}</strong>
+    </p>
+
+    <div class="audio-controls">
+      <div class="timeline-row">
+        <span class="time-text">{{ formatTime(currentTime) }}</span>
+        <mat-slider
+          [min]="0"
+          [max]="duration"
+          step="1"
+          [displayWith]="formatLabel"
+          class="timeline-slider"
+        >
+          <input matSliderThumb [value]="currentTime" (change)="seek($event)" />
+        </mat-slider>
+        <span class="time-text">{{ formatTime(duration) }}</span>
+      </div>
+      <div class="button-row">
+        <button mat-icon-button (click)="skipBack()">
+          <mat-icon>replay_10</mat-icon>
+        </button>
+        <button mat-fab color="primary" (click)="togglePlay()">
+          <mat-icon>{{ isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
+        </button>
+        <button mat-icon-button (click)="skipForward()">
+          <mat-icon>forward_10</mat-icon>
+        </button>
+        <!-- Next Button triggers parent cycle -->
+        <button mat-icon-button (click)="onNext()">
+          <mat-icon>skip_next</mat-icon>
+        </button>
+      </div>
     </div>
   </div>
 </div>

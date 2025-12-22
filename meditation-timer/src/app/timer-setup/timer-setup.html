@@ -10,7 +10,7 @@
     <div class="control-row">
       <mat-label>Duration (min)</mat-label>
       <div class="slider-input-group">
-        <mat-slider min="1" max="180" step="1" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
+        <mat-slider min="1" max="90" step="1" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
           <input matSliderThumb [(ngModel)]="durationMinutes">
         </mat-slider>
         <mat-form-field appearance="outline" class="value-input">
@@ -24,7 +24,7 @@
     <div class="control-row">
       <mat-label>Delay (sec)</mat-label>
       <div class="slider-input-group">
-        <mat-slider min="0" max="60" step="1" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
+        <mat-slider min="0" max="20" step="1" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
           <input matSliderThumb [(ngModel)]="delaySeconds">
         </mat-slider>
         <mat-form-field appearance="outline" class="value-input">
