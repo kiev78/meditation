@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TimerSetupComponent } from '../timer-setup/timer-setup.component';
 import { TimerDisplayComponent } from '../timer-display/timer-display.component';
 import { ControlButtonsComponent } from '../control-buttons/control-buttons.component';
+import { VolumeControlComponent } from '../volume-control/volume-control.component';
 import { GuidedMeditationComponent } from '../guided-meditation/guided-meditation.component';
 import { GuidedTeacherLedMeditationComponent } from '../guided-teacher-led-meditation/guided-teacher-led-meditation.component';
 import { HttpClient } from '@angular/common/http';
@@ -19,6 +20,7 @@ import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.co
     TimerSetupComponent,
     TimerDisplayComponent,
     ControlButtonsComponent,
+    VolumeControlComponent,
     EndTimeDisplayComponent,
     GuidedMeditationComponent,
     GuidedTeacherLedMeditationComponent
@@ -54,6 +56,10 @@ import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.co
           <div class="loading-state">Loading meditation...</div>
         </ng-template>
       </ng-template>
+
+      <div class="volume-wrapper">
+        <app-volume-control></app-volume-control>
+      </div>
 
       <app-timer-setup></app-timer-setup>
     </div>
@@ -199,8 +205,6 @@ export class TimerContainerComponent implements OnInit {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    if (this.timerService.stateSubjectValue.isGuided) return;
-
     if (event.key === ' ') {
       if (event.repeat) return; // Prevent rapid toggling
       event.preventDefault(); // Prevent scrolling
