@@ -9,24 +9,15 @@
         { "say": "Welcome to this guided meditation." },
         { "pause": 2 },
         { "say": "Please find a comfortable position, either sitting or lying down." },
-        {
-          "say": [
-            { "text": "Close" },
-            { "text": "your" },
-            { "text": "eyes," },
-            { "text": "and" },
-            { "text": "take" },
-            { "text": "a" },
-            { "text": "deep", "pitch": 0.4 },
-            { "text": "breath" },
-            { "text": "in." }
-          ]
-        },
+        { "pause": 2 },
+        { "say": "Close your eyes if that feels comfortable, or soften your gaze." },
+        { "pause": 4 },
+        { "say": "Take a deep breath in,", "rate": 0.85 },
+        { "pause": 3 },
+        { "say": "And let it out."},
         { "pause": 5 },
-        { "say": "And let it out.", "rate": 0.85 },
-        { "pause": 5 },
-        { "say": "Allow your body to settle into this space." },
-        { "pause": 5 }
+        { "say": "Allow your body to settle by gently moving attention from the crown of your head down to your toes." },
+        { "pause": 10 }
       ]
     },
     {
@@ -40,7 +31,7 @@
         { "pause": 5 },
         { "say": "You don't need to change anything." },
         { "pause": 1 },
-        { "say": [ { "text": "Just" , "pitch": 0.65}, { "text": "observe.", "rate": 0.8 } ] },
+        { "say": [ { "text": "Just observe.", "rate": 0.8 } ] },
         { "pause": 5 }
       ]
     },
