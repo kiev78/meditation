@@ -171,17 +171,24 @@ export class TimerContainerComponent implements OnInit {
 
   currentTime$ = timer(0, 1000).pipe(map(() => new Date()));
 
-  endTime$: Observable<Date | null> = this.timerService.state$.pipe(
-    map((state) => {
-      if (!state.isRunning) return null;
-
+  endTime$: Observable<Date | null> = combineLatest([
+    this.timerService.state$,
+    timer(0, 1000)
+  ]).pipe(
+    map(([state]) => {
       let secondsLeft = 0;
-      if (state.remainingTime < 0) {
-        // In delay phase: add delay remainder + full duration
-        secondsLeft = Math.abs(state.remainingTime) + state.duration;
+
+      if (!state.isRunning) {
+        // If stopped, assume starting now + full duration
+        secondsLeft = state.duration;
       } else {
-        // In main phase
-        secondsLeft = state.remainingTime;
+        if (state.remainingTime < 0) {
+          // In delay phase: add delay remainder + full duration
+          secondsLeft = Math.abs(state.remainingTime) + state.duration;
+        } else {
+          // In main phase
+          secondsLeft = state.remainingTime;
+        }
       }
 
       if (secondsLeft <= 0) return null;

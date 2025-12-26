@@ -65,6 +65,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   voice: SpeechSynthesisVoice | null = null;
   rate = 0.8;
   pitch = 0.4;
+  currentVolume = 1;
 
   public teacher: string = '';
   public title: string = '';
@@ -81,9 +82,15 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     return this.timerService.stateSubjectValue.isRunning;
   }
 
+  public bellService = inject(BellService);
+
   constructor() {}
 
   ngOnInit() {
+    this.timerSub = this.bellService.volume$.subscribe(vol => {
+      this.currentVolume = vol;
+    });
+
     this.timerService.updateState({ isGuided: true });
     
     this.http.get<any>('meditation/meditation-text.json')
@@ -592,7 +599,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
     const msg = new SpeechSynthesisUtterance(text);
     msg.voice = this.voice;
-    msg.volume = 1;
+    msg.volume = this.currentVolume;
     msg.rate = (rateOverride !== undefined) ? rateOverride : this.rate;
     msg.pitch = (pitchOverride !== undefined) ? pitchOverride : this.pitch;
     msg.lang = 'en-US';
