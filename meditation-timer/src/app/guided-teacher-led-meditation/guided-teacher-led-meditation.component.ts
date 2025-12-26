@@ -5,8 +5,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSliderModule } from '@angular/material/slider';
 import { HttpClient } from '@angular/common/http';
 import { TimerService } from '../timer.service';
-import { Subscription, of, timer, concat } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { BellService } from '../bell.service';
+import { TimerState } from '../timer-state.interface';
 
 @Component({
   selector: 'app-guided-teacher-led-meditation',
@@ -16,52 +17,64 @@ import { BellService } from '../bell.service';
   styleUrls: ['./guided-teacher-led-meditation.component.css']
 })
 export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, OnChanges {
-  @Input() teacher: string | null = null;
-  @Input() time: number | null = null; // minutes (optional)
-  @Input() type: string | null = null;
   @Input() meditation: any | null = null;
   @Output() next = new EventEmitter<void>();
 
-  private http = inject(HttpClient);
   public timerService = inject(TimerService);
   private bellService = inject(BellService);
   private ngZone = inject(NgZone);
   private cdr = inject(ChangeDetectorRef);
   private timerSub: Subscription | null = null;
-  private isGuidedMode = false;
-  private bellSequenceSubscription: Subscription | null = null;
+  private isSwitchingMeditation = false;
 
   selected: any | null = null;
   audio: HTMLAudioElement | null = null;
-  isPlaying = false;
   audioReady = false;
-  currentTime = 0;
-  totalDuration = 0;
-  private timeUpdateInterval: any = null;
+  currentTime = 0; // Elapsed time for the meditation phase specifically
+  totalDuration = 0; // Duration of the meditation phase
   loadError = false;
 
+  private endAudio: HTMLAudioElement | null = null;
+  private audioCtx: AudioContext | null = null;
+  private noiseProcessor: ScriptProcessorNode | null = null;
+  private gainNode: GainNode | null = null;
+
   ngOnInit(): void {
+    this.timerService.updateState({ isGuided: true });
     if (this.meditation) {
       this.selected = this.meditation;
       this.prepareAudio();
     }
     
     this.timerSub = this.timerService.state$.subscribe(state => {
-      this.isGuidedMode = !!state.isGuided;
+      if (!state.isGuided) {
+        this.clearScheduled();
+        return;
+      }
+      
+      this.totalDuration = state.duration;
 
-      if (this.isGuidedMode) {
-        this.totalDuration = state.duration;
-        const rem = state.remainingTime;
-        const elapsed = rem < 0 || rem > state.duration ? 0 : state.duration - rem;
-        this.currentTime = elapsed;
+      const preTimerDuration = state.totalDuration - state.duration;
+      const meditationElapsed = state.elapsed - preTimerDuration;
 
-        // Schedule playback based on current elapsed time and running state
-        this.checkSchedule(elapsed, state.duration, state.isRunning, state.isBellSequenceRunning, state.remainingTime);
-
-        this.clearTimeUpdate();
-      } else {
+      if (state.phase === 'paused') {
+          this.clearScheduled();
+          if (meditationElapsed > 0) {
+              this.currentTime = Math.max(0, meditationElapsed);
+          } else {
+              this.currentTime = 0;
+          }
+      } else if (state.phase === 'meditation') {
+        this.currentTime = Math.max(0, meditationElapsed);
+        this.checkSchedule(this.currentTime, state);
+      } else if (state.phase === 'delay' || state.phase === 'bells') {
+        this.currentTime = 0;
+        this.clearScheduled(); // Ensure no audio plays during pre-timer
+      } else { // 'stopped', 'finished'
+        this.currentTime = 0;
         this.clearScheduled();
       }
+      this.cdr.detectChanges(); // Manually trigger change detection
     });
   }
 
@@ -75,37 +88,28 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
       this.prepareAudio();
       this.persistLastPlayed();
 
-      // Reschedule if running
-      const state = this.timerService.stateSubjectValue;
-      if (state.isGuided) {
-         const elapsed = state.duration - state.remainingTime;
-         this.checkSchedule(elapsed, state.duration, state.isRunning, state.isBellSequenceRunning, state.remainingTime);
+      if (this.isSwitchingMeditation) {
+        this.isSwitchingMeditation = false;
       }
     }
   }
 
   ngOnDestroy(): void {
-    this.stop();
-    if (this.audio) {
-      this.audio.pause();
-      this.audio = null;
-    }
-    if (this.endAudio) {
-      this.endAudio.pause();
-      this.endAudio = null;
-    }
     if (this.timerSub) {
       this.timerSub.unsubscribe();
       this.timerSub = null;
     }
-    if (this.bellSequenceSubscription) {
-      this.bellSequenceSubscription.unsubscribe();
-    }
     this.clearScheduled();
-    this.clearTimeUpdate();
+    this.stopNoise();
+    if (this.audioCtx) {
+      this.audioCtx.close();
+      this.audioCtx = null;
+    }
   }
 
   onNext() {
+    this.isSwitchingMeditation = true;
+    this.timerService.reset();
     this.next.emit();
   }
 
@@ -123,75 +127,84 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
     }
   }
 
-  private scheduledStartTimeout: any = null;
-  private scheduledEndTimeout: any = null;
-  private endAudio: HTMLAudioElement | null = null;
-
   private clearScheduled() {
-    if (this.scheduledStartTimeout) {
-      clearTimeout(this.scheduledStartTimeout);
-      this.scheduledStartTimeout = null;
-    }
-    if (this.scheduledEndTimeout) {
-      clearTimeout(this.scheduledEndTimeout);
-      this.scheduledEndTimeout = null;
-    }
     if (this.audio) {
         this.audio.pause();
-        this.isPlaying = false;
     }
     if (this.endAudio) {
         this.endAudio.pause();
     }
+    this.stopNoise();
   }
 
-  private checkSchedule(elapsed: number, duration: number, isRunning: boolean, isBellSequenceRunning: boolean, remainingTime: number) {
-    this.clearScheduled();
-    if (!this.selected) return;
-    if (!isRunning) return; // Don't schedule if paused
-    if (isBellSequenceRunning) return; // Wait for bells to finish
-    if (remainingTime < 0) return; // Don't play during start delay
-
+  private checkSchedule(elapsed: number, state: TimerState) {
+    if (!this.selected || !state.isRunning || state.phase !== 'meditation') {
+      this.clearScheduled();
+      return;
+    }
+    
+    const overlap = 0.1; 
     const startDur = parseDurationToSeconds(this.selected['start-url-duration'] || this.selected['start_url_duration'] || this.selected.duration || this.selected['duration']);
     const endDur = parseDurationToSeconds(this.selected['end-url-duration'] || this.selected['end_url_duration'] || null) || 0;
 
-    // Start Audio Logic
-    // Starts at T=0 (relative to countdown start)
-    // Ends at T=startDur
-    const startAudioStartTime = 0;
     const startAudioEndTime = startDur || 0;
+    const endAudioStartTime = state.duration - endDur;
 
-    if (elapsed < startAudioEndTime && this.selected['start-url']) {
-        // Needs to play start audio
-        if (elapsed >= startAudioStartTime) {
-            // Should be playing right now
-            const seekPos = elapsed - startAudioStartTime;
-            this.playStartUrl(seekPos);
-        } else {
-            // Should not happen if start time is 0 and elapsed >= 0, but good for safety if we add offset back
-            const delay = (startAudioStartTime - elapsed) * 1000;
-            this.scheduledStartTimeout = setTimeout(() => {
-                this.playStartUrl(0);
-            }, delay);
-        }
+    // Rule for Start Audio
+    if (elapsed < startAudioEndTime) {
+      this.playStartUrl(elapsed);
+    } else {
+      if (this.audio && !this.audio.paused) this.audio.pause();
     }
 
-    // End Audio Logic
-    // Starts at T = duration - endDur
-    const endAudioStartTime = duration - endDur;
+    // Rule for Noise
+    if (elapsed >= startAudioEndTime - overlap && elapsed < endAudioStartTime) {
+      this.startNoise();
+    } else {
+      this.stopNoise();
+    }
 
-    if (endDur > 0 && this.selected['end-url']) {
-        if (elapsed >= endAudioStartTime && elapsed < duration) {
-             // Should be playing right now
-             const seekPos = elapsed - endAudioStartTime;
-             this.playEndUrl(seekPos);
-        } else if (elapsed < endAudioStartTime) {
-            // Schedule it
-            const delay = (endAudioStartTime - elapsed) * 1000;
-            this.scheduledEndTimeout = setTimeout(() => {
-                this.playEndUrl(0);
-            }, delay);
+    // Rule for End Audio
+    if (elapsed >= endAudioStartTime - overlap) {
+      if (endDur > 0 && this.selected['end-url']) {
+        const seekPos = elapsed - endAudioStartTime;
+        this.playEndUrl(Math.max(0, seekPos));
+      }
+    }
+  }
+
+  private startNoise() {
+    if (!this.audioCtx) {
+      try {
+        this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      } catch (e) {
+        console.error('Failed to create audio context', e);
+        return;
+      }
+    }
+
+    if (!this.noiseProcessor) {
+      this.noiseProcessor = this.audioCtx.createScriptProcessor(4096, 1, 1);
+      this.noiseProcessor.onaudioprocess = (e) => {
+        const output = e.outputBuffer.getChannelData(0);
+        for (let i = 0; i < 4096; i++) {
+          output[i] = Math.random() * 2 - 1;
         }
+      };
+    }
+
+    if (!this.gainNode) {
+      this.gainNode = this.audioCtx.createGain();
+      this.noiseProcessor.connect(this.gainNode);
+      this.gainNode.connect(this.audioCtx.destination);
+    }
+    
+    this.gainNode.gain.setValueAtTime(0.004, this.audioCtx.currentTime);
+  }
+
+  private stopNoise() {
+    if (this.gainNode) {
+      this.gainNode.gain.setValueAtTime(0, this.audioCtx!.currentTime);
     }
   }
 
@@ -201,13 +214,13 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
         this.audio = new Audio();
         this.audio.src = this.selected['start-url'];
     }
-    // Only set current time if we are significantly off, to avoid stutter on every update
-    if (Math.abs(this.audio.currentTime - seekTime) > 0.5) {
+    if (Math.abs(this.audio.currentTime - seekTime) > 1.5) { // Increased tolerance for seeking
         this.audio.currentTime = seekTime;
     }
 
-    this.audio.play().catch(() => {});
-    this.isPlaying = true;
+    if (this.audio.paused) {
+      this.audio.play().catch(() => {});
+    }
   }
 
   private playEndUrl(seekTime: number) {
@@ -217,81 +230,37 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
         this.endAudio.src = this.selected['end-url'];
     }
 
-    if (Math.abs(this.endAudio.currentTime - seekTime) > 0.5) {
+    if (Math.abs(this.endAudio.currentTime - seekTime) > 1.5) {
         this.endAudio.currentTime = seekTime;
     }
 
-    this.endAudio.play().catch(() => {});
+    if (this.endAudio.paused) {
+      this.endAudio.play().catch(() => {});
+    }
   }
 
   togglePlay(): void {
-    if (this.isGuidedMode) {
-      if (this.timerService.stateSubjectValue.isRunning) {
-        this.timerService.pause();
-      } else {
-        this.timerService.start();
-      }
-      return;
+    if (this.timerService.stateSubjectValue.isRunning) {
+      this.timerService.pause();
+    } else {
+      this.timerService.start();
     }
-    // Non-guided mode logic omitted for brevity as this component is primarily for guided mode now
-  }
-
-  stop(): void {
-    if (this.audio) {
-      this.audio.pause();
-      this.audio.currentTime = 0;
-    }
-    if (this.endAudio) {
-      this.endAudio.pause();
-      this.endAudio.currentTime = 0;
-    }
-    this.isPlaying = false;
-    this.currentTime = 0;
-    this.clearTimeUpdate();
   }
 
   seek(event: Event): void {
     const target = event.target as HTMLInputElement;
     const time = Number(target.value);
-
-    // In guided timer mode, seek the timer
-    if (this.timerService.stateSubjectValue.isGuided) {
-      const newRemaining = this.timerService.stateSubjectValue.duration - time;
-      this.timerService.seek(newRemaining);
-      // The state subscription will pick up the change and call checkSchedule
-    }
+    this.timerService.seek(this.totalDuration - time);
   }
 
-  skipBack(): void {
-    if (this.timerService.stateSubjectValue.isGuided) {
-      const state = this.timerService.stateSubjectValue;
-      const elapsed = state.duration - state.remainingTime;
-      const newElapsed = Math.max(0, elapsed - 10);
-      const newRemaining = state.duration - newElapsed;
-      this.timerService.seek(newRemaining);
-    }
-  }
-
-  skipForward(): void {
-    if (this.timerService.stateSubjectValue.isGuided) {
-      const state = this.timerService.stateSubjectValue;
-      const elapsed = state.duration - state.remainingTime;
-      const newElapsed = Math.min(state.duration, elapsed + 10);
-      const newRemaining = state.duration - newElapsed;
-      this.timerService.seek(newRemaining);
-    }
-  }
-
-  private clearTimeUpdate(): void {
-    if (this.timeUpdateInterval) {
-      clearInterval(this.timeUpdateInterval);
-      this.timeUpdateInterval = null;
-    }
+  skip(seconds: number): void {
+    const newTime = this.currentTime + seconds;
+    const newRemaining = this.totalDuration - newTime;
+    this.timerService.seek(Math.max(0, Math.min(this.totalDuration, newRemaining)));
   }
 
   formatTime(seconds: number): string {
-    if (!seconds && seconds !== 0) return '00:00';
-    seconds = Math.max(0, Math.floor(seconds));
+    if (isNaN(seconds) || seconds < 0) return '00:00';
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
@@ -302,39 +271,41 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
   }
 
   private prepareAudio(): void {
+    this.clearScheduled();
     if (!this.selected) {
       return;
     }
-
-    if (this.audio) {
-      this.audio.pause();
-      this.audio = null;
-    }
-    if (this.endAudio) {
-        this.endAudio.pause();
-        this.endAudio = null;
-    }
-
     this.audioReady = false;
     this.loadError = false;
-
+  
     if (this.selected['start-url']) {
-        this.audio = new Audio();
-        this.audio.preload = 'auto';
-        this.audio.src = this.selected['start-url'];
+      this.audio = new Audio();
+      this.audio.oncanplay = () => this.ngZone.run(() => {
+        this.audioReady = true;
+        this.cdr.detectChanges();
+      });
+      this.audio.onerror = () => this.ngZone.run(() => {
+        this.loadError = true;
+        this.cdr.detectChanges();
+      });
+      
+      this.audio.preload = 'auto';
+      this.audio.src = this.selected['start-url'];
 
-        this.audio.oncanplay = () => {
-          this.ngZone.run(() => {
-            this.audioReady = true;
-            this.cdr.detectChanges();
-          });
-        };
-
-        this.audio.onerror = () => {
-            this.ngZone.run(() => {
-                this.loadError = true;
-            });
-        };
+      if (this.audio.readyState >= 3) { // HAVE_FUTURE_DATA
+        this.ngZone.run(() => {
+          this.audioReady = true;
+          this.cdr.detectChanges();
+        });
+      }
+    } else {
+      this.audioReady = true;
+    }
+  
+    if (this.selected['end-url']) {
+      this.endAudio = new Audio();
+      this.endAudio.preload = 'auto';
+      this.endAudio.src = this.selected['end-url'];
     }
   }
 }
@@ -349,15 +320,4 @@ export function parseDurationToSeconds(d: string | null | undefined): number | n
     return parts[0] * 3600 + parts[1] * 60 + parts[2];
   }
   return null;
-}
-
-// Kept for compatibility if needed, but no longer used in this component's logic
-export function computeBellSequenceDuration(count: number, intervals: number[]): number {
-  if (!count || count <= 0) return 0;
-  if (count === 1) return 0; // first bell immediate, no waiting
-  let total = 0;
-  for (let i = 0; i < count - 1; i++) {
-    total += intervals[i] !== undefined ? intervals[i] : 5;
-  }
-  return total;
 }

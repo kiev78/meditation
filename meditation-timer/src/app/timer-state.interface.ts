@@ -15,4 +15,10 @@ export interface TimerState {
   readingPreferences?: string[];
   readingFilterMode?: 'AND' | 'OR';
   isBellSequenceRunning: boolean;
+  preTimerPhase?: 'delay' | 'bells' | null;
+
+  // New properties for the unified timeline design
+  phase: 'stopped' | 'delay' | 'bells' | 'meditation' | 'paused' | 'finished' | null;
+  elapsed: number;
+  totalDuration: number;
 }

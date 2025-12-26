@@ -65,6 +65,14 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  toggleTimer() {
+    if (this.timerService.stateSubjectValue.isRunning) {
+      this.timerService.pause();
+    } else {
+      this.timerService.start();
+    }
+  }
+
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     // Ignore keyboard shortcuts when typing in an input field
@@ -84,6 +92,9 @@ export class AppComponent implements OnInit, OnDestroy {
       this.router.navigate(['/settings']);
     } else if (event.key === '?') {
       this.openShortcutsDialog();
+    } else if (event.key === ' ') {
+      event.preventDefault(); // Prevent scrolling
+      this.toggleTimer();
     }
   }
 }

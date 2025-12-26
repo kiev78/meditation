@@ -22,13 +22,38 @@
     </div>
 
     <div class="button-row">
-      <button mat-icon-button (click)="skipBack()">
+      <button mat-icon-button (click)="skip(-10)">
         <mat-icon>replay_10</mat-icon>
       </button>
+
       <button mat-fab color="primary" (click)="togglePlay()" [disabled]="!audioReady || loadError">
-        <mat-icon>{{ (timerService.state$ | async)?.isRunning ? 'pause' : 'play_arrow' }}</mat-icon>
+        <ng-container *ngIf="timerService.state$ | async as state">
+          <ng-container [ngSwitch]="state.phase">
+            <ng-template ngSwitchCase="paused">
+              <mat-icon>play_arrow</mat-icon>
+            </ng-template>
+            <ng-template ngSwitchCase="stopped">
+              <mat-icon>play_arrow</mat-icon>
+            </ng-template>
+            <ng-template ngSwitchCase="finished">
+              <mat-icon>play_arrow</mat-icon>
+            </ng-template>
+            
+            <ng-template ngSwitchCase="delay">
+                <span class="fab-countdown">{{ state.remainingTime }}</span>
+            </ng-template>
+            <ng-template ngSwitchCase="bells">
+                <mat-icon>notifications</mat-icon>
+            </ng-template>
+
+            <ng-template ngSwitchCase="meditation">
+                <mat-icon>pause</mat-icon>
+            </ng-template>
+          </ng-container>
+        </ng-container>
       </button>
-      <button mat-icon-button (click)="skipForward()">
+
+      <button mat-icon-button (click)="skip(10)">
         <mat-icon>forward_10</mat-icon>
       </button>
 
