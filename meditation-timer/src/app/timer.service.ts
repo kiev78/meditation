@@ -87,7 +87,7 @@ export class TimerService {
 
   toggle() {
     const now = Date.now();
-    if (now - this.lastToggleTime < 500) {
+    if (now - this.lastToggleTime < 800) {
       return;
     }
     this.lastToggleTime = now;

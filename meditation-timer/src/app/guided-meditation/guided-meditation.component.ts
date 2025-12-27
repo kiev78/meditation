@@ -192,7 +192,11 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     this.next.emit();
   }
 
-  togglePlay() {
+  togglePlay(event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     if (this.isPlaying) {
       this.timerService.pause();
     } else {
