@@ -21,13 +21,15 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
   @Output() next = new EventEmitter<void>();
 
   public timerService = inject(TimerService);
-  private bellService = inject(BellService);
+  public bellService = inject(BellService);
   private ngZone = inject(NgZone);
   private cdr = inject(ChangeDetectorRef);
   private timerSub: Subscription | null = null;
+  private volumeSub: Subscription | null = null;
   private isSwitchingMeditation = false;
 
   selected: any | null = null;
+  currentVolume = 1;
   audio: HTMLAudioElement | null = null;
   audioReady = false;
   currentTime = 0; // Elapsed time for the meditation phase specifically
@@ -40,6 +42,14 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
   private gainNode: GainNode | null = null;
 
   ngOnInit(): void {
+    this.volumeSub = this.bellService.volume$.subscribe(vol => {
+      this.currentVolume = vol;
+      if (this.audio) this.audio.volume = vol;
+      if (this.endAudio) this.endAudio.volume = vol;
+      // Note: noise generator gain is hardcoded to 0.004 in startNoise(),
+      // could be scaled by volume here if needed, but noise is background.
+    });
+
     this.timerService.updateState({ isGuided: true });
     if (this.meditation) {
       this.selected = this.meditation;
@@ -98,6 +108,10 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
     if (this.timerSub) {
       this.timerSub.unsubscribe();
       this.timerSub = null;
+    }
+    if (this.volumeSub) {
+      this.volumeSub.unsubscribe();
+      this.volumeSub = null;
     }
     this.clearScheduled();
     this.stopNoise();
@@ -213,6 +227,7 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
     if (!this.audio) {
         this.audio = new Audio();
         this.audio.src = this.selected['start-url'];
+        this.audio.volume = this.currentVolume;
     }
     if (Math.abs(this.audio.currentTime - seekTime) > 1.5) { // Increased tolerance for seeking
         this.audio.currentTime = seekTime;
@@ -228,6 +243,7 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
     if (!this.endAudio) {
         this.endAudio = new Audio();
         this.endAudio.src = this.selected['end-url'];
+        this.endAudio.volume = this.currentVolume;
     }
 
     if (Math.abs(this.endAudio.currentTime - seekTime) > 1.5) {
@@ -291,6 +307,7 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
       
       this.audio.preload = 'auto';
       this.audio.src = this.selected['start-url'];
+      this.audio.volume = this.currentVolume;
 
       if (this.audio.readyState >= 3) { // HAVE_FUTURE_DATA
         this.ngZone.run(() => {
@@ -306,6 +323,7 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
       this.endAudio = new Audio();
       this.endAudio.preload = 'auto';
       this.endAudio.src = this.selected['end-url'];
+      this.endAudio.volume = this.currentVolume;
     }
   }
 }

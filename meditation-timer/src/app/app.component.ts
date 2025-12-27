@@ -75,10 +75,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    // Ignore keyboard shortcuts when typing in an input field
+    // Ignore keyboard shortcuts when typing in an input field, unless it's a number input (where shortcuts like spacebar for pause are useful and don't conflict with typing)
     const activeElement = document.activeElement as HTMLElement;
     if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.isContentEditable)) {
-      return;
+      const isNumberInput = activeElement.tagName === 'INPUT' && (activeElement as HTMLInputElement).type === 'number';
+      if (!isNumberInput) {
+        return;
+      }
     }
 
     // Navigation and Action shortcuts

@@ -25,7 +25,8 @@ class MockTimerService {
     isBellSequenceRunning: false,
     phase: 'stopped',
     elapsed: 0,
-    totalDuration: 0
+    totalDuration: 600,
+    readingPreferences: []
   });
 
   get stateSubjectValue() {
@@ -40,6 +41,7 @@ class MockTimerService {
 
 class MockBellService {
   bellDuration = 10.5; // Mock duration
+  volume$ = new BehaviorSubject<number>(1);
 }
 
 describe('GuidedMeditationComponent', () => {
