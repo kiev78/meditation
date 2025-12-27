@@ -10,7 +10,8 @@ export interface TimerState {
   theme: 'light' | 'dark';
   isRunning: boolean;
   isWakeLockActive: boolean;
-  backgroundImage?: string; 
+  backgroundImage?: string;
+  videoCallUrl?: string | null; // Override for video call link. null=use config, ""=disabled, string=override
   isGuided: boolean;
   readingPreferences?: string[];
   readingFilterMode?: 'AND' | 'OR';

@@ -39,6 +39,7 @@ export class SettingsComponent implements OnInit, AfterViewInit {
   timerService = inject(TimerService);
 
   backgroundImageUrl: string | undefined;
+  videoCallUrl: string = '';
   mode: 'url' | 'upload' = 'url';
   isRunning = false;
   private timerStateSubscription: Subscription | undefined;
@@ -105,7 +106,11 @@ export class SettingsComponent implements OnInit, AfterViewInit {
     if (settings.backgroundImage) {
         this.backgroundImageUrl = settings.backgroundImage;
         this.mode = 'url';
-      }
+    }
+
+    // Video Call
+    // Ensure we handle null/undefined as empty string for the input field
+    this.videoCallUrl = settings.videoCallUrl ?? '';
   }
   
   updateIntervalMinutes() {
@@ -155,6 +160,21 @@ export class SettingsComponent implements OnInit, AfterViewInit {
       endBells: this.endBells,
       endBellIntervals: this.endBellIntervals
     });
+  }
+
+  saveVideoCallUrl() {
+    // If empty string, save as empty string (disabled).
+    // If non-empty, save as string (override).
+    // We do not save as null here because the UI input is a string.
+    // If user wants to reset to config default (null), we'd need explicit logic,
+    // but per requirements, clearing (empty string) effectively disables it which is fine.
+    // Wait, if the user wants to USE the config default again after overriding?
+    // The requirement said "clearing it would honor that too and remove the link".
+    // So empty string = NO LINK.
+    // If they want the default back, they might need to re-enter it or we'd need a "Reset" button.
+    // Given the prompt "just deleting the link is same as clearing it so no reset button needed",
+    // I will just save whatever is in the box.
+    this.settingsService.saveSettings({ videoCallUrl: this.videoCallUrl });
   }
 
   saveUrl() {

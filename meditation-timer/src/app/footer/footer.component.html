@@ -4,6 +4,9 @@
     <a href="https://buddhistsangha.com/" class="footer-link">Buddhist Sangha of Bucks County</a> 2025
   </div>
   <div class="footer-actions">
+    <a *ngIf="videoCallUrl$ | async as url" [href]="url" target="_blank" mat-mini-fab class="video-call-button" aria-label="Join Video Call" matTooltip="Join Video Call">
+      <mat-icon>video_call</mat-icon>
+    </a>
     <button mat-mini-fab class="install-button" (click)="openInstallDialog()" aria-label="Install App" matTooltip="Install App">
       <mat-icon>get_app</mat-icon>
     </button>
