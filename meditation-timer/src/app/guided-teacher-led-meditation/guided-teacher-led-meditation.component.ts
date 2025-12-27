@@ -21,7 +21,7 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
   @Output() next = new EventEmitter<void>();
 
   public timerService = inject(TimerService);
-  private bellService = inject(BellService);
+  public bellService = inject(BellService);
   private ngZone = inject(NgZone);
   private cdr = inject(ChangeDetectorRef);
   private timerSub: Subscription | null = null;

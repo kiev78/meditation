@@ -42,16 +42,13 @@ export class TimerSetupComponent implements OnInit {
     this.isExpanded = savedState === 'true';
 
     // Auto-collapse when timer starts
+    let wasRunning = false;
     this.timerService.state$.subscribe(state => {
-      if (state.isRunning && this.isExpanded) {
+      // Only collapse on the transition from stopped to running
+      if (!wasRunning && state.isRunning && this.isExpanded) {
         this.isExpanded = false;
-        // We don't save this specific auto-collapse to localStorage
-        // to preserve the user's preference for the next session/reset.
-        // Or if we should, we would call this.togglePanel(false).
-        // Let's assume we just collapse it temporarily for the active session.
-        // Actually, if we don't save it, reloading the page might expand it again.
-        // But reloads restart the app anyway.
       }
+      wasRunning = state.isRunning;
     });
   }
 

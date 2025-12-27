@@ -205,16 +205,9 @@ export class TimerContainerComponent implements OnInit {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    if (event.key === ' ') {
-      if (event.repeat) return; // Prevent rapid toggling
-      event.preventDefault(); // Prevent scrolling
-      const isRunning = this.timerService.stateSubjectValue.isRunning;
-      if (isRunning) {
-        this.timerService.pause();
-      } else {
-        this.timerService.start();
-      }
-    } else if (event.key === 'x' || event.key === 'X') {
+    // Spacebar is handled globally in AppComponent to allow pausing from any component.
+    // We only handle Reset here.
+    if (event.key === 'x' || event.key === 'X') {
       this.timerService.reset();
     }
   }

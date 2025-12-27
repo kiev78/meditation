@@ -48,6 +48,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   @Output() next = new EventEmitter<void>();
 
   private timerSub: Subscription | null = null;
+  private volumeSub: Subscription | null = null;
   private schedule: ScheduledEvent[] = [];
   private lastSpokenIndex = -1;
   private meditationScript: MeditationSection[] = [];
@@ -87,7 +88,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   constructor() {}
 
   ngOnInit() {
-    this.timerSub = this.bellService.volume$.subscribe(vol => {
+    this.volumeSub = this.bellService.volume$.subscribe(vol => {
       this.currentVolume = vol;
     });
 
@@ -180,6 +181,9 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     this.stopSpeaking();
     if (this.timerSub) {
       this.timerSub.unsubscribe();
+    }
+    if (this.volumeSub) {
+      this.volumeSub.unsubscribe();
     }
   }
 
