@@ -37,7 +37,13 @@ export class TimerDisplayComponent {
   public timerService = inject(TimerService);
 
   formattedTime$: Observable<string> = this.timerService.state$.pipe(
-    map(state => this.formatTime(state.remainingTime))
+    map(state => {
+      if (state.phase === 'meditation') {
+        return this.formatTime(state.remainingTime);
+      } else {
+        return this.formatTime(state.duration);
+      }
+    })
   );
 
   private formatTime(seconds: number): string {

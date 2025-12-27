@@ -195,20 +195,15 @@ export class TimerContainerComponent implements OnInit {
     map(([state]) => {
       let secondsLeft = 0;
 
-      if (!state.isRunning) {
-        // If stopped, assume starting now + full duration
-        secondsLeft = state.duration;
+      if (state.totalDuration === 0) return null; // Handle unconfigured state or zero duration
+
+      if (state.phase === 'stopped' || state.phase === 'finished') {
+        secondsLeft = state.totalDuration;
       } else {
-        if (state.remainingTime < 0) {
-          // In delay phase: add delay remainder + full duration
-          secondsLeft = Math.abs(state.remainingTime) + state.duration;
-        } else {
-          // In main phase
-          secondsLeft = state.remainingTime;
-        }
+        secondsLeft = state.totalDuration - state.elapsed;
       }
 
-      if (secondsLeft <= 0) return null;
+      if (secondsLeft <= 0) return null; // Ensure we don't return negative or zero remaining time
 
       return new Date(Date.now() + secondsLeft * 1000);
     })

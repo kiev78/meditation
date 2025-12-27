@@ -51,6 +51,16 @@ export class TimerService {
     });
   }
 
+  public getBellSequenceDurationInSeconds(count: number, intervals: number[]): number {
+    if (count <= 0) return 0;
+    let totalSec = 0;
+    for (let i = 0; i < count - 1; i++) {
+        totalSec += intervals[i] !== undefined ? intervals[i] : 5;
+    }
+    totalSec += this.bellService.bellDuration;
+    return totalSec; // Return seconds directly
+  }
+
   private initSettings() {
     const saved = this.settingsService.loadSettings();
     if (saved) {
@@ -64,6 +74,12 @@ export class TimerService {
         isBellSequenceRunning: false,
         preTimerPhase: null,
       };
+
+      // Calculate totalDuration based on the merged state
+      const delayDuration = mergedState.delay;
+      const bellDuration = this.getBellSequenceDurationInSeconds(mergedState.startBells, mergedState.startBellIntervals);
+      mergedState.totalDuration = delayDuration + bellDuration + mergedState.duration;
+
       this.stateSubject.next(mergedState);
     }
   }
