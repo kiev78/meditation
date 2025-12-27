@@ -28,9 +28,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         <div
           *ngSwitchCase="'delay'"
           class="countdown"
-          mat-fab
-          color="primary"
-          aria-label="Delay countdown"
           matTooltip="Pause (Space)"
           (click)="togglePlay($event)"
         >
@@ -112,8 +109,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         justify-content: center;
         width: 56px;
         height: 56px;
-        border-radius: 20%;
-        background-color: var(--mat-fab-color, #1f40adff);
+        border-radius: 4px;
+        background-color: var(--mat-fab-background-color, #2196f3);
         color: var(--mat-fab-color, white);
         font-size: 1.5rem;
         cursor: pointer;
