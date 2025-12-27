@@ -41,5 +41,12 @@
     "start-url": "/meditation/Chan-Fashi-GuidedMassage.mp3",
     "start-url-duration": "17:04",
     "type": "Massage"
+  },
+    {
+    "teacher": "Guo Yuan Fashi",
+    "title": "Chan Contemplation of the body",
+    "start-url": "/meditation/Chan-Fashi-contemplation-body.mp3",
+    "start-url-duration": "05:35",
+    "type": "Contemplation"
   }
 ]
