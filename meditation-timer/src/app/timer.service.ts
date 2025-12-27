@@ -206,7 +206,7 @@ export class TimerService {
 
   updateState(newState: Partial<TimerState>) {
     this.updateStateInternal(newState);
-    if ('duration' in newState || 'delay' in newState || 'intervals' in newState || 'startBells' in newState || 'endBells' in newState || 'theme' in newState || 'isGuided' in newState) {
+    if ('duration' in newState || 'delay' in newState || 'intervals' in newState || 'startBells' in newState || 'endBells' in newState || 'theme' in newState || 'isGuided' in newState || 'videoCallUrl' in newState || 'backgroundImage' in newState) {
       this.settingsService.saveSettings(newState, false);
     }
   }

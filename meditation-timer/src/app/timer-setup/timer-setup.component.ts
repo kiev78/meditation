@@ -69,4 +69,28 @@ export class TimerSetupComponent implements OnInit {
   set delaySeconds(val: number) {
     this.timerService.updateState({ delay: val });
   }
+
+  get videoCallUrl(): string {
+    const val = this.timerService.stateSubjectValue.videoCallUrl;
+    // Return empty string if null, so input displays empty
+    return val === null || val === undefined ? '' : val;
+  }
+
+  set videoCallUrl(val: string) {
+    // If empty string, we set it as empty string (disabled).
+    // If user wants to reset to default (null), we might need a separate clear button or logic,
+    // but per requirement "clearing it would honor that too and remove the link",
+    // effectively empty string means "no link".
+    // If we want "reset to config", we'd need to set it to null.
+    // For now, let's treat empty string as "override with nothing".
+    this.timerService.updateState({ videoCallUrl: val });
+  }
+
+  get backgroundImage(): string {
+    return this.timerService.stateSubjectValue.backgroundImage || '';
+  }
+
+  set backgroundImage(val: string) {
+    this.timerService.updateState({ backgroundImage: val });
+  }
 }

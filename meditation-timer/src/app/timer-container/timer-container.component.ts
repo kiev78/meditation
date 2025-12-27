@@ -24,7 +24,7 @@ import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.co
     GuidedTeacherLedMeditationComponent
   ],
   template: `
-    <div class="timer-page">
+    <div class="timer-page" [style.backgroundImage]="(backgroundImage$ | async) ? 'url(' + (backgroundImage$ | async) + ')' : null" [class.has-custom-background]="!!(backgroundImage$ | async)">
       <ng-container *ngIf="!(timerService.state$ | async)?.isGuided; else guidedMode">
         <app-timer-display></app-timer-display>
         <app-control-buttons></app-control-buttons>
@@ -60,6 +60,11 @@ import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.co
   `,
   styles: [
     `
+      .timer-page.has-custom-background {
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
       .end-time {
         text-align: center;
         font-size: 1rem;
@@ -170,6 +175,10 @@ export class TimerContainerComponent implements OnInit {
   }
 
   currentTime$ = timer(0, 1000).pipe(map(() => new Date()));
+
+  backgroundImage$: Observable<string | null> = this.timerService.state$.pipe(
+    map(state => state.backgroundImage || null)
+  );
 
   endTime$: Observable<Date | null> = this.timerService.state$.pipe(
     map((state) => {

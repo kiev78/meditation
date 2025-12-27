@@ -1,0 +1,22 @@
+
+> meditation-timer@0.0.0 start
+> ng serve
+
+❯ Building...
+✔ Building...
+Initial chunk files | Names                                   |  Raw size
+main.js             | main                                    | 433.39 kB |
+styles.css          | styles                                  | 115.75 kB |
+chunk-WJBFFSZU.js   | -                                       |  42.36 kB |
+polyfills.js        | polyfills                               |  95 bytes |
+
+                    | Initial total                           | 591.60 kB
+
+Lazy chunk files    | Names                                   |  Raw size
+chunk-EDQN65AY.js   | guided-teacher-led-meditation-component | 222 bytes |
+
+Application bundle generation complete. [4.432 seconds] - 2025-12-27T00:53:59.504Z
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  ➜  Local:   http://localhost:4200/

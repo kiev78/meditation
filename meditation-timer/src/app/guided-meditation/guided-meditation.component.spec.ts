@@ -23,6 +23,9 @@ class MockTimerService {
     isWakeLockActive: false,
     isGuided: true,
     isBellSequenceRunning: false,
+    phase: 'stopped',
+    elapsed: 0,
+    totalDuration: 0
   });
 
   get stateSubjectValue() {
