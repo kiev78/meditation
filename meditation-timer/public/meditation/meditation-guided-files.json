@@ -25,5 +25,28 @@
     "end-url": "/meditation/2025.10.27_Gen_Chogyop_meditation-end.mp3",
     "end-url-duration": "2:39", 
     "type": "Mindfulness"
+  },
+  {
+    "teacher": "Guo Yuan Fashi",
+    "title": "Chan Meditation",
+    "start-url": "/meditation/Chan-Fashi-GuidedMediation-start.mp3",
+    "start-url-duration": "17:04",
+    "end-url": "/meditation/Chan-Fashi-GuidedMediation-end.mp3",
+    "end-url-duration": "1:34",
+    "type": "Body Scan"
+  },
+  {
+    "teacher": "Guo Yuan Fashi",
+    "title": "Chan Massage after Meditation",
+    "start-url": "/meditation/Chan-Fashi-GuidedMassage.mp3",
+    "start-url-duration": "17:04",
+    "type": "Massage"
+  },
+    {
+    "teacher": "Guo Yuan Fashi",
+    "title": "Chan Contemplation of the body",
+    "start-url": "/meditation/Chan-Fashi-contemplation-body.mp3",
+    "start-url-duration": "05:35",
+    "type": "Contemplation"
   }
 ]

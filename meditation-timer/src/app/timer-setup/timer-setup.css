@@ -13,11 +13,29 @@
   padding-top: 1rem;
 }
 
+.sliders-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
 .control-row {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   width: 100%;
+}
+
+@media (min-width: 800px) {
+  .sliders-wrapper {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .sliders-wrapper .control-row {
+    flex: 1;
+  }
 }
 
 .guided-row {

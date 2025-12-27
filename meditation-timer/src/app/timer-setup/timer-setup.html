@@ -6,31 +6,33 @@
   </mat-expansion-panel-header>
 
   <div class="controls-wrapper">
-    <!-- Duration Slider -->
-    <div class="control-row">
-      <mat-label>Duration (min)</mat-label>
-      <div class="slider-input-group">
-        <mat-slider min="1" max="90" step="1" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
-          <input matSliderThumb [(ngModel)]="durationMinutes">
-        </mat-slider>
-        <mat-form-field appearance="outline" class="value-input">
-          <input matInput type="number" #durationInput [(ngModel)]="durationMinutes" [disabled]="timerService.stateSubjectValue.isRunning">
-        </mat-form-field>
-        <span class="value-text">{{durationMinutes}}</span>
+    <div class="sliders-wrapper">
+      <!-- Duration Slider -->
+      <div class="control-row">
+        <mat-label>Duration (min)</mat-label>
+        <div class="slider-input-group">
+          <mat-slider min="1" max="90" step="1" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
+            <input matSliderThumb [(ngModel)]="durationMinutes">
+          </mat-slider>
+          <mat-form-field appearance="outline" class="value-input">
+            <input matInput type="number" #durationInput [(ngModel)]="durationMinutes" [disabled]="timerService.stateSubjectValue.isRunning">
+          </mat-form-field>
+          <span class="value-text">{{durationMinutes}}</span>
+        </div>
       </div>
-    </div>
 
-    <!-- Delay Slider -->
-    <div class="control-row">
-      <mat-label>Delay (sec)</mat-label>
-      <div class="slider-input-group">
-        <mat-slider min="0" max="20" step="1" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
-          <input matSliderThumb [(ngModel)]="delaySeconds">
-        </mat-slider>
-        <mat-form-field appearance="outline" class="value-input">
-          <input matInput type="number" [(ngModel)]="delaySeconds" [disabled]="timerService.stateSubjectValue.isRunning">
-        </mat-form-field>
-        <span class="value-text">{{delaySeconds}}</span>
+      <!-- Delay Slider -->
+      <div class="control-row">
+        <mat-label>Delay (sec)</mat-label>
+        <div class="slider-input-group">
+          <mat-slider min="0" max="20" step="1" [disabled]="timerService.stateSubjectValue.isRunning" class="expanded-slider">
+            <input matSliderThumb [(ngModel)]="delaySeconds">
+          </mat-slider>
+          <mat-form-field appearance="outline" class="value-input">
+            <input matInput type="number" [(ngModel)]="delaySeconds" [disabled]="timerService.stateSubjectValue.isRunning">
+          </mat-form-field>
+          <span class="value-text">{{delaySeconds}}</span>
+        </div>
       </div>
     </div>
 
@@ -38,6 +40,7 @@
     <div class="control-row guided-row">
       <mat-slide-toggle
         [checked]="timerService.stateSubjectValue.isGuided"
+        [disabled]="timerService.stateSubjectValue.isRunning"
         (change)="toggleGuided($event.checked)"
         color="primary">
         Guided Meditation

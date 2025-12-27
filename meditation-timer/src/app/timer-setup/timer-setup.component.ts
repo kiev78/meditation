@@ -40,6 +40,16 @@ export class TimerSetupComponent implements OnInit {
   ngOnInit() {
     const savedState = localStorage.getItem('meditationOptionsExpanded');
     this.isExpanded = savedState === 'true';
+
+    // Auto-collapse when timer starts
+    let wasRunning = false;
+    this.timerService.state$.subscribe(state => {
+      // Only collapse on the transition from stopped to running
+      if (!wasRunning && state.isRunning && this.isExpanded) {
+        this.isExpanded = false;
+      }
+      wasRunning = state.isRunning;
+    });
   }
 
   togglePanel(expanded: boolean) {

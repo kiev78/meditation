@@ -48,6 +48,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   @Output() next = new EventEmitter<void>();
 
   private timerSub: Subscription | null = null;
+  private volumeSub: Subscription | null = null;
   private schedule: ScheduledEvent[] = [];
   private lastSpokenIndex = -1;
   private meditationScript: MeditationSection[] = [];
@@ -65,6 +66,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
   voice: SpeechSynthesisVoice | null = null;
   rate = 0.8;
   pitch = 0.4;
+  currentVolume = 1;
 
   public teacher: string = '';
   public title: string = '';
@@ -81,9 +83,15 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     return this.timerService.stateSubjectValue.isRunning;
   }
 
+  public bellService = inject(BellService);
+
   constructor() {}
 
   ngOnInit() {
+    this.volumeSub = this.bellService.volume$.subscribe(vol => {
+      this.currentVolume = vol;
+    });
+
     this.timerService.updateState({ isGuided: true });
     
     this.http.get<any>('meditation/meditation-text.json')
@@ -173,6 +181,9 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
     this.stopSpeaking();
     if (this.timerSub) {
       this.timerSub.unsubscribe();
+    }
+    if (this.volumeSub) {
+      this.volumeSub.unsubscribe();
     }
   }
 
@@ -592,7 +603,7 @@ export class GuidedMeditationComponent implements OnInit, OnDestroy {
 
     const msg = new SpeechSynthesisUtterance(text);
     msg.voice = this.voice;
-    msg.volume = 1;
+    msg.volume = this.currentVolume;
     msg.rate = (rateOverride !== undefined) ? rateOverride : this.rate;
     msg.pitch = (pitchOverride !== undefined) ? pitchOverride : this.pitch;
     msg.lang = 'en-US';

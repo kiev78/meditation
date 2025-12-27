@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TimerSetupComponent } from '../timer-setup/timer-setup.component';
 import { TimerDisplayComponent } from '../timer-display/timer-display.component';
 import { ControlButtonsComponent } from '../control-buttons/control-buttons.component';
+import { VolumeControlComponent } from '../volume-control/volume-control.component';
 import { GuidedMeditationComponent } from '../guided-meditation/guided-meditation.component';
 import { GuidedTeacherLedMeditationComponent } from '../guided-teacher-led-meditation/guided-teacher-led-meditation.component';
 import { HttpClient } from '@angular/common/http';
@@ -19,6 +20,7 @@ import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.co
     TimerSetupComponent,
     TimerDisplayComponent,
     ControlButtonsComponent,
+    VolumeControlComponent,
     EndTimeDisplayComponent,
     GuidedMeditationComponent,
     GuidedTeacherLedMeditationComponent
@@ -28,13 +30,15 @@ import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.co
       <ng-container *ngIf="!(timerService.state$ | async)?.isGuided; else guidedMode">
         <app-timer-display></app-timer-display>
         <app-control-buttons></app-control-buttons>
+      </ng-container>
 
+      <div *ngIf="(timerService.state$ | async)?.duration">
         <app-end-time-display
           [endTime$]="endTime$"
           [currentTime$]="currentTime$"
           [timerService]="timerService"
         ></app-end-time-display>
-      </ng-container>
+      </div>
 
       <ng-template #guidedMode>
         <ng-container *ngIf="!loading; else loader">
@@ -54,6 +58,10 @@ import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.co
           <div class="loading-state">Loading meditation...</div>
         </ng-template>
       </ng-template>
+
+      <div class="volume-wrapper">
+        <app-volume-control></app-volume-control>
+      </div>
 
       <app-timer-setup></app-timer-setup>
     </div>
@@ -171,17 +179,24 @@ export class TimerContainerComponent implements OnInit {
 
   currentTime$ = timer(0, 1000).pipe(map(() => new Date()));
 
-  endTime$: Observable<Date | null> = this.timerService.state$.pipe(
-    map((state) => {
-      if (!state.isRunning) return null;
-
+  endTime$: Observable<Date | null> = combineLatest([
+    this.timerService.state$,
+    timer(0, 1000)
+  ]).pipe(
+    map(([state]) => {
       let secondsLeft = 0;
-      if (state.remainingTime < 0) {
-        // In delay phase: add delay remainder + full duration
-        secondsLeft = Math.abs(state.remainingTime) + state.duration;
+
+      if (!state.isRunning) {
+        // If stopped, assume starting now + full duration
+        secondsLeft = state.duration;
       } else {
-        // In main phase
-        secondsLeft = state.remainingTime;
+        if (state.remainingTime < 0) {
+          // In delay phase: add delay remainder + full duration
+          secondsLeft = Math.abs(state.remainingTime) + state.duration;
+        } else {
+          // In main phase
+          secondsLeft = state.remainingTime;
+        }
       }
 
       if (secondsLeft <= 0) return null;
@@ -192,18 +207,9 @@ export class TimerContainerComponent implements OnInit {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    if (this.timerService.stateSubjectValue.isGuided) return;
-
-    if (event.key === ' ') {
-      if (event.repeat) return; // Prevent rapid toggling
-      event.preventDefault(); // Prevent scrolling
-      const isRunning = this.timerService.stateSubjectValue.isRunning;
-      if (isRunning) {
-        this.timerService.pause();
-      } else {
-        this.timerService.start();
-      }
-    } else if (event.key === 'x' || event.key === 'X') {
+    // Spacebar is handled globally in AppComponent to allow pausing from any component.
+    // We only handle Reset here.
+    if (event.key === 'x' || event.key === 'X') {
       this.timerService.reset();
     }
   }
