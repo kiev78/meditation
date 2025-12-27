@@ -30,13 +30,15 @@ import { EndTimeDisplayComponent } from '../end-time-display/end-time-display.co
       <ng-container *ngIf="!(timerService.state$ | async)?.isGuided; else guidedMode">
         <app-timer-display></app-timer-display>
         <app-control-buttons></app-control-buttons>
+      </ng-container>
 
+      <div *ngIf="(timerService.state$ | async)?.duration">
         <app-end-time-display
           [endTime$]="endTime$"
           [currentTime$]="currentTime$"
           [timerService]="timerService"
         ></app-end-time-display>
-      </ng-container>
+      </div>
 
       <ng-template #guidedMode>
         <ng-container *ngIf="!loading; else loader">
