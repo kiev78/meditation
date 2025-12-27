@@ -59,6 +59,7 @@ export class TimerSetupComponent implements OnInit {
 
   toggleGuided(checked: boolean) {
     this.timerService.updateState({ isGuided: checked });
+    this.timerService.reset();
   }
 
   // Helper to handle duration in minutes (state stores seconds)
