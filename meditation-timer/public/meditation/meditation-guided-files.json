@@ -2,51 +2,28 @@
   {
     "teacher": "David Slaymaker",
     "title": "Body scan meditation",
-    "start-url": "/meditation/12.15.25-DSlaymaker-18m-guided-meditation-start.mp3",
+    "start-url": "meditation/12.15.25-DSlaymaker-18m-guided-meditation-start.mp3",
     "start-url-duration": "18:15",
-    "end-url": "/meditation/12.15.25-DSlaymaker-25m-guided-meditation-end.mp3",
+    "end-url": "meditation/12.15.25-DSlaymaker-25m-guided-meditation-end.mp3",
     "end-url-duration": "1:18",
     "type": "Body Scan"
   },
    {
     "teacher": "Rebecca Li",
     "title": "Body scan meditation",
-    "start-url": "/meditation/2025.12.1-Rebecca-Li-Guided-Meditation-start.mp3", 
+    "start-url": "meditation/2025.12.1-Rebecca-Li-Guided-Meditation-start.mp3", 
     "start-url-duration": "17:56",
-    "end-url": "/meditation/2025.12.1-Rebecca-Li-Guided-Meditation-end.mp3",
+    "end-url": "meditation/2025.12.1-Rebecca-Li-Guided-Meditation-end.mp3",
     "end-url-duration": "1:32", 
     "type": "Body Scan"
   },
   {
     "teacher": "Gen Chonguop",
     "title": "Mindfulness meditation",
-    "start-url": "/meditation/2025.10.27_Gen_Chogyop_meditation-start.mp3", 
+    "start-url": "meditation/2025.10.27_Gen_Chogyop_meditation-start.mp3", 
     "start-url-duration": "12:03",    
-    "end-url": "/meditation/2025.10.27_Gen_Chogyop_meditation-end.mp3",
+    "end-url": "meditation/2025.10.27_Gen_Chogyop_meditation-end.mp3",
     "end-url-duration": "2:39", 
     "type": "Mindfulness"
-  },
-  {
-    "teacher": "Guo Yuan Fashi",
-    "title": "Chan Meditation",
-    "start-url": "/meditation/Chan-Fashi-GuidedMediation-start.mp3",
-    "start-url-duration": "17:04",
-    "end-url": "/meditation/Chan-Fashi-GuidedMediation-end.mp3",
-    "end-url-duration": "1:34",
-    "type": "Body Scan"
-  },
-  {
-    "teacher": "Guo Yuan Fashi",
-    "title": "Chan Massage after Meditation",
-    "start-url": "/meditation/Chan-Fashi-GuidedMassage.mp3",
-    "start-url-duration": "17:04",
-    "type": "Massage"
-  },
-    {
-    "teacher": "Guo Yuan Fashi",
-    "title": "Chan Contemplation of the body",
-    "start-url": "/meditation/Chan-Fashi-contemplation-body.mp3",
-    "start-url-duration": "05:35",
-    "type": "Contemplation"
   }
 ]
