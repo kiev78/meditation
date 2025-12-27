@@ -7,7 +7,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { SettingsService } from '../settings.service';
-import { ConfigService } from '../config.service';
 import { Subscription } from 'rxjs';
 import { MatTooltip } from "@angular/material/tooltip";
 
@@ -48,8 +47,7 @@ export class ReadingsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private settingsService: SettingsService,
-    private configService: ConfigService
+    private settingsService: SettingsService
   ) {}
 
   ngOnInit(): void {
@@ -57,14 +55,8 @@ export class ReadingsComponent implements OnInit, AfterViewInit, OnDestroy {
       if (settings.readingPreferences) {
         this.currentPreferences = settings.readingPreferences;
       } else {
-        // Default logic if emitted settings lack readingPreferences (unlikely unless partial update)
-        // Check config first, then fallback to all
-        const configDefaults = this.configService.defaultReadingPreferences;
-        if (configDefaults && configDefaults.length > 0) {
-          this.currentPreferences = configDefaults;
-        } else {
-          this.currentPreferences = [...this.availableTypes];
-        }
+        // Default to all selected if not set
+        this.currentPreferences = [...this.availableTypes];
       }
       // Only update filterMode if the emitted settings explicitly include it.
       // This prevents overwriting the user's current selection when other settings change.
@@ -85,13 +77,7 @@ export class ReadingsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.filterMode = current.readingFilterMode as 'AND' | 'OR';
       }
     } else {
-      // No saved preferences, check config
-      const configDefaults = this.configService.defaultReadingPreferences;
-      if (configDefaults && configDefaults.length > 0) {
-        this.currentPreferences = configDefaults;
-      } else {
-        this.currentPreferences = [...this.availableTypes];
-      }
+      this.currentPreferences = [...this.availableTypes];
     }
   }
 

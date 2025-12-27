@@ -6,7 +6,6 @@ import { of } from 'rxjs';
 
 export interface AppConfig {
   videoCallUrl?: string;
-  defaultReadingPreferences?: string[];
 }
 
 @Injectable({
@@ -35,9 +34,5 @@ export class ConfigService {
 
   get videoCallUrl(): string | undefined {
     return this.config.videoCallUrl;
-  }
-
-  get defaultReadingPreferences(): string[] | undefined {
-    return this.config.defaultReadingPreferences;
   }
 }

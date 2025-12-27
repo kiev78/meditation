@@ -28,8 +28,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         <div
           *ngSwitchCase="'delay'"
           class="countdown"
+          mat-fab
+          color="primary"
+          aria-label="Delay countdown"
           matTooltip="Pause (Space)"
-          (click)="togglePlay()"
+          (click)="togglePlay($event)"
         >
           {{ state.remainingTime }}
         </div>
@@ -40,7 +43,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
           color="primary"
           aria-label="Bells are playing"
           matTooltip="Bells are playing"
-          (click)="togglePlay()"
+          (click)="togglePlay($event)"
         >
           <mat-icon>notifications</mat-icon>
         </button>
@@ -51,7 +54,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
           color="accent"
           aria-label="Pause Timer"
           matTooltip="Pause (Space)"
-          (click)="togglePlay()"
+          (click)="togglePlay($event)"
         >
           <mat-icon>pause</mat-icon>
         </button>
@@ -62,7 +65,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
           color="primary"
           aria-label="Start Timer"
           matTooltip="Start (Space)"
-          (click)="togglePlay()"
+          (click)="togglePlay($event)"
         >
           <mat-icon>play_arrow</mat-icon>
         </button>
@@ -109,8 +112,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         justify-content: center;
         width: 56px;
         height: 56px;
-        border-radius: 4px;
-        background-color: var(--mat-fab-background-color, #2196f3);
+        border-radius: 20%;
+        background-color: var(--mat-fab-color, #1f40adff);
         color: var(--mat-fab-color, white);
         font-size: 1.5rem;
         cursor: pointer;
@@ -129,13 +132,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 export class ControlButtonsComponent {
   constructor(public timerService: TimerService) {}
 
-  togglePlay(): void {
-    const state = this.timerService.stateSubjectValue;
-    if (state.isRunning) {
-      this.timerService.pause();
-    } else {
-      // This will correctly start the timer from idle/paused/finished states
-      this.timerService.start();
+  togglePlay(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
     }
+    this.timerService.toggle();
   }
 }

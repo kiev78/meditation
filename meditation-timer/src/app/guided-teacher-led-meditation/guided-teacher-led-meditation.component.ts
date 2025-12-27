@@ -255,12 +255,12 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
     }
   }
 
-  togglePlay(): void {
-    if (this.timerService.stateSubjectValue.isRunning) {
-      this.timerService.pause();
-    } else {
-      this.timerService.start();
+  togglePlay(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
     }
+    this.timerService.toggle();
   }
 
   seek(event: Event): void {
