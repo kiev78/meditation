@@ -99,6 +99,24 @@
     </div>
   </section>
 
+  <!-- Video Call Configuration -->
+  <section class="settings-section">
+    <h3>Video Call Link</h3>
+    <div class="form-group url-input-group">
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Video Call Link</mat-label>
+        <input
+          matInput
+          type="text"
+          [(ngModel)]="videoCallUrl"
+          placeholder="https://zoom.us/..."
+        />
+        <mat-hint>Leave empty to disable. Enter URL to override configuration.</mat-hint>
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="saveVideoCallUrl()">Save Link</button>
+    </div>
+  </section>
+
   <!-- Background Image Section -->
   <section class="settings-section">
     <h3>Background Image</h3>
