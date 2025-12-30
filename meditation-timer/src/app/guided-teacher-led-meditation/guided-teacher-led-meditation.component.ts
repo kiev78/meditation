@@ -8,6 +8,7 @@ import { TimerService } from '../timer.service';
 import { Subscription } from 'rxjs';
 import { BellService } from '../bell.service';
 import { TimerState } from '../timer-state.interface';
+import { NoiseService } from '../noise.service';
 
 @Component({
   selector: 'app-guided-teacher-led-meditation',
@@ -22,6 +23,7 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
 
   public timerService = inject(TimerService);
   public bellService = inject(BellService);
+  private noiseService = inject(NoiseService);
   private ngZone = inject(NgZone);
   private cdr = inject(ChangeDetectorRef);
   private timerSub: Subscription | null = null;
@@ -37,9 +39,6 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
   loadError = false;
 
   private endAudio: HTMLAudioElement | null = null;
-  private audioCtx: AudioContext | null = null;
-  private noiseProcessor: ScriptProcessorNode | null = null;
-  private gainNode: GainNode | null = null;
 
   ngOnInit(): void {
     this.volumeSub = this.bellService.volume$.subscribe(vol => {
@@ -114,11 +113,6 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
       this.volumeSub = null;
     }
     this.clearScheduled();
-    this.stopNoise();
-    if (this.audioCtx) {
-      this.audioCtx.close();
-      this.audioCtx = null;
-    }
   }
 
   onNext() {
@@ -148,7 +142,7 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
     if (this.endAudio) {
         this.endAudio.pause();
     }
-    this.stopNoise();
+    this.noiseService.stopNoise();
   }
 
   private checkSchedule(elapsed: number, state: TimerState) {
@@ -173,9 +167,9 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
 
     // Rule for Noise
     if (elapsed >= startAudioEndTime - overlap && elapsed < endAudioStartTime) {
-      this.startNoise();
+      this.noiseService.startNoise();
     } else {
-      this.stopNoise();
+      this.noiseService.stopNoise();
     }
 
     // Rule for End Audio
@@ -184,41 +178,6 @@ export class GuidedTeacherLedMeditationComponent implements OnInit, OnDestroy, O
         const seekPos = elapsed - endAudioStartTime;
         this.playEndUrl(Math.max(0, seekPos));
       }
-    }
-  }
-
-  private startNoise() {
-    if (!this.audioCtx) {
-      try {
-        this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      } catch (e) {
-        console.error('Failed to create audio context', e);
-        return;
-      }
-    }
-
-    if (!this.noiseProcessor) {
-      this.noiseProcessor = this.audioCtx.createScriptProcessor(4096, 1, 1);
-      this.noiseProcessor.onaudioprocess = (e) => {
-        const output = e.outputBuffer.getChannelData(0);
-        for (let i = 0; i < 4096; i++) {
-          output[i] = Math.random() * 2 - 1;
-        }
-      };
-    }
-
-    if (!this.gainNode) {
-      this.gainNode = this.audioCtx.createGain();
-      this.noiseProcessor.connect(this.gainNode);
-      this.gainNode.connect(this.audioCtx.destination);
-    }
-    
-    this.gainNode.gain.setValueAtTime(0.004, this.audioCtx.currentTime);
-  }
-
-  private stopNoise() {
-    if (this.gainNode) {
-      this.gainNode.gain.setValueAtTime(0, this.audioCtx!.currentTime);
     }
   }
 
