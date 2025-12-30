@@ -43,6 +43,7 @@ export class TimerService {
   private timerSubscription: Subscription | null = null;
   private bellSequenceSubscription: Subscription | null = null;
   private wakeLock: any = null;
+  private lastToggleTime = 0;
 
   constructor() {
     this.initSettings();
@@ -81,6 +82,20 @@ export class TimerService {
       mergedState.totalDuration = delayDuration + bellDuration + mergedState.duration;
 
       this.stateSubject.next(mergedState);
+    }
+  }
+
+  toggle() {
+    const now = Date.now();
+    if (now - this.lastToggleTime < 800) {
+      return;
+    }
+    this.lastToggleTime = now;
+
+    if (this.stateSubjectValue.isRunning) {
+      this.pause();
+    } else {
+      this.start();
     }
   }
 

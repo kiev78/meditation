@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { TimerContainerComponent, computeBellSequenceDuration, parseDurationToSeconds } from './timer-container.component';
 import { TimerService } from '../timer.service';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
@@ -6,12 +7,15 @@ import { BehaviorSubject, of } from 'rxjs';
 import { GuidedTeacherLedMeditationComponent } from '../guided-teacher-led-meditation/guided-teacher-led-meditation.component';
 import { GuidedMeditationComponent } from '../guided-meditation/guided-meditation.component';
 import { ActivatedRoute } from '@angular/router';
+import { TimerDisplayComponent } from '../timer-display/timer-display.component';
+import { NoiseService } from '../noise.service';
 
 describe('TimerContainerComponent', () => {
   let component: TimerContainerComponent;
   let fixture: ComponentFixture<TimerContainerComponent>;
   let timerServiceMock: any;
   let httpMock: HttpTestingController;
+  let noiseServiceMock: any;
 
   const mockState = {
     duration: 1800,
@@ -54,12 +58,14 @@ describe('TimerContainerComponent', () => {
       start: jasmine.createSpy('start'),
       reset: jasmine.createSpy('reset')
     };
+    noiseServiceMock = jasmine.createSpyObj('NoiseService', ['startNoise', 'stopNoise']);
 
     await TestBed.configureTestingModule({
       imports: [TimerContainerComponent, HttpClientTestingModule],
       providers: [
         { provide: TimerService, useValue: timerServiceMock },
-        { provide: ActivatedRoute, useValue: {} }
+        { provide: ActivatedRoute, useValue: {} },
+        { provide: NoiseService, useValue: noiseServiceMock }
       ]
     }).compileComponents();
 
@@ -117,5 +123,54 @@ describe('TimerContainerComponent', () => {
     expect(component.candidates.length).toBe(0);
     expect(component.selectedMeditation).toBeNull();
     expect(component.forceTTS).toBeTrue();
+  });
+
+  it('should start noise for regular meditation', () => {
+    const startMeditationState = {
+      ...mockState,
+      phase: 'meditation',
+      isGuided: false,
+    };
+    timerServiceMock.state$.next(startMeditationState);
+    fixture.detectChanges();
+    expect(noiseServiceMock.startNoise).toHaveBeenCalled();
+  });
+
+  it('should stop noise when meditation is finished', () => {
+    timerServiceMock.state$.next({ ...mockState, phase: 'meditation', isGuided: false });
+    fixture.detectChanges();
+    expect(noiseServiceMock.startNoise).toHaveBeenCalled();
+
+    const finishedState = {
+      ...mockState,
+      phase: 'finished',
+      isGuided: false,
+    };
+    timerServiceMock.state$.next(finishedState);
+    fixture.detectChanges();
+    expect(noiseServiceMock.stopNoise).toHaveBeenCalled();
+  });
+  
+  it('should not start noise for guided meditation', () => {
+    const startMeditationState = {
+      ...mockState,
+      phase: 'meditation',
+      isGuided: true,
+    };
+    timerServiceMock.state$.next(startMeditationState);
+    fixture.detectChanges();
+    expect(noiseServiceMock.startNoise).not.toHaveBeenCalled();
+  });
+
+  it('should stop noise when switching to guided meditation', () => {
+    // Start regular meditation
+    timerServiceMock.state$.next({ ...mockState, phase: 'meditation', isGuided: false });
+    fixture.detectChanges();
+    expect(noiseServiceMock.startNoise).toHaveBeenCalledTimes(1);
+
+    // Switch to guided
+    timerServiceMock.state$.next({ ...mockState, phase: 'stopped', isGuided: true });
+    fixture.detectChanges();
+    expect(noiseServiceMock.stopNoise).toHaveBeenCalledTimes(1);
   });
 });

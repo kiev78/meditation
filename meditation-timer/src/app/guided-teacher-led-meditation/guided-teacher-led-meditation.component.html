@@ -26,7 +26,7 @@
         <mat-icon>replay_10</mat-icon>
       </button>
 
-      <button mat-fab color="primary" (click)="togglePlay()" [disabled]="!audioReady || loadError">
+      <button mat-fab color="primary" (click)="togglePlay($event)" [disabled]="!audioReady || loadError">
         <ng-container *ngIf="timerService.state$ | async as state">
           <ng-container [ngSwitch]="state.phase">
             <ng-template ngSwitchCase="paused">
