@@ -23,7 +23,7 @@
         <button mat-icon-button (click)="skip(-10)">
           <mat-icon>replay_10</mat-icon>
         </button>
-        <button mat-fab color="primary" (click)="togglePlay()">
+        <button mat-fab color="primary" (click)="togglePlay($event)">
           <ng-container *ngIf="timerService.state$ | async as state">
             <ng-container [ngSwitch]="state.phase">
               <ng-template ngSwitchCase="paused">

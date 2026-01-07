@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { TimerService } from '../timer.service';
-import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { distinctUntilChanged, map } from 'rxjs/operators';
+import { Observable, Subscription } from 'rxjs';
+import { NoiseService } from '../../app/noise.service';
 
 @Component({
   selector: 'app-timer-display',
@@ -33,8 +34,10 @@ import { Observable } from 'rxjs';
     }
   `]
 })
-export class TimerDisplayComponent {
+export class TimerDisplayComponent implements OnInit, OnDestroy {
   public timerService = inject(TimerService);
+  private noiseService = inject(NoiseService);
+  private stateSub: Subscription | null = null;
 
   formattedTime$: Observable<string> = this.timerService.state$.pipe(
     map(state => {
@@ -45,6 +48,33 @@ export class TimerDisplayComponent {
       }
     })
   );
+
+  ngOnInit(): void {
+    this.stateSub = this.timerService.state$
+      .pipe(
+        map(state => ({ phase: state.phase, isGuided: state.isGuided })),
+        distinctUntilChanged((prev, curr) => prev.phase === curr.phase && prev.isGuided === curr.isGuided)
+      )
+      .subscribe(state => {
+        if (state.isGuided) {
+          this.noiseService.stopNoise();
+          return;
+        }
+
+        if (state.phase === 'meditation') {
+          this.noiseService.startNoise();
+        } else if (state.phase === 'stopped' || state.phase === 'finished') {
+          this.noiseService.stopNoise();
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    if (this.stateSub) {
+      this.stateSub.unsubscribe();
+    }
+    this.noiseService.stopNoise();
+  }
 
   private formatTime(seconds: number): string {
     const isNegative = seconds < 0;
