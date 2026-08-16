@@ -146,4 +146,33 @@ describe('TimerService', () => {
     }));
   });
 
+  describe('Interval Bells', () => {
+    it('should play interval bell with configured intervalBellSound during meditation', fakeAsync(() => {
+      service.updateState({
+        duration: 120, // 2 minutes
+        remainingTime: 120,
+        delay: 0,
+        startBells: 0,
+        endBells: 0,
+        intervals: 1, // 1 minute
+        bellSound: 'bell1',
+        intervalBellSound: 'bell3'
+      });
+
+      service.start();
+      tick(1000); // starts meditation phase
+      expect(bellService.playBell).not.toHaveBeenCalled();
+
+      // Tick to 60 seconds (1 minute interval)
+      tick(59000); // at 60s
+      expect(bellService.playBell).toHaveBeenCalledWith('bell3');
+      expect(bellService.playBell).toHaveBeenCalledTimes(1);
+
+      // Tick another 30 seconds (90s total, not at interval)
+      tick(30000);
+      expect(bellService.playBell).toHaveBeenCalledTimes(1);
+
+      service.pause();
+    }));
+  });
 });

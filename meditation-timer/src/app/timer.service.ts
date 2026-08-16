@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Subscription, timer, Observable, of, concat } from 'rxjs';
 import { take, map, distinctUntilChanged } from 'rxjs/operators';
 import { TimerState } from './timer-state.interface';
-import { BellService } from './bell.service';
+import { BellService, BellSound } from './bell.service';
 import { SettingsService } from './settings.service';
 import { WakeLockService } from './wake-lock.service';
 
@@ -23,6 +23,8 @@ export class TimerService {
     startBellIntervals: [5], // Default interval for bells > 1
     endBells: 1,
     endBellIntervals: [5], // Default interval for bells > 1
+    bellSound: 'bell1',
+    intervalBellSound: 'bell1',
     theme: 'dark',
     isRunning: false,
     isWakeLockActive: false,
@@ -45,6 +47,7 @@ export class TimerService {
   private timerSubscription: Subscription | null = null;
   private bellSequenceSubscription: Subscription | null = null;
   private lastToggleTime = 0;
+  private lastIntervalBellElapsed = -1;
 
   constructor() {
     this.initSettings();
@@ -154,10 +157,11 @@ export class TimerService {
     });
 
     if (initialPhase === 'bells' && (currentState.phase === 'stopped' || currentState.phase === 'finished')) {
-      this.playBellSequence(currentState.startBells, currentState.startBellIntervals);
+      this.playBellSequence(currentState.startBells, currentState.startBellIntervals, currentState.bellSound);
     }
 
     const startTimestamp = Date.now() - (startElapsed * 1000);
+    this.lastIntervalBellElapsed = -1;
 
     this.timerSubscription = timer(0, 500)
       .pipe(
@@ -183,13 +187,22 @@ export class TimerService {
             remainingTime = -((delayDuration + bellDuration) - currentElapsed);
             if (state.phase !== 'bells') {
               this.updateState({ phase: 'bells' });
-              this.playBellSequence(state.startBells, state.startBellIntervals);
+              this.playBellSequence(state.startBells, state.startBellIntervals, state.bellSound);
             }
           } else {
             phase = 'meditation';
             remainingTime = totalDuration - currentElapsed;
             if (state.phase !== 'meditation') {
               this.updateState({ phase: 'meditation' });
+            }
+
+            const meditationElapsed = currentElapsed - (delayDuration + bellDuration);
+            if (state.intervals > 0 && meditationElapsed > 0 && meditationElapsed < meditationDuration) {
+              const intervalSec = state.intervals * 60;
+              if (meditationElapsed % intervalSec === 0 && this.lastIntervalBellElapsed !== meditationElapsed) {
+                this.lastIntervalBellElapsed = meditationElapsed;
+                this.bellService.playBell(state.intervalBellSound || state.bellSound || 'bell1');
+              }
             }
           }
           
@@ -202,7 +215,7 @@ export class TimerService {
         complete: () => {
           const finalState = this.stateSubjectValue;
           this.updateState({ phase: 'finished', isRunning: false, remainingTime: finalState.duration, elapsed: 0 });
-          this.playBellSequence(finalState.endBells, finalState.endBellIntervals);
+          this.playBellSequence(finalState.endBells, finalState.endBellIntervals, finalState.bellSound);
           this.wakeLockService.release();
         }
       });
@@ -211,6 +224,7 @@ export class TimerService {
   pause() {
     if (!this.stateSubjectValue.isRunning) return;
 
+    this.lastIntervalBellElapsed = -1;
     if (this.timerSubscription) {
       this.timerSubscription.unsubscribe();
       this.timerSubscription = null;
@@ -226,6 +240,7 @@ export class TimerService {
 
   reset() {
     this.pause();
+    this.lastIntervalBellElapsed = -1;
     const duration = this.stateSubjectValue.duration;
     this.updateState({ remainingTime: duration, elapsed: 0, phase: 'stopped' });
     this.wakeLockService.release();
@@ -257,7 +272,7 @@ export class TimerService {
     return totalSec * 1000;
   }
 
-  private playBellSequence(count: number, intervals: number[]) {
+  private playBellSequence(count: number, intervals: number[], sound?: BellSound) {
     if (this.bellSequenceSubscription) {
       this.bellSequenceSubscription.unsubscribe();
     }
@@ -270,13 +285,13 @@ export class TimerService {
     }
     
     this.bellSequenceSubscription = concat(...observables).subscribe(() => {
-      this.bellService.playBell();
+      this.bellService.playBell(sound || this.stateSubjectValue.bellSound);
     });
   }
 
   updateState(newState: Partial<TimerState>) {
     this.updateStateInternal(newState);
-    if ('duration' in newState || 'delay' in newState || 'intervals' in newState || 'startBells' in newState || 'endBells' in newState || 'theme' in newState || 'isGuided' in newState || 'videoCallUrl' in newState || 'backgroundImage' in newState) {
+    if ('duration' in newState || 'delay' in newState || 'intervals' in newState || 'startBells' in newState || 'endBells' in newState || 'theme' in newState || 'isGuided' in newState || 'videoCallUrl' in newState || 'backgroundImage' in newState || 'bellSound' in newState || 'intervalBellSound' in newState) {
       this.settingsService.saveSettings(newState, false);
     }
   }

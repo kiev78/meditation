@@ -1,15 +1,22 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
+export type BellSound = 'bell1' | 'bell2' | 'bell3';
+
 @Injectable({
   providedIn: 'root'
 })
 export class BellService {
   private activeAudios: Set<HTMLAudioElement> = new Set();
-  private readonly BELL_PATH = 'sounds/bell.mp3';
+  private readonly BELL_PATHS: Record<BellSound, string> = {
+    bell1: 'sounds/bell1.mp3',
+    bell2: 'sounds/bell2.mp3',
+    bell3: 'sounds/bell3.mp3',
+  };
   private readonly VOLUME_KEY = 'meditation-timer-volume';
   private readonly MUTE_KEY = 'meditation-timer-muted';
   private readonly PREV_VOLUME_KEY = 'meditation-timer-prev-volume';
+  private readonly BELL_SOUND_KEY = 'meditation-timer-bell-sound';
 
   private previousVolume = 1;
   private volumeSubject = new BehaviorSubject<number>(1);
@@ -18,19 +25,49 @@ export class BellService {
   private isMutedSubject = new BehaviorSubject<boolean>(false);
   isMuted$ = this.isMutedSubject.asObservable();
 
+  private bellSoundSubject = new BehaviorSubject<BellSound>('bell1');
+  bellSound$ = this.bellSoundSubject.asObservable();
+
+  private bellDurations: Record<BellSound, number> = {
+    bell1: 10,
+    bell2: 10,
+    bell3: 10,
+  };
+
   public bellDuration = 10; // Default to 10s, updated on metadata load
 
+  get selectedBell(): BellSound {
+    return this.bellSoundSubject.value;
+  }
+
   constructor() {
-    // Preload one instance to get duration and ensure browser caches it
-    const preload = new Audio(this.BELL_PATH);
-    preload.onloadedmetadata = () => {
-      this.bellDuration = preload.duration;
-    };
-    preload.load();
+    this.preloadBells();
     this.loadSettings();
   }
 
+  private preloadBells() {
+    (Object.keys(this.BELL_PATHS) as BellSound[]).forEach((sound) => {
+      const audio = new Audio(this.BELL_PATHS[sound]);
+      audio.onloadedmetadata = () => {
+        if (audio.duration && !isNaN(audio.duration)) {
+          this.bellDurations[sound] = audio.duration;
+          if (this.bellSoundSubject.value === sound) {
+            this.bellDuration = audio.duration;
+          }
+        }
+      };
+      audio.load();
+    });
+  }
+
   private loadSettings() {
+    const savedSound = localStorage.getItem(this.BELL_SOUND_KEY) as BellSound;
+    if (savedSound === 'bell1' || savedSound === 'bell2' || savedSound === 'bell3') {
+      this.setBellSound(savedSound);
+    } else {
+      this.setBellSound('bell1');
+    }
+
     const savedVolume = localStorage.getItem(this.VOLUME_KEY);
     const savedMute = localStorage.getItem(this.MUTE_KEY);
 
@@ -56,8 +93,19 @@ export class BellService {
     }
   }
 
-  playBell() {
-    const audio = new Audio(this.BELL_PATH);
+  setBellSound(sound: BellSound) {
+    const validSound: BellSound = (sound === 'bell2' || sound === 'bell3') ? sound : 'bell1';
+    this.bellSoundSubject.next(validSound);
+    if (this.bellDurations[validSound]) {
+      this.bellDuration = this.bellDurations[validSound];
+    }
+    localStorage.setItem(this.BELL_SOUND_KEY, validSound);
+  }
+
+  playBell(sound?: BellSound) {
+    const bellToPlay: BellSound = sound || this.bellSoundSubject.value;
+    const path = this.BELL_PATHS[bellToPlay] || this.BELL_PATHS.bell1;
+    const audio = new Audio(path);
 
     // Track this audio instance
     this.activeAudios.add(audio);

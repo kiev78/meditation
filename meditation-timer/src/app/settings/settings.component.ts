@@ -11,6 +11,7 @@ import { SettingsService } from '../settings.service';
 import { ImageStorageService } from '../image-storage.service';
 import { TimerState } from '../timer-state.interface';
 import { TimerService } from '../timer.service';
+import { BellService, BellSound } from '../bell.service';
 import { Subscription } from 'rxjs';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute } from '@angular/router';
@@ -36,6 +37,7 @@ export class SettingsComponent implements OnInit, AfterViewInit {
   private settingsService = inject(SettingsService);
   private imageStorageService = inject(ImageStorageService);
   private route = inject(ActivatedRoute);
+  private bellService = inject(BellService);
   timerService = inject(TimerService);
 
   backgroundImageUrl: string | undefined;
@@ -50,12 +52,17 @@ export class SettingsComponent implements OnInit, AfterViewInit {
   endBells: number = 1;
   endBellIntervals: number[] = [5];
   intervalMinutes: number = 0;
+  bellSound: BellSound = 'bell1';
+  intervalBellSound: BellSound = 'bell1';
 
 
   ngOnInit() {
     const settings = this.settingsService.loadSettings();
     if (settings) {
       this.initSettings(settings);
+    } else {
+      this.bellSound = this.bellService.selectedBell;
+      this.intervalBellSound = 'bell1';
     }
 
     this.timerStateSubscription = this.timerService.state$.subscribe(state => {
@@ -97,6 +104,9 @@ export class SettingsComponent implements OnInit, AfterViewInit {
     this.endBells = settings.endBells ?? 1;
     this.endBellIntervals = settings.endBellIntervals || [5];
     this.intervalMinutes = settings.intervals ?? 0;
+    this.bellSound = (settings.bellSound === 'bell2' || settings.bellSound === 'bell3') ? settings.bellSound : 'bell1';
+    this.bellService.setBellSound(this.bellSound);
+    this.intervalBellSound = (settings.intervalBellSound === 'bell2' || settings.intervalBellSound === 'bell3') ? settings.intervalBellSound : 'bell1';
 
     // Resize arrays to match bell count immediately (just in case of mismatch)
     this.adjustIntervals(this.startBells, this.startBellIntervals);
@@ -129,6 +139,20 @@ export class SettingsComponent implements OnInit, AfterViewInit {
     this.updateBellSettings();
   }
 
+  onBellSoundChange(newValue: BellSound) {
+    this.bellSound = newValue;
+    this.bellService.setBellSound(newValue);
+    this.updateBellSettings();
+  }
+
+  onIntervalBellSoundChange(newValue: BellSound) {
+    this.intervalBellSound = newValue;
+    this.updateBellSettings();
+  }
+
+  previewBell(sound: BellSound) {
+    this.bellService.playBell(sound);
+  }
 
   // Method to adjust the intervals array based on bell count
   private adjustIntervals(count: number, intervals: number[]) {
@@ -158,7 +182,9 @@ export class SettingsComponent implements OnInit, AfterViewInit {
       startBells: this.startBells,
       startBellIntervals: this.startBellIntervals,
       endBells: this.endBells,
-      endBellIntervals: this.endBellIntervals
+      endBellIntervals: this.endBellIntervals,
+      bellSound: this.bellSound,
+      intervalBellSound: this.intervalBellSound
     });
   }
 

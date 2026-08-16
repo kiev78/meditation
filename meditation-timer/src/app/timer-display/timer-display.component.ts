@@ -41,7 +41,7 @@ export class TimerDisplayComponent implements OnInit, OnDestroy {
 
   formattedTime$: Observable<string> = this.timerService.state$.pipe(
     map(state => {
-      if (state.phase === 'meditation') {
+      if (state.phase === 'meditation' || (state.phase === 'paused' && state.remainingTime > 0)) {
         return this.formatTime(state.remainingTime);
       } else {
         return this.formatTime(state.duration);
@@ -63,7 +63,7 @@ export class TimerDisplayComponent implements OnInit, OnDestroy {
 
         if (state.phase === 'meditation') {
           this.noiseService.startNoise();
-        } else if (state.phase === 'stopped' || state.phase === 'finished') {
+        } else if (state.phase === 'stopped' || state.phase === 'finished' || state.phase === 'paused') {
           this.noiseService.stopNoise();
         }
       });

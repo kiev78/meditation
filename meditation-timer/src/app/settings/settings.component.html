@@ -7,33 +7,83 @@
 
     <div class="bell-config-container">
 
+      <!-- Bell Sound Selection -->
+      <div class="control-row">
+        <mat-label>Meditation Bell Sound (Start & End)</mat-label>
+        <mat-radio-group [ngModel]="bellSound" (ngModelChange)="onBellSoundChange($event)" [disabled]="isRunning"
+          class="bell-sound-radio-group">
+          <div class="bell-sound-option">
+            <mat-radio-button value="bell1">Bell 1 (Default)</mat-radio-button>
+            <button mat-icon-button type="button" (click)="previewBell('bell1')" aria-label="Preview Bell 1"
+              title="Preview Bell 1">
+              <mat-icon>volume_up</mat-icon>
+            </button>
+          </div>
+          <div class="bell-sound-option">
+            <mat-radio-button value="bell2">Bell 2</mat-radio-button>
+            <button mat-icon-button type="button" (click)="previewBell('bell2')" aria-label="Preview Bell 2"
+              title="Preview Bell 2">
+              <mat-icon>volume_up</mat-icon>
+            </button>
+          </div>
+          <div class="bell-sound-option">
+            <mat-radio-button value="bell3">Bell 3</mat-radio-button>
+            <button mat-icon-button type="button" (click)="previewBell('bell3')" aria-label="Preview Bell 3"
+              title="Preview Bell 3">
+              <mat-icon>volume_up</mat-icon>
+            </button>
+          </div>
+        </mat-radio-group>
+      </div>
+
       <!-- Interval Bells -->
       <div class="control-row">
         <mat-label>Interval Bells (sound the bell every x minutes)</mat-label>
         <div class="slider-input-group">
           <mat-slider min="0" max="30" step="1" [disabled]="isRunning" class="slider">
-            <input
-              matSliderThumb
-              [(ngModel)]="intervalMinutes"
-              (ngModelChange)="updateIntervalMinutes()"
-            />
+            <input matSliderThumb [(ngModel)]="intervalMinutes" (ngModelChange)="updateIntervalMinutes()" />
           </mat-slider>
           <span class="value-display">{{ intervalMinutes }}</span>
         </div>
       </div>
 
+      <!-- Interval Bell Sound Selection -->
+      <div class="control-row">
+        <mat-label>Interval Bell Sound</mat-label>
+        <mat-radio-group [ngModel]="intervalBellSound" (ngModelChange)="onIntervalBellSoundChange($event)"
+          [disabled]="isRunning" class="bell-sound-radio-group">
+          <div class="bell-sound-option">
+            <mat-radio-button value="bell1">Bell 1 (Default)</mat-radio-button>
+            <button mat-icon-button type="button" (click)="previewBell('bell1')" aria-label="Preview Bell 1"
+              title="Preview Bell 1">
+              <mat-icon>volume_up</mat-icon>
+            </button>
+          </div>
+          <div class="bell-sound-option">
+            <mat-radio-button value="bell2">Bell 2</mat-radio-button>
+            <button mat-icon-button type="button" (click)="previewBell('bell2')" aria-label="Preview Bell 2"
+              title="Preview Bell 2">
+              <mat-icon>volume_up</mat-icon>
+            </button>
+          </div>
+          <div class="bell-sound-option">
+            <mat-radio-button value="bell3">Bell 3</mat-radio-button>
+            <button mat-icon-button type="button" (click)="previewBell('bell3')" aria-label="Preview Bell 3"
+              title="Preview Bell 3">
+              <mat-icon>volume_up</mat-icon>
+            </button>
+          </div>
+        </mat-radio-group>
+      </div>
+
       <!-- Start Bells -->
       <div class="bell-section">
         <div class="count-column">
-           <div class="control-row">
+          <div class="control-row">
             <mat-label>How many starting bells:</mat-label>
             <div class="slider-input-group">
               <mat-slider min="0" max="5" step="1" [disabled]="isRunning" class="slider">
-                <input
-                  matSliderThumb
-                  [(ngModel)]="startBells"
-                  (valueChange)="onStartBellsChange($event)"
-                />
+                <input matSliderThumb [(ngModel)]="startBells" (valueChange)="onStartBellsChange($event)" />
               </mat-slider>
               <span class="value-display">{{ startBells }}</span>
             </div>
@@ -42,18 +92,12 @@
 
         <div class="intervals-column" *ngIf="startBellIntervals.length > 0">
           <h4>Intervals between starting bells</h4>
-          <ng-container
-            *ngFor="let interval of startBellIntervals; let i = index; trackBy: trackByIndex"
-          >
+          <ng-container *ngFor="let interval of startBellIntervals; let i = index; trackBy: trackByIndex">
             <div class="control-row">
               <mat-label>Interval {{ i + 1 }} (sec)</mat-label>
               <div class="slider-input-group">
                 <mat-slider min="1" max="30" step="1" [disabled]="isRunning" class="slider">
-                  <input
-                    matSliderThumb
-                    [(ngModel)]="startBellIntervals[i]"
-                    (valueChange)="updateBellSettings()"
-                  />
+                  <input matSliderThumb [(ngModel)]="startBellIntervals[i]" (valueChange)="updateBellSettings()" />
                 </mat-slider>
                 <span class="value-display">{{ startBellIntervals[i] }}s</span>
               </div>
@@ -83,11 +127,7 @@
               <mat-label>Interval {{ i + 1 }} (sec)</mat-label>
               <div class="slider-input-group">
                 <mat-slider min="1" max="30" step="1" [disabled]="isRunning" class="slider">
-                  <input
-                    matSliderThumb
-                    [(ngModel)]="endBellIntervals[i]"
-                    (valueChange)="updateBellSettings()"
-                  />
+                  <input matSliderThumb [(ngModel)]="endBellIntervals[i]" (valueChange)="updateBellSettings()" />
                 </mat-slider>
                 <span class="value-display">{{ endBellIntervals[i] }}s</span>
               </div>
@@ -105,12 +145,7 @@
     <div class="form-group url-input-group">
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Video Call Link</mat-label>
-        <input
-          matInput
-          type="text"
-          [(ngModel)]="videoCallUrl"
-          placeholder="https://zoom.us/..."
-        />
+        <input matInput type="text" [(ngModel)]="videoCallUrl" placeholder="https://zoom.us/..." />
         <mat-hint>Leave empty to disable. Enter URL to override configuration.</mat-hint>
       </mat-form-field>
       <button mat-raised-button color="primary" (click)="saveVideoCallUrl()">Save Link</button>
@@ -133,12 +168,7 @@
     <div class="form-group url-input-group">
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Image URL</mat-label>
-        <input
-          matInput
-          type="text"
-          [(ngModel)]="backgroundImageUrl"
-          placeholder="Enter image URL"
-        />
+        <input matInput type="text" [(ngModel)]="backgroundImageUrl" placeholder="Enter image URL" />
       </mat-form-field>
       <button mat-raised-button color="primary" (click)="saveUrl()">Save URL</button>
     </div>
@@ -163,5 +193,26 @@
       <img [src]="backgroundImageUrl" alt="Background preview" />
     </div>
     }
+  </section>
+
+  <!-- Credits Section -->
+  <section class="settings-section credits-section">
+    <h3>Credits</h3>
+    <ul class="credits-list">
+      <li>
+        <a href="http://www.freesound.org/people/suburban%20grilla/sounds/2166/" target="_blank"
+          rel="noopener noreferrer">Bell 1</a> by <a href="http://www.freesound.org/people/suburban%20grilla/"
+          target="_blank" rel="noopener noreferrer">suburban grilla</a>
+      </li>
+      <li>
+        <a href="http://www.freesound.org/people/itsallhappening/sounds/48795/" target="_blank"
+          rel="noopener noreferrer">Bell 2</a> by <a href="http://www.freesound.org/people/itsallhappening/"
+          target="_blank" rel="noopener noreferrer">itsallhappening</a>
+      </li>
+      <li>
+        <a href="https://freesound.org/people/jonopodmore/sounds/607215/" target="_blank" rel="noopener noreferrer">Bell
+          3</a> by <a href="https://freesound.org/people/jonopodmore/">jonopodmore</a>
+      </li>
+    </ul>
   </section>
 </div>

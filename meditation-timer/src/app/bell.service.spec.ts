@@ -75,4 +75,35 @@ describe('BellService', () => {
     expect(audioMock.volume).toBe(0.3);
     expect(audioMock.play).toHaveBeenCalled();
   });
+
+  it('should default to bell1 sound', () => {
+    expect(service.selectedBell).toBe('bell1');
+    service.playBell();
+    expect((window as any).Audio).toHaveBeenCalledWith('sounds/bell1.mp3');
+  });
+
+  it('should allow changing bell sound and persist to localStorage', () => {
+    service.setBellSound('bell2');
+    expect(service.selectedBell).toBe('bell2');
+    expect(localStorage.getItem('meditation-timer-bell-sound')).toBe('bell2');
+
+    service.playBell();
+    expect((window as any).Audio).toHaveBeenCalledWith('sounds/bell2.mp3');
+  });
+
+  it('should allow playing a specific bell sound explicitly', () => {
+    service.setBellSound('bell1');
+    service.playBell('bell2');
+    expect((window as any).Audio).toHaveBeenCalledWith('sounds/bell2.mp3');
+  });
+
+  it('should allow selecting bell3 and persist to localStorage', () => {
+    service.setBellSound('bell3');
+    expect(service.selectedBell).toBe('bell3');
+    expect(localStorage.getItem('meditation-timer-bell-sound')).toBe('bell3');
+
+    service.playBell();
+    expect((window as any).Audio).toHaveBeenCalledWith('sounds/bell3.mp3');
+  });
 });
+

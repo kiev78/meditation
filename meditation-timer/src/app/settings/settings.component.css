@@ -117,6 +117,64 @@ mat-radio-group {
   gap: 1rem;
 }
 
+.bell-sound-radio-group {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.bell-sound-option {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.bell-sound-option button {
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.bell-sound-option button:hover {
+  opacity: 1;
+}
+
+/* Credits Section */
+.credits-section {
+  border-bottom: none;
+}
+
+.credits-list {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.credits-list li {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+.credits-list a {
+  color: #6750a4;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity 0.2s ease;
+}
+
+.credits-list a:hover {
+  opacity: 0.8;
+}
+
+:host-context(body.dark-theme) .credits-list a {
+  color: #d0bcff;
+}
+
 @media (max-width: 700px) {
   .bell-section {
     flex-direction: column;

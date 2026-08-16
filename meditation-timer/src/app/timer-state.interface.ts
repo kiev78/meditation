@@ -17,6 +17,8 @@ export interface TimerState {
   readingFilterMode?: 'AND' | 'OR';
   isBellSequenceRunning: boolean;
   preTimerPhase?: 'delay' | 'bells' | null;
+  bellSound?: 'bell1' | 'bell2' | 'bell3';
+  intervalBellSound?: 'bell1' | 'bell2' | 'bell3';
 
   // New properties for the unified timeline design
   phase: 'stopped' | 'delay' | 'bells' | 'meditation' | 'paused' | 'finished' | null;
