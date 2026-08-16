@@ -41,7 +41,7 @@ export class ReadingsComponent implements OnInit, AfterViewInit, OnDestroy {
   private observer: IntersectionObserver | null = null;
   private settingsSub: Subscription | null = null;
 
-  availableTypes = ['BSBC','Chan', 'Zen', 'Tibetan', 'Theravada', 'Mahayana', 'Triratna', 'Chants', 'Music', 'Other'];
+  availableTypes = ['BSBC','Chan', 'Zen', 'Tibetan', 'Theravada', 'Mahayana', 'Triratna', 'Chants', 'TNH', 'Music', 'Other'];
   currentPreferences: string[] = [];
   // Filter mode: default to AND per user request. Persisted to settings as `readingFilterMode`.
   filterMode: 'AND' | 'OR' = 'AND';
