@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Subscription, timer, Observable, of, concat } from 'rxjs';
-import { take, map } from 'rxjs/operators';
+import { take, map, distinctUntilChanged } from 'rxjs/operators';
 import { TimerState } from './timer-state.interface';
 import { BellService } from './bell.service';
 import { SettingsService } from './settings.service';
+import { WakeLockService } from './wake-lock.service';
 
 @Injectable({
   providedIn: 'root',
@@ -11,6 +12,7 @@ import { SettingsService } from './settings.service';
 export class TimerService {
   private bellService = inject(BellService);
   private settingsService = inject(SettingsService);
+  private wakeLockService = inject(WakeLockService);
 
   private initialState: TimerState = {
     duration: 1800, // Meditation duration
@@ -42,21 +44,27 @@ export class TimerService {
 
   private timerSubscription: Subscription | null = null;
   private bellSequenceSubscription: Subscription | null = null;
-  private wakeLock: any = null;
   private lastToggleTime = 0;
 
   constructor() {
     this.initSettings();
-    this.settingsService.settings$.subscribe((settings) => {
-      this.updateStateInternal({ ...settings, remainingTime: settings.duration || this.initialState.duration });
-    });
+    if (this.settingsService?.settings$) {
+      this.settingsService.settings$.subscribe((settings) => {
+        this.updateStateInternal({ ...settings, remainingTime: settings.duration || this.initialState.duration });
+      });
+    }
+    if (this.wakeLockService?.isActive$) {
+      this.wakeLockService.isActive$.subscribe((isActive) => {
+        this.updateStateInternal({ isWakeLockActive: isActive });
+      });
+    }
   }
 
   public getBellSequenceDurationInSeconds(count: number, intervals: number[]): number {
     if (count <= 0) return 0;
     let totalSec = 0;
     for (let i = 0; i < count - 1; i++) {
-        totalSec += intervals[i] !== undefined ? intervals[i] : 5;
+      totalSec += intervals[i] !== undefined ? intervals[i] : 5;
     }
     totalSec += this.bellService.bellDuration;
     return totalSec; // Return seconds directly
@@ -104,7 +112,7 @@ export class TimerService {
       return;
     }
 
-    this.requestWakeLock();
+    this.wakeLockService.acquire();
 
     const currentState = this.stateSubjectValue;
 
@@ -119,16 +127,46 @@ export class TimerService {
 
     // On a fresh start, reset elapsed time
     if (currentState.phase === 'stopped' || currentState.phase === 'finished') {
-        startElapsed = 0;
+      startElapsed = 0;
     }
     
-    this.updateState({ isRunning: true, totalDuration: totalDuration, elapsed: startElapsed });
+    // Determine initial state values
+    let initialRemainingTime = currentState.remainingTime;
+    let initialPhase: TimerState['phase'] = 'meditation';
+    if (startElapsed < delayDuration) {
+      initialPhase = 'delay';
+      initialRemainingTime = -(delayDuration - startElapsed);
+    } else if (startElapsed < delayDuration + bellDuration) {
+      initialPhase = 'bells';
+      initialRemainingTime = -((delayDuration + bellDuration) - startElapsed);
+    } else {
+      initialPhase = 'meditation';
+      initialRemainingTime = totalDuration - startElapsed;
+    }
 
-    this.timerSubscription = timer(0, 1000)
-      .pipe(take(totalDuration - startElapsed + 1))
+    this.updateState({
+      isRunning: true,
+      totalDuration: totalDuration,
+      elapsed: startElapsed,
+      phase: initialPhase,
+      remainingTime: initialRemainingTime,
+      isBellSequenceRunning: initialPhase === 'bells'
+    });
+
+    if (initialPhase === 'bells' && (currentState.phase === 'stopped' || currentState.phase === 'finished')) {
+      this.playBellSequence(currentState.startBells, currentState.startBellIntervals);
+    }
+
+    const startTimestamp = Date.now() - (startElapsed * 1000);
+
+    this.timerSubscription = timer(0, 500)
+      .pipe(
+        map(() => Math.min(totalDuration, Math.floor((Date.now() - startTimestamp) / 1000))),
+        distinctUntilChanged(),
+        take(totalDuration - startElapsed + 1)
+      )
       .subscribe({
-        next: (tick) => {
-          const currentElapsed = startElapsed + tick;
+        next: (currentElapsed) => {
           const state = this.stateSubjectValue; // Get latest state
           let phase: TimerState['phase'] = state.phase;
           let remainingTime = state.remainingTime;
@@ -136,13 +174,13 @@ export class TimerService {
           // State machine to determine phase
           if (currentElapsed < delayDuration) {
             phase = 'delay';
-            remainingTime = delayDuration - currentElapsed;
+            remainingTime = -(delayDuration - currentElapsed);
             if (state.phase !== 'delay') {
               this.updateState({ phase: 'delay' });
             }
           } else if (currentElapsed < delayDuration + bellDuration) {
             phase = 'bells';
-            remainingTime = (delayDuration + bellDuration) - currentElapsed;
+            remainingTime = -((delayDuration + bellDuration) - currentElapsed);
             if (state.phase !== 'bells') {
               this.updateState({ phase: 'bells' });
               this.playBellSequence(state.startBells, state.startBellIntervals);
@@ -151,7 +189,7 @@ export class TimerService {
             phase = 'meditation';
             remainingTime = totalDuration - currentElapsed;
             if (state.phase !== 'meditation') {
-               this.updateState({ phase: 'meditation' });
+              this.updateState({ phase: 'meditation' });
             }
           }
           
@@ -165,7 +203,7 @@ export class TimerService {
           const finalState = this.stateSubjectValue;
           this.updateState({ phase: 'finished', isRunning: false, remainingTime: finalState.duration, elapsed: 0 });
           this.playBellSequence(finalState.endBells, finalState.endBellIntervals);
-          this.releaseWakeLock();
+          this.wakeLockService.release();
         }
       });
   }
@@ -179,17 +217,18 @@ export class TimerService {
     }
     this.bellService.stopBell();
     if (this.bellSequenceSubscription) {
-        this.bellSequenceSubscription.unsubscribe();
-        this.bellSequenceSubscription = null;
+      this.bellSequenceSubscription.unsubscribe();
+      this.bellSequenceSubscription = null;
     }
     this.updateState({ isRunning: false, phase: 'paused' });
-    this.releaseWakeLock();
+    this.wakeLockService.release();
   }
 
   reset() {
     this.pause();
     const duration = this.stateSubjectValue.duration;
     this.updateState({ remainingTime: duration, elapsed: 0, phase: 'stopped' });
+    this.wakeLockService.release();
   }
 
   seek(newRemaining: number) {
@@ -202,9 +241,9 @@ export class TimerService {
     if (wasRunning) {
       this.start({ isSeek: true });
     } else if (wasPaused) {
-        const currentState = this.stateSubjectValue;
-        const newElapsed = currentState.duration - newRemaining;
-        this.updateState({ elapsed: newElapsed, totalDuration: currentState.duration });
+      const currentState = this.stateSubjectValue;
+      const newElapsed = currentState.duration - newRemaining;
+      this.updateState({ elapsed: newElapsed, totalDuration: currentState.duration });
     }
   }
 
@@ -212,7 +251,7 @@ export class TimerService {
     if (count <= 0) return 0;
     let totalSec = 0;
     for (let i = 0; i < count - 1; i++) {
-        totalSec += intervals[i] !== undefined ? intervals[i] : 5;
+      totalSec += intervals[i] !== undefined ? intervals[i] : 5;
     }
     totalSec += this.bellService.bellDuration;
     return totalSec * 1000;
@@ -220,18 +259,18 @@ export class TimerService {
 
   private playBellSequence(count: number, intervals: number[]) {
     if (this.bellSequenceSubscription) {
-        this.bellSequenceSubscription.unsubscribe();
+      this.bellSequenceSubscription.unsubscribe();
     }
     if (count <= 0) return;
 
     const observables: Observable<any>[] = [of(null)];
     for (let i = 0; i < count - 1; i++) {
-        const intervalSec = intervals[i] !== undefined ? intervals[i] : 5;
-        observables.push(timer(intervalSec * 1000));
+      const intervalSec = intervals[i] !== undefined ? intervals[i] : 5;
+      observables.push(timer(intervalSec * 1000));
     }
     
     this.bellSequenceSubscription = concat(...observables).subscribe(() => {
-        this.bellService.playBell();
+      this.bellService.playBell();
     });
   }
 
@@ -250,27 +289,5 @@ export class TimerService {
   toggleTheme() {
     const currentTheme = this.stateSubject.value.theme;
     this.updateState({ theme: currentTheme === 'light' ? 'dark' : 'light' });
-  }
-
-  private async requestWakeLock() {
-    if ('wakeLock' in navigator) {
-      try {
-        this.wakeLock = await (navigator as any).wakeLock.request('screen');
-        this.updateState({ isWakeLockActive: true });
-        this.wakeLock.addEventListener('release', () => {
-          this.updateState({ isWakeLockActive: false });
-        });
-      } catch (err) {
-        console.warn('Wake Lock request failed:', err);
-      }
-    }
-  }
-
-  private releaseWakeLock() {
-    if (this.wakeLock) {
-      this.wakeLock.release().then(() => {
-        this.wakeLock = null;
-      });
-    }
   }
 }

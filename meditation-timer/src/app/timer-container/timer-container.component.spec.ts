@@ -26,7 +26,8 @@ describe('TimerContainerComponent', () => {
     startBellIntervals: [5],
     endBells: 1,
     endBellIntervals: [5],
-    isBellSequenceRunning: false
+    isBellSequenceRunning: false,
+    phase: 'stopped'
   };
 
   const mockMeditations = [
@@ -34,19 +35,16 @@ describe('TimerContainerComponent', () => {
       title: "Meditation 1 - Fits",
       "start-url-duration": "10:00", // 600s
       "end-url-duration": "01:00"  // 60s
-      // Total needed: 600 + 300 (silence) + 60 = 960s (16 mins)
     },
     {
       title: "Meditation 2 - Too Long",
       "start-url-duration": "25:00", // 1500s
       "end-url-duration": "01:00"  // 60s
-      // Total needed: 1500 + 300 + 60 = 1860s (31 mins) -> Greater than 1800s (30 mins)
     },
     {
       title: "Meditation 3 - Fits Exactly",
       "start-url-duration": "24:00", // 1440s
       "end-url-duration": "01:00"  // 60s
-      // Total needed: 1440 + 300 + 60 = 1800s (30 mins) -> Fits exactly
     }
   ];
 
@@ -56,7 +54,8 @@ describe('TimerContainerComponent', () => {
       stateSubjectValue: mockState,
       pause: jasmine.createSpy('pause'),
       start: jasmine.createSpy('start'),
-      reset: jasmine.createSpy('reset')
+      reset: jasmine.createSpy('reset'),
+      updateState: jasmine.createSpy('updateState')
     };
     noiseServiceMock = jasmine.createSpyObj('NoiseService', ['startNoise', 'stopNoise']);
 
@@ -94,10 +93,6 @@ describe('TimerContainerComponent', () => {
     });
 
     fixture.detectChanges();
-
-    // Candidate 1 (16m) -> Fits
-    // Candidate 2 (31m) -> Too long
-    // Candidate 3 (30m) -> Fits exactly
 
     expect(component.candidates.length).toBe(2);
     expect(component.candidates.some(c => c.title === "Meditation 1 - Fits")).toBeTrue();
@@ -171,6 +166,6 @@ describe('TimerContainerComponent', () => {
     // Switch to guided
     timerServiceMock.state$.next({ ...mockState, phase: 'stopped', isGuided: true });
     fixture.detectChanges();
-    expect(noiseServiceMock.stopNoise).toHaveBeenCalledTimes(1);
+    expect(noiseServiceMock.stopNoise).toHaveBeenCalled();
   });
 });

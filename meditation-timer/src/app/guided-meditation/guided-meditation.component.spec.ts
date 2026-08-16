@@ -37,6 +37,10 @@ class MockTimerService {
     const newTime = { ...this.state$.value, remainingTime: newRem };
     this.state$.next(newTime);
   }
+
+  updateState(newState: Partial<TimerState>) {
+    this.state$.next({ ...this.state$.value, ...newState });
+  }
 }
 
 class MockBellService {

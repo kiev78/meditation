@@ -3,10 +3,11 @@ import { GuidedTeacherLedMeditationComponent } from './guided-teacher-led-medita
 import { TimerService } from '../timer.service';
 import { BellService } from '../bell.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { TimerState } from '../timer-state.interface';
 
 describe('GuidedTeacherLedMeditationComponent', () => {
   let component: GuidedTeacherLedMeditationComponent;
@@ -14,7 +15,7 @@ describe('GuidedTeacherLedMeditationComponent', () => {
   let timerServiceMock: any;
   let bellServiceMock: any;
 
-  const mockState = {
+  const mockState: TimerState = {
     duration: 1800,
     remainingTime: 1800,
     isGuided: true,
@@ -23,7 +24,15 @@ describe('GuidedTeacherLedMeditationComponent', () => {
     startBellIntervals: [5],
     endBells: 1,
     endBellIntervals: [5],
-    isBellSequenceRunning: false
+    isBellSequenceRunning: false,
+    phase: 'meditation',
+    elapsed: 0,
+    totalDuration: 1800,
+    delay: 0,
+    intervals: 0,
+    theme: 'dark',
+    isWakeLockActive: false,
+    preTimerPhase: null
   };
 
   const mockMeditation = {
@@ -41,13 +50,16 @@ describe('GuidedTeacherLedMeditationComponent', () => {
       stateSubjectValue: mockState,
       pause: jasmine.createSpy('pause'),
       start: jasmine.createSpy('start'),
-      seek: jasmine.createSpy('seek')
+      seek: jasmine.createSpy('seek'),
+      reset: jasmine.createSpy('reset'),
+      updateState: jasmine.createSpy('updateState')
     };
 
     bellServiceMock = {
       playBell: jasmine.createSpy('playBell'),
       stopBell: jasmine.createSpy('stopBell'),
-      bellDuration: 2
+      bellDuration: 2,
+      volume$: of(1)
     };
 
     await TestBed.configureTestingModule({
@@ -88,7 +100,7 @@ describe('GuidedTeacherLedMeditationComponent', () => {
     const playEndSpy = spyOn<any>(component, 'playEndUrl');
 
     // Simulate timer running at T=0
-    timerServiceMock.state$.next({ ...mockState, isRunning: true, remainingTime: 1800 });
+    timerServiceMock.state$.next({ ...mockState, isRunning: true, remainingTime: 1800, phase: 'meditation', elapsed: 0, totalDuration: 1800 });
     fixture.detectChanges();
     tick(100);
 
@@ -97,7 +109,7 @@ describe('GuidedTeacherLedMeditationComponent', () => {
     expect(playStartSpy).toHaveBeenCalledWith(0);
 
     // Simulate timer at T=1750 (inside end audio)
-    timerServiceMock.state$.next({ ...mockState, isRunning: true, remainingTime: 50 }); // 1800 - 50 = 1750 elapsed
+    timerServiceMock.state$.next({ ...mockState, isRunning: true, remainingTime: 50, phase: 'meditation', elapsed: 1750, totalDuration: 1800 }); // 1800 - 50 = 1750 elapsed
     fixture.detectChanges();
     tick(100);
 
@@ -116,10 +128,11 @@ describe('GuidedTeacherLedMeditationComponent', () => {
 
     // Simulate start delay (remainingTime < 0)
     timerServiceMock.state$.next({
-        ...mockState,
-        isRunning: true,
-        remainingTime: -5,
-        isBellSequenceRunning: false
+      ...mockState,
+      isRunning: true,
+      phase: 'delay',
+      remainingTime: -5,
+      isBellSequenceRunning: false
     });
     fixture.detectChanges();
     tick(100);
@@ -132,10 +145,11 @@ describe('GuidedTeacherLedMeditationComponent', () => {
 
     // Simulate bell sequence (isBellSequenceRunning = true)
     timerServiceMock.state$.next({
-        ...mockState,
-        isRunning: true,
-        remainingTime: 1800,
-        isBellSequenceRunning: true
+      ...mockState,
+      isRunning: true,
+      phase: 'bells',
+      remainingTime: -5,
+      isBellSequenceRunning: true
     });
     fixture.detectChanges();
     tick(100);
@@ -148,10 +162,11 @@ describe('GuidedTeacherLedMeditationComponent', () => {
 
     // 1. Bell Sequence Active
     timerServiceMock.state$.next({
-        ...mockState,
-        isRunning: true,
-        remainingTime: 1800,
-        isBellSequenceRunning: true
+      ...mockState,
+      isRunning: true,
+      phase: 'bells',
+      remainingTime: -5,
+      isBellSequenceRunning: true
     });
     fixture.detectChanges();
     tick(8000); // Wait 8s (mock bell duration)
@@ -159,10 +174,13 @@ describe('GuidedTeacherLedMeditationComponent', () => {
 
     // 2. Bell Sequence Finishes
     timerServiceMock.state$.next({
-        ...mockState,
-        isRunning: true,
-        remainingTime: 1800,
-        isBellSequenceRunning: false
+      ...mockState,
+      isRunning: true,
+      phase: 'meditation',
+      remainingTime: 1800,
+      elapsed: 0,
+      totalDuration: 1800,
+      isBellSequenceRunning: false
     });
     fixture.detectChanges();
     tick(100);

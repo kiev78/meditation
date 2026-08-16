@@ -21,6 +21,7 @@ describe('HeaderComponent', () => {
     };
 
     settingsService = {
+      settings$: of({}),
       loadSettings: jasmine.createSpy('loadSettings').and.returnValue({ readingPreference: 'all' }),
       saveSettings: jasmine.createSpy('saveSettings')
     };

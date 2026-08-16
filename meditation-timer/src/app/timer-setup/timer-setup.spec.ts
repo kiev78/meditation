@@ -3,6 +3,7 @@ import { TimerSetupComponent } from './timer-setup.component';
 import { TimerService } from '../timer.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute } from '@angular/router';
+import { of } from 'rxjs';
 
 describe('TimerSetup', () => {
   let component: TimerSetupComponent;
@@ -11,14 +12,24 @@ describe('TimerSetup', () => {
 
   beforeEach(async () => {
     timerServiceMock = {
+      state$: of({
+        duration: 1800,
+        delay: 5,
+        intervals: 5,
+        startBells: 1,
+        startBellIntervals: [5],
+        endBells: 1,
+        endBellIntervals: [5],
+        isRunning: false
+      }),
       stateSubjectValue: {
         duration: 1800,
         delay: 5,
         intervals: 5,
         startBells: 1,
-        startBellInterval: 5,
+        startBellIntervals: [5],
         endBells: 1,
-        endBellInterval: 5,
+        endBellIntervals: [5],
         isRunning: false
       },
       updateState: jasmine.createSpy('updateState')

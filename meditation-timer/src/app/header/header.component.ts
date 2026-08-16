@@ -33,6 +33,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   constructor(private router: Router, private settingsService: SettingsService, private route: ActivatedRoute) {}
 
   ngOnInit() {
+    this.isReadingsPage = this.router.url ? this.router.url.includes('/readings') : false;
     this.routerSubscription = this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {

@@ -20,6 +20,10 @@ export class NoiseService implements OnDestroy {
       }
     }
 
+    if (this.audioCtx.state === 'suspended') {
+      this.audioCtx.resume().catch(() => {});
+    }
+
     if (!this.noiseProcessor) {
       this.noiseProcessor = this.audioCtx.createScriptProcessor(4096, 1, 1);
       this.noiseProcessor.onaudioprocess = (e) => {
